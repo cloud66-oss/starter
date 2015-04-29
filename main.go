@@ -48,7 +48,7 @@ func main() {
 		if result {
 			// this populates the values needed to hydrate Dockerfile.template for this pack
 			r.Compile()
-			tmpl, err := template.ParseFiles(filepath.Join("packs", fmt.Sprintf("%s.dockerfile.template", r.Name())))
+			tmpl, err := template.ParseFiles(filepath.Join("templates", fmt.Sprintf("%s.dockerfile.template", r.Name())))
 			if err != nil {
 				panic(err)
 			}
@@ -57,7 +57,7 @@ func main() {
 				panic(err)
 			}
 
-			tmpl, err = template.ParseFiles(filepath.Join("packs", fmt.Sprintf("%s.service_yml.template", r.Name())))
+			tmpl, err = template.ParseFiles(filepath.Join("templates", fmt.Sprintf("%s.service_yml.template", r.Name())))
 			if err != nil {
 				panic(err)
 			}
