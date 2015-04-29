@@ -3,6 +3,7 @@ web:
     branch: {{.GitBranch}}
     ports: {{.Ports}}
     command: {{.Command}}
+
 {{if .Dbs.Items}}
 dbs:{{range $db := .Dbs.Items}}
     - {{$db}}{{end}}

@@ -18,29 +18,34 @@ func FileExists(filename string) bool {
 	}
 }
 
-func GetGemVersion(gemFile string, gemName string) (bool, string) {
+// returns bool = found any of the gems or not and string = the version of the first found
+func GetGemVersion(gemFile string, gemNames ...string) (bool, string) {
 	buf, err := ioutil.ReadFile(gemFile)
 	if err != nil {
 		return false, err.Error()
 	}
 
-	re := regexp.MustCompile(fmt.Sprintf("[^#]gem\\s['\"]%s['\"]\\s*,?\\s*(?P<version>['\"].*?['\"])?", gemName))
+	for _, gemName := range gemNames {
+		re := regexp.MustCompile(fmt.Sprintf("[^#]gem\\s['\"]%s['\"]\\s*,?\\s*(?P<version>['\"].*?['\"])?", gemName))
 
-	if !re.Match(buf) {
-		return false, ""
-	} else {
-		sm := re.FindStringSubmatch(string(buf))
-
-		if len(sm) > 0 {
-
-			result := strings.Replace(sm[1], "'", "", -1)
-			result = strings.Replace(result, "\"", "", -1)
-
-			return true, result
+		if !re.Match(buf) {
+			return false, ""
 		} else {
-			return true, ""
+			sm := re.FindStringSubmatch(string(buf))
+
+			if len(sm) > 0 {
+
+				result := strings.Replace(sm[1], "'", "", -1)
+				result = strings.Replace(result, "\"", "", -1)
+
+				return true, result
+			} else {
+				return true, ""
+			}
 		}
 	}
+
+	return false, ""
 }
 
 func CompareVersions(desired string, actual string) (bool, error) {

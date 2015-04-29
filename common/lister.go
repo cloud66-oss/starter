@@ -18,3 +18,7 @@ func NewLister(seed ...string) *Lister {
 func (l *Lister) ToList(sep string) string {
 	return strings.Join(l.Items, sep)
 }
+
+func (l *Lister) Add(item string) {
+	l.Items = append(l.Items, item)
+}
