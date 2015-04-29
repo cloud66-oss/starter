@@ -5,4 +5,5 @@ type Pack interface {
 	PackVersion() string
 	Detect() (bool, error)
 	Compile() error
+	OutputFolder() string
 }

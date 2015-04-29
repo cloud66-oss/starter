@@ -35,6 +35,10 @@ func (r *Ruby) Detect() (bool, error) {
 	return common.FileExists(r.Gemfile), nil
 }
 
+func (r *Ruby) OutputFolder() string {
+	return r.WorkDir
+}
+
 func (r *Ruby) Compile() error {
 	// we have a ruby app
 
