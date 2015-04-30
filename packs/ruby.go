@@ -54,8 +54,17 @@ func (r *Ruby) Compile() error {
 		r.Ports = []int{3000}
 	}
 
-	// TODO: add packages based on any other findings in the Gemfile
+	// add packages based on any other findings in the Gemfile
 	r.Packages = common.NewLister()
+	if hasRmagick, _ := common.GetGemVersion(r.Gemfile, "rmagick"); hasRmagick {
+		fmt.Println("----> Found Image Magick")
+		r.Packages.Add("imagemagick", "libmagickwand-dev")
+	}
+
+	if hasSqlite, _ := common.GetGemVersion(r.Gemfile, "sqlite"); hasSqlite {
+		fmt.Println("----> Found sqlite")
+		r.Packages.Add("libsqlite3-dev")
+	}
 
 	// look for DB
 	r.Dbs = common.NewLister()
