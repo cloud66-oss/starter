@@ -95,3 +95,7 @@ func ParseEnvironmentVariables(line string) (string, error) {
 
 	return line, nil
 }
+
+func ParseUniqueInt(line string) (string, error) {
+	return strings.Replace(line, "{{UNIQUE_INT}}", "_unique:int", -1), nil
+}
