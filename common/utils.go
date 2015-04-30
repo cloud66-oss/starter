@@ -10,7 +10,10 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-var procfileRegex = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
+var (
+	procfileRegex = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
+	envVarRegex   = regexp.MustCompile("\\$([A-Z_]+[A-Z0-9_]*)")
+)
 
 type Process struct {
 	Name    string
@@ -85,4 +88,10 @@ func ParseProcfile(procfile string) ([]*Process, error) {
 	}
 
 	return procs, nil
+}
+
+func ParseEnvironmentVariables(line string) (string, error) {
+	line = envVarRegex.ReplaceAllString(line, "_env:$1")
+
+	return line, nil
 }

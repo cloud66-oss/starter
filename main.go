@@ -89,7 +89,9 @@ func parseProcfile(procfilePath string, context *common.ParseContext) (*common.P
 		if proc.Name == "web" || proc.Name == "custom_web" {
 			// assuming the first one is created by Compile
 			// TODO: this is neither safe nor right. alternatives?
-			context.Services[0].Command = proc.Command // arguments?
+			if context.Services[0].Command, err = common.ParseEnvironmentVariables(proc.Command); err != nil {
+				fmt.Printf("Failed to parse environment variables due to %s", err.Error())
+			}
 		} else {
 			fmt.Printf("----> Found Procfile item %s\n", proc.Name)
 			context.Services = append(context.Services, &common.Service{Name: proc.Name, Command: proc.Command})
