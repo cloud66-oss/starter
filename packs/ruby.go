@@ -13,12 +13,6 @@ type Ruby struct {
 	Gemfile  string
 	Version  string
 	Packages *common.Lister
-	Ports    []int
-	Dbs      *common.Lister
-
-	GitRepo   string
-	GitBranch string
-	Command   string
 }
 
 func (r *Ruby) Name() string {
@@ -40,19 +34,23 @@ func (r *Ruby) OutputFolder() string {
 	return r.WorkDir
 }
 
-func (r *Ruby) Compile() error {
+func (r *Ruby) Compile() (*common.ParseContext, error) {
 	// we have a ruby app
 
 	// TODO: should check to see if Gemfile has fixed ruby version
 	r.Version = "onbuild"
 
+	service := &common.Service{Name: "web"}
+
 	// port depends on the application server. for now we are going to fix to 3000
 	if runsUnicorn, _ := common.GetGemVersion(r.Gemfile, "unicorn", "thin"); runsUnicorn {
 		fmt.Println("----> Found non Webrick application server")
-		r.Ports = []int{9292}
+		service.Ports = []int{9292}
 	} else {
-		r.Ports = []int{3000}
+		service.Ports = []int{3000}
 	}
+
+	// TODO: read and parse Procfile and use that to build the services
 
 	// add packages based on any other findings in the Gemfile
 	r.Packages = common.NewLister()
@@ -67,21 +65,23 @@ func (r *Ruby) Compile() error {
 	}
 
 	// look for DB
-	r.Dbs = common.NewLister()
+	dbs := common.NewLister()
 	if hasMysql, _ := common.GetGemVersion(r.Gemfile, "mysql2"); hasMysql {
 		fmt.Println("----> Found Mysql")
-		r.Dbs.Add("mysql")
+		dbs.Add("mysql")
 	}
 
 	if hasPg, _ := common.GetGemVersion(r.Gemfile, "pg"); hasPg {
 		fmt.Println("----> Found PostgreSQL")
-		r.Dbs.Add("postgres")
+		dbs.Add("postgres")
 	}
 
 	if hasRedis, _ := common.GetGemVersion(r.Gemfile, "redis"); hasRedis {
 		fmt.Println("----> Found Redis")
-		r.Dbs.Add("redis")
+		dbs.Add("redis")
 	}
 
-	return nil
+	parseContext := &common.ParseContext{Services: []*common.Service{service}, Dbs: dbs}
+
+	return parseContext, nil
 }

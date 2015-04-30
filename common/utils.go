@@ -10,6 +10,13 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
+var procfileRegex = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
+
+type Process struct {
+	Command   string
+	Arguments []string
+}
+
 func FileExists(filename string) bool {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return false
@@ -60,4 +67,18 @@ func CompareVersions(desired string, actual string) (bool, error) {
 	}
 
 	return des.Check(act), nil
+}
+
+func ParseProcfile(procfile string) (procs map[string]Process) {
+	procs = make(map[string]Process)
+
+	for _, line := range strings.Split(procfile, "\n") {
+		if matches := procfileRegex.FindStringSubmatch(line); matches != nil {
+			name, command := matches[1], matches[2]
+			args := strings.Split(command, " ")
+			procs[name] = Process{args[0], args[1:]}
+		}
+	}
+
+	return
 }
