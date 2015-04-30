@@ -50,8 +50,6 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 		service.Ports = []int{3000}
 	}
 
-	// TODO: read and parse Procfile and use that to build the services
-
 	// add packages based on any other findings in the Gemfile
 	r.Packages = common.NewLister()
 	if hasRmagick, _ := common.GetGemVersion(r.Gemfile, "rmagick"); hasRmagick {

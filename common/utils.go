@@ -13,8 +13,8 @@ import (
 var procfileRegex = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
 
 type Process struct {
-	Command   string
-	Arguments []string
+	Name    string
+	Command string
 }
 
 func FileExists(filename string) bool {
@@ -69,16 +69,20 @@ func CompareVersions(desired string, actual string) (bool, error) {
 	return des.Check(act), nil
 }
 
-func ParseProcfile(procfile string) (procs map[string]Process) {
-	procs = make(map[string]Process)
+func ParseProcfile(procfile string) ([]*Process, error) {
+	procs := []*Process{}
 
-	for _, line := range strings.Split(procfile, "\n") {
+	buf, err := ioutil.ReadFile(procfile)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, line := range strings.Split(string(buf), "\n") {
 		if matches := procfileRegex.FindStringSubmatch(line); matches != nil {
 			name, command := matches[1], matches[2]
-			args := strings.Split(command, " ")
-			procs[name] = Process{args[0], args[1:]}
+			procs = append(procs, &Process{Name: name, Command: command})
 		}
 	}
 
-	return
+	return procs, nil
 }

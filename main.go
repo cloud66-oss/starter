@@ -52,7 +52,6 @@ func main() {
 		}
 
 		if result {
-
 			// this populates the values needed to hydrate Dockerfile.template for this pack
 			context, err := r.Compile()
 			if err != nil {
@@ -61,6 +60,11 @@ func main() {
 
 			if err := parseAndWrite(r, fmt.Sprintf("%s.dockerfile.template", r.Name()), "Dockerfile"); err != nil {
 				fmt.Printf("Failed to write Dockerfile due to %s\n", err.Error())
+			}
+
+			context, err = parseProcfile(filepath.Join(flagPath, "Procfile"), context)
+			if err != nil {
+				fmt.Printf("Failed to parse Procfile due to %s\n", err.Error())
 			}
 
 			if err := writeServiceFile(context, r.OutputFolder()); err != nil {
@@ -72,6 +76,27 @@ func main() {
 	}
 
 	fmt.Println("\nDone")
+}
+
+func parseProcfile(procfilePath string, context *common.ParseContext) (*common.ParseContext, error) {
+	fmt.Println("Parsing Procfile")
+	procs, err := common.ParseProcfile(procfilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, proc := range procs {
+		if proc.Name == "web" || proc.Name == "custom_web" {
+			// assuming the first one is created by Compile
+			// TODO: this is neither safe nor right. alternatives?
+			context.Services[0].Command = proc.Command // arguments?
+		} else {
+			fmt.Printf("----> Found Procfile item %s\n", proc.Name)
+			context.Services = append(context.Services, &common.Service{Name: proc.Name, Command: proc.Command})
+		}
+	}
+
+	return context, nil
 }
 
 func writeServiceFile(context *common.ParseContext, outputFolder string) error {
