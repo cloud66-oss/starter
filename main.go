@@ -10,6 +10,7 @@ import (
 	//	"github.com/mgutz/ansi"
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -110,12 +111,12 @@ func parseProcfile(procfilePath string, context *common.ParseContext) (*common.P
 }
 
 func writeServiceFile(context *common.ParseContext, outputFolder string) error {
-	tmpl, err := template.ParseFiles(filepath.Join(flagTemplatePath, "service_yml.template"))
-	if err != nil {
-		return err
-	}
-
 	destFullPath := filepath.Join(outputFolder, "service.yml")
+
+	d, err := yaml.Marshal(&context)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+	}
 
 	if _, err := os.Stat(destFullPath); !os.IsNotExist(err) && !flagOverwrite {
 		return fmt.Errorf("service.yml exists and will not be overwritten unless the overwrite flag is set")
@@ -131,10 +132,8 @@ func writeServiceFile(context *common.ParseContext, outputFolder string) error {
 			fmt.Printf("Cannot close file service.yml due to %s\n", err.Error())
 		}
 	}()
-	err = tmpl.Execute(destFile, context)
-	if err != nil {
-		return err
-	}
+
+	destFile.Write(d)
 
 	return nil
 }

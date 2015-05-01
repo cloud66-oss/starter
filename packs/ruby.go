@@ -79,7 +79,7 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 		dbs.Add("redis")
 	}
 
-	parseContext := &common.ParseContext{Services: []*common.Service{service}, Dbs: dbs}
+	parseContext := &common.ParseContext{Services: []*common.Service{service}, Dbs: dbs.Items}
 
 	return parseContext, nil
 }
