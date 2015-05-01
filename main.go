@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"text/template"
 
-	//	"github.com/mgutz/ansi"
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
 	"gopkg.in/yaml.v2"
@@ -38,17 +37,17 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Println("Cloud 66 Starter - (c) 2015 Cloud 66")
+	fmt.Println(common.MsgTitle, "Cloud 66 Starter - (c) 2015 Cloud 66", common.MsgReset)
 
 	packList = &[]packs.Pack{&packs.Ruby{WorkDir: flagPath}}
 
 	for _, r := range *packList {
 		result, err := r.Detect()
 		if err != nil {
-			fmt.Printf("Failed to check for %s due to %s\n", r.Name(), err.Error())
+			fmt.Printf(common.MsgError, "Failed to check for %s due to %s\n", r.Name(), err.Error())
 		} else {
 			if result {
-				fmt.Printf("Found %s application\n", r.Name())
+				fmt.Printf("%s Found %s application\n", common.MsgL0, r.Name())
 			}
 		}
 
@@ -76,11 +75,11 @@ func main() {
 		}
 	}
 
-	fmt.Println("\nDone")
+	fmt.Println(common.MsgTitle, "\n Done", common.MsgReset)
 }
 
 func parseProcfile(procfilePath string, context *common.ParseContext) (*common.ParseContext, error) {
-	fmt.Println("Parsing Procfile")
+	fmt.Println(common.MsgL1, "Parsing Procfile")
 	procs, err := common.ParseProcfile(procfilePath)
 	if err != nil {
 		return nil, err
@@ -92,7 +91,7 @@ func parseProcfile(procfilePath string, context *common.ParseContext) (*common.P
 			// TODO: this is neither safe nor right. alternatives?
 			context.Services[0].Command = proc.Command
 		} else {
-			fmt.Printf("----> Found Procfile item %s\n", proc.Name)
+			fmt.Printf("%s ----> Found Procfile item %s\n", common.MsgL2, proc.Name)
 			context.Services = append(context.Services, &common.Service{Name: proc.Name, Command: proc.Command})
 		}
 	}
@@ -129,7 +128,7 @@ func writeServiceFile(context *common.ParseContext, outputFolder string) error {
 		return fmt.Errorf("service.yml exists and will not be overwritten unless the overwrite flag is set")
 	}
 
-	fmt.Println("Writing service.yml")
+	fmt.Println(common.MsgL1, "Writing service.yml")
 	destFile, err := os.Create(destFullPath)
 	if err != nil {
 		return err
@@ -157,7 +156,7 @@ func parseAndWrite(pack packs.Pack, templateName string, destName string) error 
 		return fmt.Errorf("File %s exists and will not be overwritten unless the overwrite flag is set\n", destName)
 	}
 
-	fmt.Printf("Writing %s...\n", destName)
+	fmt.Printf("%s Writing %s...%s\n", common.MsgL1, destName, common.MsgReset)
 	destFile, err := os.Create(destFullPath)
 	if err != nil {
 		return err

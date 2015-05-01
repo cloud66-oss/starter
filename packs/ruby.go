@@ -44,7 +44,7 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 
 	// port depends on the application server. for now we are going to fix to 3000
 	if runsUnicorn, _ := common.GetGemVersion(r.Gemfile, "unicorn", "thin"); runsUnicorn {
-		fmt.Println("----> Found non Webrick application server")
+		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
 		service.Ports = []int{9292}
 	} else {
 		service.Ports = []int{3000}
@@ -53,29 +53,29 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 	// add packages based on any other findings in the Gemfile
 	r.Packages = common.NewLister()
 	if hasRmagick, _ := common.GetGemVersion(r.Gemfile, "rmagick"); hasRmagick {
-		fmt.Println("----> Found Image Magick")
+		fmt.Println(common.MsgL2, "----> Found Image Magick", common.MsgReset)
 		r.Packages.Add("imagemagick", "libmagickwand-dev")
 	}
 
 	if hasSqlite, _ := common.GetGemVersion(r.Gemfile, "sqlite"); hasSqlite {
-		fmt.Println("----> Found sqlite")
+		fmt.Println(common.MsgL2, "----> Found sqlite", common.MsgReset)
 		r.Packages.Add("libsqlite3-dev")
 	}
 
 	// look for DB
 	dbs := common.NewLister()
 	if hasMysql, _ := common.GetGemVersion(r.Gemfile, "mysql2"); hasMysql {
-		fmt.Println("----> Found Mysql")
+		fmt.Println(common.MsgL2, "----> Found Mysql", common.MsgReset)
 		dbs.Add("mysql")
 	}
 
 	if hasPg, _ := common.GetGemVersion(r.Gemfile, "pg"); hasPg {
-		fmt.Println("----> Found PostgreSQL")
+		fmt.Println(common.MsgL2, "----> Found PostgreSQL", common.MsgReset)
 		dbs.Add("postgres")
 	}
 
 	if hasRedis, _ := common.GetGemVersion(r.Gemfile, "redis"); hasRedis {
-		fmt.Println("----> Found Redis")
+		fmt.Println(common.MsgL2, "----> Found Redis", common.MsgReset)
 		dbs.Add("redis")
 	}
 

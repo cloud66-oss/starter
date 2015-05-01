@@ -9,11 +9,19 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-version"
+	"github.com/mgutz/ansi"
 )
 
 var (
 	procfileRegex = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
 	envVarRegex   = regexp.MustCompile("\\$([A-Z_]+[A-Z0-9_]*)")
+
+	MsgTitle string = ansi.ColorCode("green+h")
+	MsgL0    string = ansi.ColorCode("magenta")
+	MsgL1    string = ansi.ColorCode("white")
+	MsgL2    string = ansi.ColorCode("black+h")
+	MsgReset string = ansi.ColorCode("reset")
+	MsgError string = ansi.ColorCode("red+h")
 )
 
 type Process struct {
