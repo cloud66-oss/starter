@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -98,4 +99,20 @@ func ParseEnvironmentVariables(line string) (string, error) {
 
 func ParseUniqueInt(line string) (string, error) {
 	return strings.Replace(line, "{{UNIQUE_INT}}", "_unique:int", -1), nil
+}
+
+func LocalGitBranch(folder string) string {
+	b, err := exec.Command("git", "--git-dir", fmt.Sprintf("%s/.git", folder), "name-rev", "--name-only", "HEAD").Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(b))
+}
+
+func RemoteGitUrl(folder string) string {
+	b, err := exec.Command("git", "--git-dir", fmt.Sprintf("%s/.git", folder), "config", "remote.origin.url").Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(b))
 }

@@ -97,6 +97,10 @@ func parseProcfile(procfilePath string, context *common.ParseContext) (*common.P
 		}
 	}
 
+	// Get the git info
+	gitUrl := common.RemoteGitUrl(flagPath)
+	gitBranch := common.LocalGitBranch(flagPath)
+
 	for _, service := range context.Services {
 		if service.Command, err = common.ParseEnvironmentVariables(service.Command); err != nil {
 			fmt.Printf("Failed to replace environment variable placeholder due to %s\n", err.Error())
@@ -105,6 +109,9 @@ func parseProcfile(procfilePath string, context *common.ParseContext) (*common.P
 		if service.Command, err = common.ParseUniqueInt(service.Command); err != nil {
 			fmt.Printf("Failed to replace UNIQUE_INT variable placeholder due to %s\n", err.Error())
 		}
+
+		service.GitBranch = gitBranch
+		service.GitRepo = gitUrl
 	}
 
 	return context, nil
