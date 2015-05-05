@@ -21,7 +21,7 @@ var (
 	MsgL1    string = ansi.ColorCode("white")
 	MsgL2    string = ansi.ColorCode("black+h")
 	MsgReset string = ansi.ColorCode("reset")
-	MsgError string = ansi.ColorCode("red+h")
+	MsgError string = ansi.ColorCode("red")
 )
 
 type Process struct {
@@ -44,27 +44,44 @@ func GetGemVersion(gemFile string, gemNames ...string) (bool, string) {
 		return false, err.Error()
 	}
 
-	for _, gemName := range gemNames {
-		re := regexp.MustCompile(fmt.Sprintf("[^#]gem\\s['\"]%s['\"]\\s*,?\\s*(?P<version>['\"].*?['\"])?", gemName))
-
-		if !re.Match(buf) {
-			return false, ""
-		} else {
-			sm := re.FindStringSubmatch(string(buf))
-
-			if len(sm) > 0 {
-
-				result := strings.Replace(sm[1], "'", "", -1)
-				result = strings.Replace(result, "\"", "", -1)
-
-				return true, result
-			} else {
-				return true, ""
+	lines := strings.Split(string(buf), "\n")
+	for _, line := range lines {
+		for _, gemName := range gemNames {
+			found, version := ParseLineForGem(gemName, line)
+			if found {
+				return true, version
 			}
 		}
 	}
 
 	return false, ""
+
+}
+
+// Checks a line to see if it contains the given gem. returns true, version or false, ""
+func ParseLineForGem(gemName string, line string) (bool, string) {
+	line = strings.TrimSpace(line)
+	if line == "" || strings.HasPrefix(line, "#") {
+		// empty or comment
+		return false, ""
+	}
+
+	re := regexp.MustCompile(fmt.Sprintf("gem\\s['\"]%s['\"]\\s*,?\\s*(?P<version>['\"].*?['\"])?", gemName))
+	if !re.MatchString(line) {
+		return false, ""
+	} else {
+		sm := re.FindStringSubmatch(line)
+
+		if len(sm) > 0 {
+
+			result := strings.Replace(sm[1], "'", "", -1)
+			result = strings.Replace(result, "\"", "", -1)
+
+			return true, result
+		} else {
+			return true, ""
+		}
+	}
 }
 
 func CompareVersions(desired string, actual string) (bool, error) {

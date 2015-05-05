@@ -44,10 +44,12 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 
 	// port depends on the application server. for now we are going to fix to 3000
 	if runsUnicorn, _ := common.GetGemVersion(r.Gemfile, "unicorn", "thin"); runsUnicorn {
-		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
-		service.Ports = []int{9292}
+		fmt.Println(common.MsgL2, "----> Found non Webrick application server (%s)", common.MsgReset)
+		// The command here will be found in the Procfile
+		service.Ports = []string{"9000:80:443"}
 	} else {
-		service.Ports = []int{3000}
+		service.Ports = []string{"3000:80:443"}
+		service.Command = "bundle exec rails s _env:$RAILS_ENV"
 	}
 
 	// add packages based on any other findings in the Gemfile

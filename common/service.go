@@ -5,5 +5,5 @@ type Service struct {
 	GitRepo   string
 	GitBranch string
 	Command   string
-	Ports     []int
+	Ports     []string
 }

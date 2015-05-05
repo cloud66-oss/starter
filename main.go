@@ -9,13 +9,16 @@ import (
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
-	"gopkg.in/yaml.v2"
+	//"gopkg.in/yaml.v2"
 )
 
 var (
 	flagPath         string
 	flagTemplatePath string
 	flagOverwrite    bool
+
+	gitUrl    string
+	gitBranch string
 
 	packList *[]packs.Pack
 	context  *common.ParseContext
@@ -55,20 +58,29 @@ func main() {
 			// this populates the values needed to hydrate Dockerfile.template for this pack
 			context, err := r.Compile()
 			if err != nil {
-				fmt.Printf("Failed to compile the project due to %s", err.Error())
+				fmt.Printf("%s Failed to compile the project due to %s", common.MsgError, err.Error())
 			}
 
+			// Get the git info
+			gitUrl = common.RemoteGitUrl(flagPath)
+			gitBranch = common.LocalGitBranch(flagPath)
+
 			if err := parseAndWrite(r, fmt.Sprintf("%s.dockerfile.template", r.Name()), "Dockerfile"); err != nil {
-				fmt.Printf("Failed to write Dockerfile due to %s\n", err.Error())
+				fmt.Printf("%s Failed to write Dockerfile due to %s\n", common.MsgError, err.Error())
 			}
 
 			context, err = parseProcfile(filepath.Join(flagPath, "Procfile"), context)
 			if err != nil {
-				fmt.Printf("Failed to parse Procfile due to %s\n", err.Error())
+				fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
+			}
+
+			for _, service := range context.Services {
+				service.GitBranch = gitBranch
+				service.GitRepo = gitUrl
 			}
 
 			if err := writeServiceFile(context, r.OutputFolder()); err != nil {
-				fmt.Printf("Failed to write services.yml due to %s\n", err.Error())
+				fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
 			}
 
 			break
@@ -79,6 +91,10 @@ func main() {
 }
 
 func parseProcfile(procfilePath string, context *common.ParseContext) (*common.ParseContext, error) {
+	if !common.FileExists(procfilePath) {
+		return context, nil
+	}
+
 	fmt.Println(common.MsgL1, "Parsing Procfile")
 	procs, err := common.ParseProcfile(procfilePath)
 	if err != nil {
@@ -87,8 +103,6 @@ func parseProcfile(procfilePath string, context *common.ParseContext) (*common.P
 
 	for _, proc := range procs {
 		if proc.Name == "web" || proc.Name == "custom_web" {
-			// assuming the first one is created by Compile
-			// TODO: this is neither safe nor right. alternatives?
 			context.Services[0].Command = proc.Command
 		} else {
 			fmt.Printf("%s ----> Found Procfile item %s\n", common.MsgL2, proc.Name)
@@ -96,21 +110,14 @@ func parseProcfile(procfilePath string, context *common.ParseContext) (*common.P
 		}
 	}
 
-	// Get the git info
-	gitUrl := common.RemoteGitUrl(flagPath)
-	gitBranch := common.LocalGitBranch(flagPath)
-
 	for _, service := range context.Services {
 		if service.Command, err = common.ParseEnvironmentVariables(service.Command); err != nil {
-			fmt.Printf("Failed to replace environment variable placeholder due to %s\n", err.Error())
+			fmt.Printf("%s Failed to replace environment variable placeholder due to %s\n", common.MsgError, err.Error())
 		}
 
 		if service.Command, err = common.ParseUniqueInt(service.Command); err != nil {
-			fmt.Printf("Failed to replace UNIQUE_INT variable placeholder due to %s\n", err.Error())
+			fmt.Printf("%s Failed to replace UNIQUE_INT variable placeholder due to %s\n", common.MsgError, err.Error())
 		}
-
-		service.GitBranch = gitBranch
-		service.GitRepo = gitUrl
 	}
 
 	return context, nil
@@ -119,27 +126,30 @@ func parseProcfile(procfilePath string, context *common.ParseContext) (*common.P
 func writeServiceFile(context *common.ParseContext, outputFolder string) error {
 	destFullPath := filepath.Join(outputFolder, "service.yml")
 
-	d, err := yaml.Marshal(&context)
+	tmpl, err := template.ParseFiles(filepath.Join(flagTemplatePath, "service.yml.template"))
 	if err != nil {
-		fmt.Printf("error: %v\n", err)
+		return err
 	}
 
 	if _, err := os.Stat(destFullPath); !os.IsNotExist(err) && !flagOverwrite {
 		return fmt.Errorf("service.yml exists and will not be overwritten unless the overwrite flag is set")
 	}
 
-	fmt.Println(common.MsgL1, "Writing service.yml")
 	destFile, err := os.Create(destFullPath)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err := destFile.Close(); err != nil {
-			fmt.Printf("Cannot close file service.yml due to %s\n", err.Error())
+			fmt.Printf("%s Cannot close file service.yml due to %s\n", common.MsgError, err.Error())
 		}
 	}()
 
-	destFile.Write(d)
+	fmt.Println(common.MsgL1, "Writing service.yml...")
+	err = tmpl.Execute(destFile, context)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -163,7 +173,7 @@ func parseAndWrite(pack packs.Pack, templateName string, destName string) error 
 	}
 	defer func() {
 		if err := destFile.Close(); err != nil {
-			fmt.Printf("Cannot close file %s due to %s\n", destName, err.Error())
+			fmt.Printf("%s Cannot close file %s due to %s\n", common.MsgError, destName, err.Error())
 		}
 	}()
 	err = tmpl.Execute(destFile, pack)

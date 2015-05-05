@@ -1,0 +1,12 @@
+---
+services:
+{{range .Services}}
+  {{.Name}}:
+    git: {{.GitRepo}}
+    git_branch: {{.GitBranch}}
+    command: {{.Command}}
+    {{if .Ports}}{{range .Ports}}ports: 
+      - {{.}}{{end}}{{end}}
+{{end}}
+dbs:{{range .Dbs}}
+  - {{.}}{{end}}
