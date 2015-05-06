@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	procfileRegex = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
-	envVarRegex   = regexp.MustCompile("\\$([A-Z_]+[A-Z0-9_]*)")
+	procfileRegex    = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
+	envVarRegex      = regexp.MustCompile("\\$([A-Z_]+[A-Z0-9_]*)")
+	rubyVersionRegex = regexp.MustCompile("ruby\\s['\"](.*?)['\"]")
 
 	MsgTitle string = ansi.ColorCode("green+h")
 	MsgL0    string = ansi.ColorCode("magenta")
@@ -35,6 +36,28 @@ func FileExists(filename string) bool {
 	} else {
 		return true
 	}
+}
+
+// Looks for ruby version in the gemfile. If found returns true, version if not false, ""
+func GetRubyVersion(gemFile string) (bool, string) {
+	buf, err := ioutil.ReadFile(gemFile)
+	if err != nil {
+		return false, err.Error()
+	}
+
+	lines := strings.Split(string(buf), "\n")
+	for _, line := range lines {
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		if rubyVersionRegex.MatchString(line) {
+			sm := rubyVersionRegex.FindStringSubmatch(line)
+			return true, sm[1]
+		}
+	}
+
+	return false, ""
 }
 
 // returns bool = found any of the gems or not and string = the version of the first found

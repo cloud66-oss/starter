@@ -37,8 +37,12 @@ func (r *Ruby) OutputFolder() string {
 func (r *Ruby) Compile() (*common.ParseContext, error) {
 	// we have a ruby app
 
-	// TODO: should check to see if Gemfile has fixed ruby version
-	r.Version = "onbuild"
+	foundRuby, rubyVersion := common.GetRubyVersion(r.Gemfile)
+	if foundRuby {
+		r.Version = fmt.Sprintf("%s-onbuild", rubyVersion)
+	} else {
+		r.Version = "onbuild"
+	}
 
 	service := &common.Service{Name: "web"}
 
@@ -46,7 +50,7 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 	if runsUnicorn, _ := common.GetGemVersion(r.Gemfile, "unicorn", "thin"); runsUnicorn {
 		fmt.Println(common.MsgL2, "----> Found non Webrick application server (%s)", common.MsgReset)
 		// The command here will be found in the Procfile
-		service.Ports = []string{"9000:80:443"}
+		service.Ports = []string{"9292:80:443"}
 	} else {
 		service.Ports = []string{"3000:80:443"}
 		service.Command = "bundle exec rails s _env:$RAILS_ENV"
