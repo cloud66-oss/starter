@@ -9,7 +9,7 @@ import (
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
-	//"gopkg.in/yaml.v2"
+	"github.com/kardianos/osext"
 )
 
 var (
@@ -44,6 +44,13 @@ func main() {
 
 	packList = &[]packs.Pack{&packs.Ruby{WorkDir: flagPath}}
 
+	if flagPath == "" {
+		flagPath, _ = osext.Executable()
+	}
+
+	fmt.Printf("%s Detecting framework for the project at %s%s\n", common.MsgTitle, flagPath, common.MsgReset)
+
+	found := false
 	for _, r := range *packList {
 		result, err := r.Detect()
 		if err != nil {
@@ -83,8 +90,13 @@ func main() {
 				fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
 			}
 
+			found = true
 			break
 		}
+	}
+
+	if !found {
+		fmt.Println(common.MsgError, "Could not detect any of the supported frameworks", common.MsgReset)
 	}
 
 	fmt.Println(common.MsgTitle, "\n Done", common.MsgReset)
@@ -132,7 +144,7 @@ func writeServiceFile(context *common.ParseContext, outputFolder string) error {
 	}
 
 	if _, err := os.Stat(destFullPath); !os.IsNotExist(err) && !flagOverwrite {
-		return fmt.Errorf("service.yml exists and will not be overwritten unless the overwrite flag is set")
+		return fmt.Errorf("service.yml exists and will not be overwritten unless the overwrite flag (-o) is set")
 	}
 
 	destFile, err := os.Create(destFullPath)
@@ -163,7 +175,7 @@ func parseAndWrite(pack packs.Pack, templateName string, destName string) error 
 	destFullPath := filepath.Join(pack.OutputFolder(), destName)
 
 	if _, err := os.Stat(destFullPath); !os.IsNotExist(err) && !flagOverwrite {
-		return fmt.Errorf("File %s exists and will not be overwritten unless the overwrite flag is set\n", destName)
+		return fmt.Errorf("File %s exists and will not be overwritten unless the overwrite flag (-o) is set\n", destName)
 	}
 
 	fmt.Printf("%s Writing %s...%s\n", common.MsgL1, destName, common.MsgReset)
