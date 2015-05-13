@@ -8,5 +8,5 @@ services:
     {{if .Ports}}{{range .Ports}}ports: 
       - {{.}}{{end}}{{end}}
 {{end}}
-dbs:{{range .Dbs}}
+databases:{{range .Dbs}}
   - {{.}}{{end}}
