@@ -26,7 +26,7 @@ var (
 
 func init() {
 	flag.StringVar(&flagPath, "p", "", "project path")
-	flag.StringVar(&flagTemplatePath, "templates", "templates", "where template files are located")
+	flag.StringVar(&flagTemplatePath, "templates", "", "where template files are located")
 	flag.BoolVar(&flagOverwrite, "o", false, "overwrite existing files")
 }
 
@@ -45,7 +45,20 @@ func main() {
 	packList = &[]packs.Pack{&packs.Ruby{WorkDir: flagPath}}
 
 	if flagPath == "" {
-		flagPath, _ = osext.Executable()
+		pwd, err := os.Getwd()
+		if err != nil {
+			fmt.Printf("%s Unable to detect current directory path due to %s", common.MsgError, err.Error())
+		}
+		flagPath = pwd
+	}
+
+	if flagTemplatePath == "" {
+		execDir, err := osext.Executable()
+		if err != nil {
+			fmt.Printf("%s Unable to detect template folder due to %s", common.MsgError, err.Error())
+		}
+
+		flagTemplatePath = filepath.Join(filepath.Dir(execDir), "templates")
 	}
 
 	fmt.Printf("%s Detecting framework for the project at %s%s\n", common.MsgTitle, flagPath, common.MsgReset)

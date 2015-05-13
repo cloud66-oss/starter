@@ -48,7 +48,7 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 
 	// port depends on the application server. for now we are going to fix to 3000
 	if runsUnicorn, _ := common.GetGemVersion(r.Gemfile, "unicorn", "thin"); runsUnicorn {
-		fmt.Println(common.MsgL2, "----> Found non Webrick application server (%s)", common.MsgReset)
+		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
 		// The command here will be found in the Procfile
 		service.Ports = []string{"9292:80:443"}
 	} else {
