@@ -7,6 +7,8 @@ services:
     command: {{.Command}}
     {{if .Ports}}{{range .Ports}}ports: 
       - {{.}}{{end}}{{end}}
+    {{if .EnvVars}}env_vars:{{range .EnvVars}}
+      {{.Key}}: {{.Value}}{{end}}{{end}}
 {{end}}
 databases:{{range .Dbs}}
   - {{.}}{{end}}

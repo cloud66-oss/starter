@@ -8,7 +8,8 @@ import (
 )
 
 type Ruby struct {
-	WorkDir string
+	WorkDir     string
+	Environment string
 
 	Gemfile  string
 	Version  string
@@ -46,6 +47,8 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 
 	service := &common.Service{Name: "web"}
 
+	isRails, _ := common.GetGemVersion(r.Gemfile, "rails")
+
 	// port depends on the application server. for now we are going to fix to 3000
 	if runsUnicorn, _ := common.GetGemVersion(r.Gemfile, "unicorn", "thin"); runsUnicorn {
 		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
@@ -53,7 +56,11 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 		service.Ports = []string{"9292:80:443"}
 	} else {
 		service.Ports = []string{"3000:80:443"}
-		service.Command = "bundle exec rails s _env:$RAILS_ENV"
+		if isRails {
+			service.Command = "bundle exec rails s _env:$RAILS_ENV"
+		} else {
+			service.Command = "bundle exec rack s _env:$RACK_ENV"
+		}
 	}
 
 	// add packages based on any other findings in the Gemfile
@@ -85,7 +92,14 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 		dbs.Add("redis")
 	}
 
-	parseContext := &common.ParseContext{Services: []*common.Service{service}, Dbs: dbs.Items}
+	parseContext := &common.ParseContext{
+		Services: []*common.Service{service},
+		Dbs:      dbs.Items,
+		EnvVars: []*common.EnvVar{
+			&common.EnvVar{Key: "RAILS_ENV", Value: r.Environment},
+			&common.EnvVar{Key: "RACK_ENV", Value: r.Environment}}}
+
+	service.EnvVars = parseContext.EnvVars
 
 	return parseContext, nil
 }

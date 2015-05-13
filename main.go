@@ -16,6 +16,7 @@ var (
 	flagPath         string
 	flagTemplatePath string
 	flagOverwrite    bool
+	flagEnvironment  string
 
 	gitUrl    string
 	gitBranch string
@@ -28,6 +29,7 @@ func init() {
 	flag.StringVar(&flagPath, "p", "", "project path")
 	flag.StringVar(&flagTemplatePath, "templates", "", "where template files are located")
 	flag.BoolVar(&flagOverwrite, "o", false, "overwrite existing files")
+	flag.StringVar(&flagEnvironment, "e", "production", "set project environment")
 }
 
 func main() {
@@ -41,8 +43,6 @@ func main() {
 	flag.Parse()
 
 	fmt.Println(common.MsgTitle, "Cloud 66 Starter - (c) 2015 Cloud 66", common.MsgReset)
-
-	packList = &[]packs.Pack{&packs.Ruby{WorkDir: flagPath}}
 
 	if flagPath == "" {
 		pwd, err := os.Getwd()
@@ -61,6 +61,8 @@ func main() {
 		flagTemplatePath = filepath.Join(filepath.Dir(execDir), "templates")
 	}
 
+	packList = &[]packs.Pack{&packs.Ruby{WorkDir: flagPath, Environment: flagEnvironment}}
+
 	fmt.Printf("%s Detecting framework for the project at %s%s\n", common.MsgTitle, flagPath, common.MsgReset)
 
 	found := false
@@ -70,7 +72,7 @@ func main() {
 			fmt.Printf(common.MsgError, "Failed to check for %s due to %s\n", r.Name(), err.Error())
 		} else {
 			if result {
-				fmt.Printf("%s Found %s application\n", common.MsgL0, r.Name())
+				fmt.Printf("%s Found %s application (%s)\n", common.MsgL0, r.Name(), flagEnvironment)
 			}
 		}
 
@@ -143,6 +145,8 @@ func parseProcfile(procfilePath string, context *common.ParseContext) (*common.P
 		if service.Command, err = common.ParseUniqueInt(service.Command); err != nil {
 			fmt.Printf("%s Failed to replace UNIQUE_INT variable placeholder due to %s\n", common.MsgError, err.Error())
 		}
+
+		service.EnvVars = context.EnvVars
 	}
 
 	return context, nil

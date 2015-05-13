@@ -6,4 +6,5 @@ type Service struct {
 	GitBranch string
 	Command   string
 	Ports     []string
+	EnvVars   []*EnvVar // service level environment variables
 }
