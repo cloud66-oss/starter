@@ -77,7 +77,7 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 
 	if hasPg, _ := common.GetGemVersion(r.Gemfile, "pg"); hasPg {
 		fmt.Println(common.MsgL2, "----> Found PostgreSQL", common.MsgReset)
-		dbs.Add("postgres")
+		dbs.Add("postgresql")
 	}
 
 	if hasRedis, _ := common.GetGemVersion(r.Gemfile, "redis"); hasRedis {
