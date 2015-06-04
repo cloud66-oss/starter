@@ -92,6 +92,16 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 		dbs.Add("redis")
 	}
 
+	if hasMongoDB, _ := common.GetGemVersion(r.Gemfile, "mongo", "mongo_mapper", "dm-mongo-adapter", "mongoid"); hasMongoDB {
+		fmt.Println(common.MsgL2, "----> Found MongoDB", common.MsgReset)
+		dbs.Add("mongodb")
+	}
+
+	if hasElasticsearch, _ := common.GetGemVersion(r.Gemfile, "elasticsearch", "tire", "flex", "chewy"); hasElasticsearch {
+		fmt.Println(common.MsgL2, "----> Found Elasticsearch", common.MsgReset)
+		dbs.Add("elasticsearch")
+	}
+
 	parseContext := &common.ParseContext{
 		Services: []*common.Service{service},
 		Dbs:      dbs.Items,
