@@ -105,6 +105,13 @@ func main() {
 				fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
 			}
 
+			if len(context.Messages) > 0 {
+				fmt.Printf("%s Warnings: \n", common.MsgWarn)
+				for _, m := range context.Messages {
+					fmt.Printf(" %s %s\n", common.MsgWarn, m)
+				}				
+			}
+
 			found = true
 			break
 		}

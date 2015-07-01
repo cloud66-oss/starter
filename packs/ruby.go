@@ -35,14 +35,25 @@ func (r *Ruby) OutputFolder() string {
 	return r.WorkDir
 }
 
+func (r *Ruby) DefaultVersion() string {
+	return "onbuild"
+}
+
 func (r *Ruby) Compile() (*common.ParseContext, error) {
 	// we have a ruby app
+
+	messages := common.NewLister()
 
 	foundRuby, rubyVersion := common.GetRubyVersion(r.Gemfile)
 	if foundRuby {
 		r.Version = fmt.Sprintf("%s-onbuild", rubyVersion)
 	} else {
-		r.Version = "onbuild"
+		rubyVersion = common.AskUser("Can't find Ruby version from Gemfile:", "default")
+		if rubyVersion == "default" {
+			r.Version = r.DefaultVersion()
+		} else {
+			r.Version = fmt.Sprintf("%s-onbuild", rubyVersion)
+		}
 	}
 
 	service := &common.Service{Name: "web"}
@@ -55,11 +66,12 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 		// The command here will be found in the Procfile
 		service.Ports = []string{"9292:80:443"}
 	} else {
-		service.Ports = []string{"3000:80:443"}
 		if isRails {
-			service.Command = "bundle exec rails s _env:$RAILS_ENV"
+			service.Command = "bundle exec rails s $RAILS_ENV"
+			service.Ports = []string{"3000:80:443"}
 		} else {
-			service.Command = "bundle exec rack s _env:$RACK_ENV"
+			service.Command = "bundle exec rackup s $RACK_ENV"
+			service.Ports = []string{"9292:80:443"}
 		}
 	}
 
@@ -102,12 +114,29 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 		dbs.Add("elasticsearch")
 	}
 
+	if hasDatabaseYaml := common.FileExists("config/database.yml"); hasDatabaseYaml {
+		fmt.Println(common.MsgL2, "----> Found config/database.yml", common.MsgReset)
+		messages.Add(
+			fmt.Sprintf("%s %s-> %s", 
+				"database.yml: Make sure you are using environment variables.", 
+				common.MsgReset, "http://help.cloud66.com/deployment/environment-variables"))
+	}
+
+	if hasMongoIdYaml := common.FileExists("config/mongoid.yml"); hasMongoIdYaml {
+		fmt.Println(common.MsgL2, "----> Found config/mongoid.yml", common.MsgReset)
+		messages.Add(
+			fmt.Sprintf("%s %s-> %s", 
+				"mongoid.yml: Make sure you are using environment variables.", 
+				common.MsgReset, "http://help.cloud66.com/deployment/environment-variables"))
+	}
+
 	parseContext := &common.ParseContext{
 		Services: []*common.Service{service},
 		Dbs:      dbs.Items,
-		EnvVars: []*common.EnvVar{
+		EnvVars:  []*common.EnvVar{
 			&common.EnvVar{Key: "RAILS_ENV", Value: r.Environment},
-			&common.EnvVar{Key: "RACK_ENV", Value: r.Environment}}}
+			&common.EnvVar{Key: "RACK_ENV", Value: r.Environment}},
+		Messages: messages.Items}
 
 	service.EnvVars = parseContext.EnvVars
 

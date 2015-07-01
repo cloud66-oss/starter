@@ -10,4 +10,5 @@ type Pack interface {
 	Detect() (bool, error)
 	Compile() (*common.ParseContext, error)
 	OutputFolder() string
+	DefaultVersion() string
 }

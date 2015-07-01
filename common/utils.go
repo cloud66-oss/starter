@@ -23,6 +23,7 @@ var (
 	MsgL2    string = ansi.ColorCode("black+h")
 	MsgReset string = ansi.ColorCode("reset")
 	MsgError string = ansi.ColorCode("red")
+	MsgWarn  string = ansi.ColorCode("yellow")	
 )
 
 type Process struct {
@@ -154,7 +155,7 @@ func LocalGitBranch(folder string) string {
 	if err != nil {
 		return ""
 	}
-	return strings.TrimSpace(string(b))
+	return strings.TrimSpace(strings.Replace(string(b), "https://", "http://", -1))
 }
 
 func RemoteGitUrl(folder string) string {
@@ -162,5 +163,17 @@ func RemoteGitUrl(folder string) string {
 	if err != nil {
 		return ""
 	}
-	return strings.TrimSpace(string(b))
+	return strings.TrimSpace(strings.Replace(string(b), "https://", "http://", -1))
 }
+
+func AskUser(message string, default_value string) string {
+	fmt.Print(MsgL1, fmt.Sprintf(" %s [%s] ", message, default_value), MsgReset)
+	value := ""
+	if _, err := fmt.Scanln(&value); err != nil || strings.TrimSpace(value) == "" {
+		return default_value
+	}
+
+	return value
+}
+
+
