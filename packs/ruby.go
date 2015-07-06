@@ -67,10 +67,10 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 		service.Ports = []string{"9292:80:443"}
 	} else {
 		if isRails {
-			service.Command = "bundle exec rails s $RAILS_ENV"
+			service.Command = "bundle exec rails s _env:RAILS_ENV"
 			service.Ports = []string{"3000:80:443"}
 		} else {
-			service.Command = "bundle exec rackup s $RACK_ENV"
+			service.Command = "bundle exec rackup s _env:RACK_ENV"
 			service.Ports = []string{"9292:80:443"}
 		}
 	}
