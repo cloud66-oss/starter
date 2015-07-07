@@ -61,7 +61,8 @@ func main() {
 		flagTemplatePath = filepath.Join(filepath.Dir(execDir), "templates")
 	}
 
-	packList = &[]packs.Pack{&packs.Ruby{WorkDir: flagPath, Environment: flagEnvironment}}
+	// TODO: this is not a good way
+	packList = &[]packs.Pack{&packs.Ruby{WorkDir: flagPath, Environment: flagEnvironment}, &packs.Node{WorkDir: flagPath, Environment: flagEnvironment}}
 
 	fmt.Printf("%s Detecting framework for the project at %s%s\n", common.MsgTitle, flagPath, common.MsgReset)
 
@@ -109,7 +110,7 @@ func main() {
 				fmt.Printf("%s Warnings: \n", common.MsgWarn)
 				for _, m := range context.Messages {
 					fmt.Printf(" %s %s\n", common.MsgWarn, m)
-				}				
+				}
 			}
 
 			found = true
