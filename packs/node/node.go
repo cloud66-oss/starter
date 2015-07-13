@@ -1,8 +1,7 @@
-package packs
+package node
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/cloud66/starter/common"
 )
@@ -12,11 +11,11 @@ type Node struct {
 	Environment string
 
 	PackageJson string
-	Version  string
-	Packages *common.Lister
+	Version     string
+	Packages    *common.Lister
 }
 
-type PackageJson interface {}
+type PackageJson interface{}
 
 func (r *Node) Name() string {
 	return "node"
@@ -24,13 +23,6 @@ func (r *Node) Name() string {
 
 func (r *Node) PackVersion() string {
 	return "0.1"
-}
-
-func (r *Node) Detect() (bool, error) {
-	r.PackageJson = filepath.Join(r.WorkDir, "package.json")
-
-	// TODO: fetch git url and branch from the director
-	return common.FileExists(r.PackageJson), nil
 }
 
 func (r *Node) OutputFolder() string {
@@ -66,7 +58,7 @@ func (r *Node) Compile() (*common.ParseContext, error) {
 	}
 
 	if hasScript, script := common.GetScriptsStart(r.PackageJson); hasScript {
-		fmt.Println(common.MsgL2, "----> Found Script:", script, common.MsgReset)		
+		fmt.Println(common.MsgL2, "----> Found Script:", script, common.MsgReset)
 	}
 
 	// look for DB
@@ -76,7 +68,7 @@ func (r *Node) Compile() (*common.ParseContext, error) {
 	parseContext := &common.ParseContext{
 		Services: []*common.Service{service},
 		Dbs:      dbs.Items,
-		EnvVars:  []*common.EnvVar{
+		EnvVars: []*common.EnvVar{
 			&common.EnvVar{Key: "RAILS_ENV", Value: r.Environment},
 			&common.EnvVar{Key: "RACK_ENV", Value: r.Environment}},
 		Messages: messages.Items}

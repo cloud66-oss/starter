@@ -61,65 +61,47 @@ func main() {
 		flagTemplatePath = filepath.Join(filepath.Dir(execDir), "templates")
 	}
 
-	// TODO: this is not a good way
-	packList = &[]packs.Pack{&packs.Ruby{WorkDir: flagPath, Environment: flagEnvironment}, &packs.Node{WorkDir: flagPath, Environment: flagEnvironment}}
-
 	fmt.Printf("%s Detecting framework for the project at %s%s\n", common.MsgTitle, flagPath, common.MsgReset)
 
-	found := false
-	for _, r := range *packList {
-		result, err := r.Detect()
-		if err != nil {
-			fmt.Printf(common.MsgError, "Failed to check for %s due to %s\n", r.Name(), err.Error())
-		} else {
-			if result {
-				fmt.Printf("%s Found %s application (%s)\n", common.MsgL0, r.Name(), flagEnvironment)
-			}
-		}
+	detector, err := Detect(flagPath)
+	if err != nil {
+		fmt.Println(common.MsgError, err.Error(), common.MsgReset)
+		return
+	}
+	analyzer := detector.Analyzer(flagPath, flagEnvironment)
 
-		if result {
-			// this populates the values needed to hydrate Dockerfile.template for this pack
-			context, err := r.Compile()
-			if err != nil {
-				fmt.Printf("%s Failed to compile the project due to %s", common.MsgError, err.Error())
-			}
-
-			// Get the git info
-			gitUrl = common.RemoteGitUrl(flagPath)
-			gitBranch = common.LocalGitBranch(flagPath)
-
-			if err := parseAndWrite(r, fmt.Sprintf("%s.dockerfile.template", r.Name()), "Dockerfile"); err != nil {
-				fmt.Printf("%s Failed to write Dockerfile due to %s\n", common.MsgError, err.Error())
-			}
-
-			context, err = parseProcfile(filepath.Join(flagPath, "Procfile"), context)
-			if err != nil {
-				fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
-			}
-
-			for _, service := range context.Services {
-				service.GitBranch = gitBranch
-				service.GitRepo = gitUrl
-			}
-
-			if err := writeServiceFile(context, r.OutputFolder()); err != nil {
-				fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
-			}
-
-			if len(context.Messages) > 0 {
-				fmt.Printf("%s Warnings: \n", common.MsgWarn)
-				for _, m := range context.Messages {
-					fmt.Printf(" %s %s\n", common.MsgWarn, m)
-				}
-			}
-
-			found = true
-			break
-		}
+	context, err := analyzer.Compile()
+	if err != nil {
+		fmt.Printf("%s Failed to compile the project due to %s", common.MsgError, err.Error())
 	}
 
-	if !found {
-		fmt.Println(common.MsgError, "Could not detect any of the supported frameworks", common.MsgReset)
+	// Get the git info
+	gitUrl = common.RemoteGitUrl(flagPath)
+	gitBranch = common.LocalGitBranch(flagPath)
+
+	if err := parseAndWrite(analyzer, fmt.Sprintf("%s.dockerfile.template", analyzer.Name()), "Dockerfile"); err != nil {
+		fmt.Printf("%s Failed to write Dockerfile due to %s\n", common.MsgError, err.Error())
+	}
+
+	context, err = parseProcfile(filepath.Join(flagPath, "Procfile"), context)
+	if err != nil {
+		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
+	}
+
+	for _, service := range context.Services {
+		service.GitBranch = gitBranch
+		service.GitRepo = gitUrl
+	}
+
+	if err := writeServiceFile(context, analyzer.OutputFolder()); err != nil {
+		fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
+	}
+
+	if len(context.Messages) > 0 {
+		fmt.Printf("%s Warnings: \n", common.MsgWarn)
+		for _, m := range context.Messages {
+			fmt.Printf(" %s %s\n", common.MsgWarn, m)
+		}
 	}
 
 	fmt.Println(common.MsgTitle, "\n Done", common.MsgReset)

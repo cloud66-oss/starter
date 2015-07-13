@@ -1,8 +1,7 @@
-package packs
+package ruby
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/cloud66/starter/common"
 )
@@ -22,13 +21,6 @@ func (r *Ruby) Name() string {
 
 func (r *Ruby) PackVersion() string {
 	return "0.1"
-}
-
-func (r *Ruby) Detect() (bool, error) {
-	r.Gemfile = filepath.Join(r.WorkDir, "Gemfile")
-
-	// TODO: fetch git url and branch from the director
-	return common.FileExists(r.Gemfile), nil
 }
 
 func (r *Ruby) OutputFolder() string {
@@ -117,23 +109,23 @@ func (r *Ruby) Compile() (*common.ParseContext, error) {
 	if hasDatabaseYaml := common.FileExists("config/database.yml"); hasDatabaseYaml {
 		fmt.Println(common.MsgL2, "----> Found config/database.yml", common.MsgReset)
 		messages.Add(
-			fmt.Sprintf("%s %s-> %s", 
-				"database.yml: Make sure you are using environment variables.", 
+			fmt.Sprintf("%s %s-> %s",
+				"database.yml: Make sure you are using environment variables.",
 				common.MsgReset, "http://help.cloud66.com/deployment/environment-variables"))
 	}
 
 	if hasMongoIdYaml := common.FileExists("config/mongoid.yml"); hasMongoIdYaml {
 		fmt.Println(common.MsgL2, "----> Found config/mongoid.yml", common.MsgReset)
 		messages.Add(
-			fmt.Sprintf("%s %s-> %s", 
-				"mongoid.yml: Make sure you are using environment variables.", 
+			fmt.Sprintf("%s %s-> %s",
+				"mongoid.yml: Make sure you are using environment variables.",
 				common.MsgReset, "http://help.cloud66.com/deployment/environment-variables"))
 	}
 
 	parseContext := &common.ParseContext{
 		Services: []*common.Service{service},
 		Dbs:      dbs.Items,
-		EnvVars:  []*common.EnvVar{
+		EnvVars: []*common.EnvVar{
 			&common.EnvVar{Key: "RAILS_ENV", Value: r.Environment},
 			&common.EnvVar{Key: "RACK_ENV", Value: r.Environment}},
 		Messages: messages.Items}
