@@ -13,6 +13,8 @@ type Analyzer interface {
 	GetContext() *common.ParseContext
 	GetGitBranch() string
 	GetGitURL() string
+	GetVersion() string
+	GetPackages() *common.Lister
 	Analyze() error
 	FetchGitMetadata()
 	AnalyzeProcfile() error
@@ -31,8 +33,16 @@ type AnalyzerBase struct {
 	Context *common.ParseContext
 }
 
+func (a *AnalyzerBase) GetPackages() *common.Lister {
+	return a.Packages
+}
+
 func (a *AnalyzerBase) GetRootDir() string {
 	return a.RootDir
+}
+
+func (a *AnalyzerBase) GetVersion() string {
+	return a.Version
 }
 
 func (a *AnalyzerBase) GetContext() *common.ParseContext {

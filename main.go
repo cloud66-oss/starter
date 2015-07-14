@@ -68,8 +68,9 @@ func main() {
 		fmt.Printf("%s Failed to analyze the project due to %s", common.MsgError, err.Error())
 	}
 
-	dockerfileWriter := packs.DockerfileWriter{TemplateDir: flagTemplatePath, ShouldOverwrite: flagOverwrite}
-	if err := dockerfileWriter.Write(analyzer); err != nil {
+	dockerfileWriter := packs.DockerfileWriter{TemplateDir: flagTemplatePath, OutputDir: analyzer.GetRootDir(), ShouldOverwrite: flagOverwrite}
+	dockerfileContext := packs.NewDockerfileContext(analyzer)
+	if err := dockerfileWriter.Write(analyzer.Name(), dockerfileContext); err != nil {
 		fmt.Printf("%s Failed to write Dockerfile due to %s\n", common.MsgError, err.Error())
 	}
 
