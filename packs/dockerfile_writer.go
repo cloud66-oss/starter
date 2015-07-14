@@ -1,4 +1,4 @@
-package main
+package packs
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/cloud66/starter/common"
-	"github.com/cloud66/starter/packs"
 )
 
 type DockerfileWriter struct {
@@ -15,7 +14,7 @@ type DockerfileWriter struct {
 	ShouldOverwrite bool
 }
 
-func (w *DockerfileWriter) write(analyzer packs.Analyzer) error {
+func (w *DockerfileWriter) Write(analyzer Analyzer) error {
 	templateName := fmt.Sprintf("%s.dockerfile.template", analyzer.Name())
 	destName := "Dockerfile"
 

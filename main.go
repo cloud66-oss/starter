@@ -68,14 +68,14 @@ func main() {
 		fmt.Printf("%s Failed to analyze the project due to %s", common.MsgError, err.Error())
 	}
 
-	dockerfileWriter := DockerfileWriter{TemplateDir: flagTemplatePath, ShouldOverwrite: flagOverwrite}
-	if err := dockerfileWriter.write(analyzer); err != nil {
+	dockerfileWriter := packs.DockerfileWriter{TemplateDir: flagTemplatePath, ShouldOverwrite: flagOverwrite}
+	if err := dockerfileWriter.Write(analyzer); err != nil {
 		fmt.Printf("%s Failed to write Dockerfile due to %s\n", common.MsgError, err.Error())
 	}
 
-	serviceYAMLWriter := ServiceYAMLWriter{TemplateDir: flagTemplatePath, OutputDir: analyzer.GetRootDir(), ShouldOverwrite: flagOverwrite}
-	serviceYAMLContext := NewServiceYAMLContext(analyzer)
-	if err := serviceYAMLWriter.write(serviceYAMLContext); err != nil {
+	serviceYAMLWriter := packs.ServiceYAMLWriter{TemplateDir: flagTemplatePath, OutputDir: analyzer.GetRootDir(), ShouldOverwrite: flagOverwrite}
+	serviceYAMLContext := packs.NewServiceYAMLContext(analyzer)
+	if err := serviceYAMLWriter.Write(serviceYAMLContext); err != nil {
 		fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
 	}
 

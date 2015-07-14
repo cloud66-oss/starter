@@ -1,4 +1,4 @@
-package main
+package packs
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"text/template"
 
 	"github.com/cloud66/starter/common"
-	"github.com/cloud66/starter/packs"
 )
 
 type ServiceYAMLContext struct {
@@ -15,7 +14,7 @@ type ServiceYAMLContext struct {
 	Dbs      []string
 }
 
-func NewServiceYAMLContext(a packs.Analyzer) *ServiceYAMLContext {
+func NewServiceYAMLContext(a Analyzer) *ServiceYAMLContext {
 	context := &ServiceYAMLContext{
 		Services: a.GetContext().Services,
 		Dbs:      a.GetContext().Dbs}
@@ -28,7 +27,7 @@ type ServiceYAMLWriter struct {
 	ShouldOverwrite bool
 }
 
-func (w *ServiceYAMLWriter) write(context *ServiceYAMLContext) error {
+func (w *ServiceYAMLWriter) Write(context *ServiceYAMLContext) error {
 	destFullPath := filepath.Join(w.OutputDir, "service.yml")
 
 	tmpl, err := template.ParseFiles(filepath.Join(w.TemplateDir, "service.yml.template"))
