@@ -16,11 +16,11 @@ func (d *Detector) Name() string {
 	return "Ruby"
 }
 
-func (d *Detector) Detect(root string) bool {
-	d.gemfile = filepath.Join(root, "Gemfile")
+func (d *Detector) Detect(rootDir string) bool {
+	d.gemfile = filepath.Join(rootDir, "Gemfile")
 	return common.FileExists(d.gemfile)
 }
 
-func (d *Detector) Analyzer(root string, environment string) packs.Pack {
-	return &Ruby{Gemfile: d.gemfile, WorkDir: root, Environment: environment}
+func (d *Detector) Analyzer(rootDir string, environment string) packs.Analyzer {
+	return &Analyzer{Gemfile: d.gemfile, AnalyzerBase: packs.AnalyzerBase{RootDir: rootDir, Environment: environment}}
 }

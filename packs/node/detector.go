@@ -16,11 +16,11 @@ func (d *Detector) Name() string {
 	return "Node"
 }
 
-func (d *Detector) Detect(root string) bool {
-	d.packageJSON = filepath.Join(root, "package.json")
+func (d *Detector) Detect(rootDir string) bool {
+	d.packageJSON = filepath.Join(rootDir, "package.json")
 	return common.FileExists(d.packageJSON)
 }
 
-func (d *Detector) Analyzer(root string, environment string) packs.Pack {
-	return &Node{PackageJson: d.packageJSON, WorkDir: root, Environment: environment}
+func (d *Detector) Analyzer(rootDir string, environment string) packs.Analyzer {
+	return &Analyzer{PackageJSON: d.packageJSON, AnalyzerBase: packs.AnalyzerBase{RootDir: rootDir, Environment: environment}}
 }
