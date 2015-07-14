@@ -16,8 +16,19 @@ func (a *Analyzer) Name() string {
 	return "node"
 }
 
-func (a *Analyzer) Analyze() error {
-	service := &common.Service{Name: "web"}
+func (a *Analyzer) Analyze(services []*common.Service) error {
+	var service *common.Service
+	for _, s := range services {
+		if s.Name == "web" {
+			service = s
+			break
+		}
+	}
+	if service == nil {
+		service = &common.Service{Name: "web"}
+		services = append(services, service)
+	}
+
 	if runsExpress, _ := common.GetDependencyVersion(a.PackageJSON, "express"); runsExpress {
 		fmt.Println(common.MsgL2, "----> Found Express", common.MsgReset)
 	}
@@ -28,7 +39,7 @@ func (a *Analyzer) Analyze() error {
 	a.Packages = a.GuessPackages()
 	a.Version = a.FindVersion()
 	a.Context = &common.ParseContext{
-		Services: []*common.Service{service},
+		Services: services,
 		Dbs:      a.AnalyzeDatabases().Items,
 		EnvVars:  []*common.EnvVar{}}
 

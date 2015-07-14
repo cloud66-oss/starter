@@ -16,9 +16,8 @@ type Analyzer interface {
 	GetVersion() string
 	GetMessages() common.Lister
 	GetPackages() *common.Lister
-	Analyze() error
+	Analyze([]*common.Service) error
 	FetchGitMetadata()
-	AnalyzeProcfile() error
 }
 
 type AnalyzerBase struct {
@@ -65,14 +64,14 @@ func (a *AnalyzerBase) GetGitURL() string {
 func Analyze(a Analyzer) error {
 	a.FetchGitMetadata()
 
-	err := a.Analyze()
-	if err != nil {
-		return err
-	}
-
-	err = a.AnalyzeProcfile()
+	services, err := AnalyzeProcfile(a)
 	if err != nil {
 		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
+	}
+
+	err = a.Analyze(services)
+	if err != nil {
+		return err
 	}
 
 	for _, service := range a.GetContext().Services {
@@ -100,25 +99,22 @@ func (a *AnalyzerBase) FetchGitMetadata() {
 	a.GitUrl = common.RemoteGitUrl(a.RootDir)
 }
 
-func (a *AnalyzerBase) AnalyzeProcfile() error {
-	procfilePath := filepath.Join(a.RootDir, "Procfile")
+func AnalyzeProcfile(a Analyzer) ([]*common.Service, error) {
+	services := []*common.Service{}
+	procfilePath := filepath.Join(a.GetRootDir(), "Procfile")
 	if !common.FileExists(procfilePath) {
-		return nil
+		return services, nil
 	}
 
 	fmt.Println(common.MsgL1, "Parsing Procfile")
 	procs, err := common.ParseProcfile(procfilePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, proc := range procs {
-		if proc.Name == "web" || proc.Name == "custom_web" {
-			a.Context.Services[0].Command = proc.Command
-		} else {
-			fmt.Printf("%s ----> Found Procfile item %s\n", common.MsgL2, proc.Name)
-			a.Context.Services = append(a.Context.Services, &common.Service{Name: proc.Name, Command: proc.Command})
-		}
+		fmt.Printf("%s ----> Found Procfile item %s\n", common.MsgL2, proc.Name)
+		services = append(services, &common.Service{Name: proc.Name, Command: proc.Command})
 	}
-	return nil
+	return services, nil
 }

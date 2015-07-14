@@ -16,8 +16,19 @@ func (a *Analyzer) Name() string {
 	return "ruby"
 }
 
-func (a *Analyzer) Analyze() error {
-	service := &common.Service{Name: "web"}
+func (a *Analyzer) Analyze(services []*common.Service) error {
+	var service *common.Service
+	for _, s := range services {
+		if s.Name == "web" {
+			service = s
+			break
+		}
+	}
+	if service == nil {
+		service = &common.Service{Name: "web"}
+		services = append(services, service)
+	}
+
 	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
 	// port depends on the application server. for now we are going to fix to 3000
 	if runsUnicorn, _ := common.GetGemVersion(a.Gemfile, "unicorn", "thin"); runsUnicorn {
@@ -37,7 +48,7 @@ func (a *Analyzer) Analyze() error {
 	a.Packages = a.GuessPackages()
 	a.Version = a.FindVersion()
 	a.Context = &common.ParseContext{
-		Services: []*common.Service{service},
+		Services: services,
 		Dbs:      a.AnalyzeDatabases().Items,
 		EnvVars: []*common.EnvVar{
 			&common.EnvVar{Key: "RAILS_ENV", Value: a.Environment},
