@@ -73,8 +73,9 @@ func main() {
 		fmt.Printf("%s Failed to write Dockerfile due to %s\n", common.MsgError, err.Error())
 	}
 
-	serviceYAMLWriter := ServiceYAMLWriter{TemplateDir: flagTemplatePath, ShouldOverwrite: flagOverwrite}
-	if err := serviceYAMLWriter.write(analyzer); err != nil {
+	serviceYAMLWriter := ServiceYAMLWriter{TemplateDir: flagTemplatePath, OutputDir: analyzer.GetRootDir(), ShouldOverwrite: flagOverwrite}
+	serviceYAMLContext := NewServiceYAMLContext(analyzer)
+	if err := serviceYAMLWriter.write(serviceYAMLContext); err != nil {
 		fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
 	}
 

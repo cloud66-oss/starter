@@ -110,7 +110,7 @@ func (a *Analyzer) Analyze() error {
 		Dbs:      dbs.Items,
 		EnvVars: []*common.EnvVar{
 			&common.EnvVar{Key: "RAILS_ENV", Value: a.Environment},
-			&common.EnvVar{Key: "RACK_ENV", Value: a.Environment}},
+			&common.EnvVar{Key: "RACK_ENV" , Value: a.Environment}},
 		Messages: messages.Items}
 
 	service.EnvVars = a.Context.EnvVars

@@ -10,13 +10,26 @@ import (
 	"github.com/cloud66/starter/packs"
 )
 
+type ServiceYAMLContext struct {
+	Services []*common.Service
+	Dbs      []string
+}
+
+func NewServiceYAMLContext(a packs.Analyzer) *ServiceYAMLContext {
+	context := &ServiceYAMLContext{
+		Services: a.GetContext().Services,
+		Dbs:      a.GetContext().Dbs}
+	return context
+}
+
 type ServiceYAMLWriter struct {
 	TemplateDir     string
+	OutputDir       string
 	ShouldOverwrite bool
 }
 
-func (w *ServiceYAMLWriter) write(analyzer packs.Analyzer) error {
-	destFullPath := filepath.Join(analyzer.GetRootDir(), "service.yml")
+func (w *ServiceYAMLWriter) write(context *ServiceYAMLContext) error {
+	destFullPath := filepath.Join(w.OutputDir, "service.yml")
 
 	tmpl, err := template.ParseFiles(filepath.Join(w.TemplateDir, "service.yml.template"))
 	if err != nil {
@@ -38,7 +51,7 @@ func (w *ServiceYAMLWriter) write(analyzer packs.Analyzer) error {
 	}()
 
 	fmt.Println(common.MsgL1, "Writing service.yml...")
-	err = tmpl.Execute(destFile, analyzer.GetContext())
+	err = tmpl.Execute(destFile, context)
 	if err != nil {
 		return err
 	}
