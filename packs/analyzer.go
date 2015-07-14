@@ -14,6 +14,7 @@ type Analyzer interface {
 	GetGitBranch() string
 	GetGitURL() string
 	GetVersion() string
+	GetMessages() common.Lister
 	GetPackages() *common.Lister
 	Analyze() error
 	FetchGitMetadata()
@@ -29,8 +30,12 @@ type AnalyzerBase struct {
 	GitBranch string
 
 	Packages *common.Lister
+	Messages common.Lister
+	Context  *common.ParseContext
+}
 
-	Context *common.ParseContext
+func (a *AnalyzerBase) GetMessages() common.Lister {
+	return a.Messages
 }
 
 func (a *AnalyzerBase) GetPackages() *common.Lister {

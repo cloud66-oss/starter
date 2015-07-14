@@ -80,9 +80,9 @@ func main() {
 		fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
 	}
 
-	if len(analyzer.GetContext().Messages) > 0 {
+	if len(analyzer.GetMessages().Items) > 0 {
 		fmt.Printf("%s Warnings: \n", common.MsgWarn)
-		for _, m := range analyzer.GetContext().Messages {
+		for _, m := range analyzer.GetMessages().Items {
 			fmt.Printf(" %s %s\n", common.MsgWarn, m)
 		}
 	}
