@@ -61,7 +61,7 @@ func main() {
 		fmt.Println(common.MsgError, err.Error(), common.MsgReset)
 		return
 	}
-	analyzer := NewAnalyzer(pack, flagPath, flagEnvironment)
+	analyzer := pack.Analyzer(flagPath, flagEnvironment)
 
 	analysis, err := packs.Analyze(analyzer)
 	if err != nil {

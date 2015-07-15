@@ -13,10 +13,6 @@ type Analyzer struct {
 	PackageJSON string
 }
 
-func (a *Analyzer) PackName() string {
-	return "node"
-}
-
 func (a *Analyzer) Init() error {
 	a.PackageJSON = filepath.Join(a.GetRootDir(), "package.json")
 	return nil

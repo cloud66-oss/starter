@@ -1,6 +1,6 @@
 package packs
 
 type Detector interface {
-	PackName() string
+	GetPack() Pack
 	Detect(rootDir string) bool
 }

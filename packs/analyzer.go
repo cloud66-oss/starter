@@ -8,7 +8,7 @@ import (
 )
 
 type Analyzer interface {
-	PackName() string
+	GetPack() Pack
 	GetRootDir() string
 	setMessages(*common.Lister)
 
@@ -21,6 +21,7 @@ type Analyzer interface {
 }
 
 type AnalyzerBase struct {
+	PackElement
 	RootDir     string
 	Environment string
 	Messages    *common.Lister
@@ -75,7 +76,7 @@ func Analyze(a Analyzer) (*Analysis, error) {
 	refineServices(&services, envVars, gitBranch, gitURL)
 
 	analysis := &Analysis{
-		PackName:  a.PackName(),
+		PackName:  a.GetPack().Name(),
 		GitBranch: gitBranch,
 		GitURL:    gitURL,
 		ServiceYAMLContext: &ServiceYAMLContext{

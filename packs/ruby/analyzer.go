@@ -13,10 +13,6 @@ type Analyzer struct {
 	Gemfile string
 }
 
-func (a *Analyzer) PackName() string {
-	return "ruby"
-}
-
 func (a *Analyzer) Init() error {
 	a.Gemfile = filepath.Join(a.GetRootDir(), "Gemfile")
 	return nil

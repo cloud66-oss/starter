@@ -8,11 +8,7 @@ import (
 )
 
 type Detector struct {
-	packs.Detector
-}
-
-func (d *Detector) PackName() string {
-	return "ruby"
+	packs.PackElement
 }
 
 func (d *Detector) Detect(rootDir string) bool {
