@@ -56,7 +56,6 @@ func (a *Analyzer) FindVersion() string {
 	if foundNode {
 		return fmt.Sprintf("%s-onbuild", nodeVersion)
 	} else {
-		//TODO: I'm not sure this will happen!
 		nodeVersion = common.AskUser("Can't find Node version from package.json:", "default")
 		if nodeVersion == "default" {
 			return a.defaultVersion()
