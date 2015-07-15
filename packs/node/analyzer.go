@@ -16,18 +16,23 @@ func (a *Analyzer) Name() string {
 	return "node"
 }
 
-func (a *Analyzer) Analyze(services []*common.Service) error {
+func (a *Analyzer) AnalyzeServices(services *[]*common.Service) error {
 	var service *common.Service
-	for _, s := range services {
-		if s.Name == "web" {
+	for _, s := range *services {
+		if s.Name == "web" || s.Name == "custom_web" {
 			service = s
 			break
 		}
 	}
 	if service == nil {
 		service = &common.Service{Name: "web"}
-		services = append(services, service)
+		*services = append(*services, service)
 	}
+	return nil
+}
+
+func (a *Analyzer) GuessPackages() *common.Lister {
+	packages := common.NewLister()
 
 	if runsExpress, _ := common.GetDependencyVersion(a.PackageJSON, "express"); runsExpress {
 		fmt.Println(common.MsgL2, "----> Found Express", common.MsgReset)
@@ -36,18 +41,6 @@ func (a *Analyzer) Analyze(services []*common.Service) error {
 		fmt.Println(common.MsgL2, "----> Found Script:", script, common.MsgReset)
 	}
 
-	a.Packages = a.GuessPackages()
-	a.Version = a.FindVersion()
-	a.Context = &common.ParseContext{
-		Services: services,
-		Dbs:      a.AnalyzeDatabases().Items,
-		EnvVars:  []*common.EnvVar{}}
-
-	return nil
-}
-
-func (a *Analyzer) GuessPackages() *common.Lister {
-	packages := common.NewLister()
 	return packages
 }
 
@@ -67,11 +60,15 @@ func (a *Analyzer) FindVersion() string {
 	}
 }
 
-func (a *Analyzer) defaultVersion() string {
-	return "onbuild"
-}
-
-func (a *Analyzer) AnalyzeDatabases() *common.Lister {
+func (a *Analyzer) FindDatabases() *common.Lister {
 	dbs := common.NewLister()
 	return dbs
+}
+
+func (a *Analyzer) EnvVars() []*common.EnvVar {
+	return []*common.EnvVar{}
+}
+
+func (a *Analyzer) defaultVersion() string {
+	return "onbuild"
 }

@@ -63,26 +63,24 @@ func main() {
 	}
 	analyzer := detector.Analyzer(flagPath, flagEnvironment)
 
-	err = packs.Analyze(analyzer)
+	analysis, err := packs.Analyze(analyzer)
 	if err != nil {
 		fmt.Printf("%s Failed to analyze the project due to %s", common.MsgError, err.Error())
 	}
 
 	dockerfileWriter := packs.DockerfileWriter{TemplateDir: flagTemplatePath, OutputDir: analyzer.GetRootDir(), ShouldOverwrite: flagOverwrite}
-	dockerfileContext := packs.NewDockerfileContext(analyzer)
-	if err := dockerfileWriter.Write(analyzer.Name(), dockerfileContext); err != nil {
+	if err := dockerfileWriter.Write(analysis.PackName, analysis.DockerfileContext); err != nil {
 		fmt.Printf("%s Failed to write Dockerfile due to %s\n", common.MsgError, err.Error())
 	}
 
 	serviceYAMLWriter := packs.ServiceYAMLWriter{TemplateDir: flagTemplatePath, OutputDir: analyzer.GetRootDir(), ShouldOverwrite: flagOverwrite}
-	serviceYAMLContext := packs.NewServiceYAMLContext(analyzer)
-	if err := serviceYAMLWriter.Write(serviceYAMLContext); err != nil {
+	if err := serviceYAMLWriter.Write(analysis.ServiceYAMLContext); err != nil {
 		fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
 	}
 
-	if len(analyzer.GetMessages().Items) > 0 {
+	if len(analysis.Messages.Items) > 0 {
 		fmt.Printf("%s Warnings: \n", common.MsgWarn)
-		for _, m := range analyzer.GetMessages().Items {
+		for _, m := range analysis.Messages.Items {
 			fmt.Printf(" %s %s\n", common.MsgWarn, m)
 		}
 	}

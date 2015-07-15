@@ -16,44 +16,33 @@ func (a *Analyzer) Name() string {
 	return "ruby"
 }
 
-func (a *Analyzer) Analyze(services []*common.Service) error {
+func (a *Analyzer) AnalyzeServices(services *[]*common.Service) error {
 	var service *common.Service
-	for _, s := range services {
-		if s.Name == "web" {
+	for _, s := range *services {
+		if s.Name == "web" || s.Name == "custom_web" {
 			service = s
 			break
 		}
 	}
 	if service == nil {
 		service = &common.Service{Name: "web"}
-		services = append(services, service)
-	}
-
-	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
-	// port depends on the application server. for now we are going to fix to 3000
-	if runsUnicorn, _ := common.GetGemVersion(a.Gemfile, "unicorn", "thin"); runsUnicorn {
-		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
-		// The command here will be found in the Procfile
-		service.Ports = []string{"9292:80:443"}
-	} else {
-		if isRails {
-			service.Command = "bundle exec rails s _env:RAILS_ENV"
-			service.Ports = []string{"3000:80:443"}
-		} else {
-			service.Command = "bundle exec rackup s _env:RACK_ENV"
+		*services = append(*services, service)
+		isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
+		// port depends on the application server. for now we are going to fix to 3000
+		if runsUnicorn, _ := common.GetGemVersion(a.Gemfile, "unicorn", "thin"); runsUnicorn {
+			fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
+			// The command here will be found in the Procfile
 			service.Ports = []string{"9292:80:443"}
+		} else {
+			if isRails {
+				service.Command = "bundle exec rails s _env:RAILS_ENV"
+				service.Ports = []string{"3000:80:443"}
+			} else {
+				service.Command = "bundle exec rackup s _env:RACK_ENV"
+				service.Ports = []string{"9292:80:443"}
+			}
 		}
 	}
-
-	a.Packages = a.GuessPackages()
-	a.Version = a.FindVersion()
-	a.Context = &common.ParseContext{
-		Services: services,
-		Dbs:      a.AnalyzeDatabases().Items,
-		EnvVars: []*common.EnvVar{
-			&common.EnvVar{Key: "RAILS_ENV", Value: a.Environment},
-			&common.EnvVar{Key: "RACK_ENV", Value: a.Environment}}}
-
 	return nil
 }
 
@@ -85,11 +74,7 @@ func (a *Analyzer) FindVersion() string {
 	}
 }
 
-func (a *Analyzer) defaultVersion() string {
-	return "onbuild"
-}
-
-func (a *Analyzer) AnalyzeDatabases() *common.Lister {
+func (a *Analyzer) FindDatabases() *common.Lister {
 	dbs := common.NewLister()
 	if hasMysql, _ := common.GetGemVersion(a.Gemfile, "mysql2"); hasMysql {
 		fmt.Println(common.MsgL2, "----> Found Mysql", common.MsgReset)
@@ -132,4 +117,14 @@ func (a *Analyzer) AnalyzeDatabases() *common.Lister {
 				common.MsgReset, "http://help.cloud66.com/deployment/environment-variables"))
 	}
 	return dbs
+}
+
+func (a *Analyzer) EnvVars() []*common.EnvVar {
+	return []*common.EnvVar{
+		&common.EnvVar{Key: "RAILS_ENV", Value: a.Environment},
+		&common.EnvVar{Key: "RACK_ENV", Value: a.Environment}}
+}
+
+func (a *Analyzer) defaultVersion() string {
+	return "onbuild"
 }

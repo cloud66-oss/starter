@@ -14,13 +14,6 @@ type ServiceYAMLContext struct {
 	Dbs      []string
 }
 
-func NewServiceYAMLContext(a Analyzer) *ServiceYAMLContext {
-	context := &ServiceYAMLContext{
-		Services: a.GetContext().Services,
-		Dbs:      a.GetContext().Dbs}
-	return context
-}
-
 type ServiceYAMLWriter struct {
 	TemplateDir     string
 	OutputDir       string

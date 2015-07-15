@@ -14,13 +14,6 @@ type DockerfileContext struct {
 	Packages *common.Lister
 }
 
-func NewDockerfileContext(a Analyzer) *DockerfileContext {
-	context := &DockerfileContext{
-		Version:  a.GetVersion(),
-		Packages: a.GetPackages()}
-	return context
-}
-
 type DockerfileWriter struct {
 	TemplateDir     string
 	OutputDir       string
