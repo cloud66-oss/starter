@@ -33,22 +33,33 @@ func (a *Analyzer) AnalyzeServices(services *[]*common.Service) error {
 	if service == nil {
 		service = &common.Service{Name: "web"}
 		*services = append(*services, service)
-		isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
-		// port depends on the application server. for now we are going to fix to 3000
-		if runsUnicorn, _ := common.GetGemVersion(a.Gemfile, "unicorn", "thin"); runsUnicorn {
-			fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
-			// The command here will be found in the Procfile
-			service.Ports = []string{"9292:80:443"}
+	}
+
+	var command string
+	var ports []string
+	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
+	// port depends on the application server. for now we are going to fix to 3000
+	if runsUnicorn, _ := common.GetGemVersion(a.Gemfile, "unicorn", "thin"); runsUnicorn {
+		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
+		// The command here will be found in the Procfile
+		ports = []string{"9292:80:443"}
+	} else {
+		if isRails {
+			command = "bundle exec rails s _env:RAILS_ENV"
+			ports = []string{"3000:80:443"}
 		} else {
-			if isRails {
-				service.Command = "bundle exec rails s _env:RAILS_ENV"
-				service.Ports = []string{"3000:80:443"}
-			} else {
-				service.Command = "bundle exec rackup s _env:RACK_ENV"
-				service.Ports = []string{"9292:80:443"}
-			}
+			command = "bundle exec rackup s _env:RACK_ENV"
+			ports = []string{"9292:80:443"}
 		}
 	}
+
+	if service.Command == "" {
+		service.Command = command
+	}
+	if service.Ports == nil {
+		service.Ports = ports
+	}
+
 	return nil
 }
 
