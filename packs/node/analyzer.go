@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
@@ -14,6 +15,11 @@ type Analyzer struct {
 
 func (a *Analyzer) Name() string {
 	return "node"
+}
+
+func (a *Analyzer) Init() error {
+	a.PackageJSON = filepath.Join(a.GetRootDir(), "package.json")
+	return nil
 }
 
 func (a *Analyzer) AnalyzeServices(services *[]*common.Service) error {

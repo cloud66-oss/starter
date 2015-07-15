@@ -1,7 +1,6 @@
 package packs
 
 type Detector interface {
-	Name() string
+	PackName() string
 	Detect(rootDir string) bool
-	Analyzer(rootDir string, environment string) Analyzer
 }

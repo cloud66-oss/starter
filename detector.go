@@ -9,22 +9,22 @@ import (
 	"github.com/cloud66/starter/packs/ruby"
 )
 
-func Detect(root string) (packs.Detector, error) {
+func Detect(rootDir string) (string, error) {
 	detectors := []packs.Detector{&ruby.Detector{}, &node.Detector{}}
-	var found []packs.Detector
+	var packs []string
 
 	for _, d := range detectors {
-		if d.Detect(root) {
-			found = append(found, d)
-			fmt.Printf("%s Found %s application\n", common.MsgL0, d.Name())
+		if d.Detect(rootDir) {
+			packs = append(packs, d.PackName())
+			fmt.Printf("%s Found %s application\n", common.MsgL0, d.PackName())
 		}
 	}
 
-	if len(found) == 0 {
-		return nil, fmt.Errorf("Could not detect any of the supported frameworks")
-	} else if len(found) > 1 {
-		return nil, fmt.Errorf("More than one framework detected")
+	if len(packs) == 0 {
+		return "", fmt.Errorf("Could not detect any of the supported frameworks")
+	} else if len(packs) > 1 {
+		return "", fmt.Errorf("More than one framework detected")
 	} else {
-		return found[0], nil
+		return packs[0], nil
 	}
 }

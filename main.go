@@ -56,12 +56,12 @@ func main() {
 
 	fmt.Printf("%s Detecting framework for the project at %s%s\n", common.MsgTitle, flagPath, common.MsgReset)
 
-	detector, err := Detect(flagPath)
+	pack, err := Detect(flagPath)
 	if err != nil {
 		fmt.Println(common.MsgError, err.Error(), common.MsgReset)
 		return
 	}
-	analyzer := detector.Analyzer(flagPath, flagEnvironment)
+	analyzer := NewAnalyzer(pack, flagPath, flagEnvironment)
 
 	analysis, err := packs.Analyze(analyzer)
 	if err != nil {

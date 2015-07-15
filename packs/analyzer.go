@@ -12,6 +12,7 @@ type Analyzer interface {
 	GetRootDir() string
 	setMessages(*common.Lister)
 
+	Init() error
 	AnalyzeServices(*[]*common.Service) error
 	GuessPackages() *common.Lister
 	FindVersion() string
@@ -25,12 +26,12 @@ type AnalyzerBase struct {
 	Messages    *common.Lister
 }
 
-func (a *AnalyzerBase) setMessages(messages *common.Lister) {
-	a.Messages = messages
-}
-
 func (a *AnalyzerBase) GetRootDir() string {
 	return a.RootDir
+}
+
+func (a *AnalyzerBase) setMessages(messages *common.Lister) {
+	a.Messages = messages
 }
 
 type Analysis struct {
@@ -48,6 +49,11 @@ type Analysis struct {
 func Analyze(a Analyzer) (*Analysis, error) {
 	messages := &common.Lister{}
 	a.setMessages(messages)
+	err := a.Init()
+	if err != nil {
+		fmt.Printf("%s Failed to initialize analyzer due to %s\n", common.MsgError, err.Error())
+		return nil, err
+	}
 
 	gitURL := common.LocalGitBranch(a.GetRootDir())
 	gitBranch := common.RemoteGitUrl(a.GetRootDir())
@@ -60,6 +66,7 @@ func Analyze(a Analyzer) (*Analysis, error) {
 	services, err := AnalyzeProcfile(a)
 	if err != nil {
 		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
+		return nil, err
 	}
 	err = a.AnalyzeServices(&services)
 	if err != nil {

@@ -9,18 +9,12 @@ import (
 
 type Detector struct {
 	packs.Detector
-	packageJSON string
 }
 
-func (d *Detector) Name() string {
-	return "Node"
+func (d *Detector) PackName() string {
+	return "node"
 }
 
 func (d *Detector) Detect(rootDir string) bool {
-	d.packageJSON = filepath.Join(rootDir, "package.json")
-	return common.FileExists(d.packageJSON)
-}
-
-func (d *Detector) Analyzer(rootDir string, environment string) packs.Analyzer {
-	return &Analyzer{PackageJSON: d.packageJSON, AnalyzerBase: packs.AnalyzerBase{RootDir: rootDir, Environment: environment}}
+	return common.FileExists(filepath.Join(rootDir, "package.json"))
 }
