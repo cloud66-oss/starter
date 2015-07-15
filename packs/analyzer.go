@@ -8,7 +8,7 @@ import (
 )
 
 type Analyzer interface {
-	Name() string
+	PackName() string
 	GetRootDir() string
 	setMessages(*common.Lister)
 
@@ -75,7 +75,7 @@ func Analyze(a Analyzer) (*Analysis, error) {
 	refineServices(&services, envVars, gitBranch, gitURL)
 
 	analysis := &Analysis{
-		PackName:  a.Name(),
+		PackName:  a.PackName(),
 		GitBranch: gitBranch,
 		GitURL:    gitURL,
 		ServiceYAMLContext: &ServiceYAMLContext{

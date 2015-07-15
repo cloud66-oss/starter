@@ -13,7 +13,7 @@ type Analyzer struct {
 	PackageJSON string
 }
 
-func (a *Analyzer) Name() string {
+func (a *Analyzer) PackName() string {
 	return "node"
 }
 

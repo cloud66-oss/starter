@@ -13,7 +13,7 @@ type Analyzer struct {
 	Gemfile string
 }
 
-func (a *Analyzer) Name() string {
+func (a *Analyzer) PackName() string {
 	return "ruby"
 }
 
