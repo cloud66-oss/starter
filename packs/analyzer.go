@@ -7,16 +7,6 @@ import (
 	"github.com/cloud66/starter/common"
 )
 
-type Analyzer interface {
-	GetPack() Pack
-
-	AnalyzeServices(*[]*common.Service) error
-	GuessPackages() *common.Lister
-	FindVersion() string
-	FindDatabases() *common.Lister
-	EnvVars() []*common.EnvVar
-}
-
 type AnalyzerBase struct {
 	PackElement
 
