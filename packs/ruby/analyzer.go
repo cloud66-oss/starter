@@ -13,9 +13,57 @@ type Analyzer struct {
 	Gemfile string
 }
 
+type Analysis struct {
+	PackName string
+
+	GitURL    string
+	GitBranch string
+
+	ServiceYAMLContext *ServiceYAMLContext
+	DockerfileContext  *DockerfileContext
+
+	Messages common.Lister
+}
+
 func (a *Analyzer) Init() error {
 	a.Gemfile = filepath.Join(a.GetRootDir(), "Gemfile")
 	return nil
+}
+
+func (a *Analyzer) Analyze() (*Analysis, error) {
+	err := a.Init()
+	if err != nil {
+		fmt.Printf("%s Failed to initialize analyzer due to %s\n", common.MsgError, err.Error())
+		return nil, err
+	}
+
+	gitURL := common.LocalGitBranch(a.GetRootDir())
+	gitBranch := common.RemoteGitUrl(a.GetRootDir())
+
+	packages := a.GuessPackages()
+	version := a.FindVersion()
+	dbs := a.FindDatabases()
+	envVars := a.EnvVars()
+
+	services, err := packs.AnalyzeProcfile(a)
+	if err != nil {
+		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
+		return nil, err
+	}
+	err = a.AnalyzeServices(&services)
+	if err != nil {
+		return nil, err
+	}
+	packs.RefineServices(&services, envVars, gitBranch, gitURL)
+
+	analysis := &Analysis{
+		PackName:           a.GetPack().Name(),
+		GitBranch:          gitBranch,
+		GitURL:             gitURL,
+		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}},
+		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}},
+		Messages:           a.Messages}
+	return analysis, nil
 }
 
 func (a *Analyzer) AnalyzeServices(services *[]*common.Service) error {

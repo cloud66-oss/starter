@@ -1,18 +1,18 @@
 package packs
 
+import "github.com/cloud66/starter/common"
+
 type Pack interface {
 	Name() string
 	Detector() Detector
-	Analyzer(rootDir string, environment string) Analyzer
-	DockerfileWriter(string, string, bool) DockerfileWriterBase
-	ServiceYAMLWriter(string, string, bool) ServiceYAMLWriterBase
+	Analyze(rootDir string, environment string) error
+	WriteDockerfile(string, string, bool) error
+	WriteServiceYAML(string, string, bool) error
+	GetMessages() []string
 }
 
 type PackBase struct {
-}
-
-func (p *PackBase) ServiceYAMLWriter(templateDir string, outputDir string, shouldOverwrite bool) ServiceYAMLWriterBase {
-	return ServiceYAMLWriterBase{TemplateDir: templateDir, OutputDir: outputDir, ShouldOverwrite: shouldOverwrite}
+	Messages *common.Lister
 }
 
 type PackElement struct {

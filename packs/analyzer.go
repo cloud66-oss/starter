@@ -10,7 +10,6 @@ import (
 type Analyzer interface {
 	GetPack() Pack
 	GetRootDir() string
-	setMessages(*common.Lister)
 
 	Init() error
 	AnalyzeServices(*[]*common.Service) error
@@ -18,82 +17,17 @@ type Analyzer interface {
 	FindVersion() string
 	FindDatabases() *common.Lister
 	EnvVars() []*common.EnvVar
-
-	ServiceYAMLContext([]*common.Service, *common.Lister) *ServiceYAMLContextBase
-	DockerfileContext(string, *common.Lister) *DockerfileContextBase
 }
 
 type AnalyzerBase struct {
 	PackElement
 	RootDir     string
 	Environment string
-	Messages    *common.Lister
-}
-
-func (a *AnalyzerBase) ServiceYAMLContext(services []*common.Service, dbs *common.Lister) *ServiceYAMLContextBase {
-	return &ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}
-}
-
-func (a *AnalyzerBase) DockerfileContext(version string, packages *common.Lister) *DockerfileContextBase {
-	return &DockerfileContextBase{Version: version, Packages: packages}
+	Messages    common.Lister
 }
 
 func (a *AnalyzerBase) GetRootDir() string {
 	return a.RootDir
-}
-
-func (a *AnalyzerBase) setMessages(messages *common.Lister) {
-	a.Messages = messages
-}
-
-type Analysis struct {
-	PackName string
-
-	GitURL    string
-	GitBranch string
-
-	ServiceYAMLContext *ServiceYAMLContextBase
-	DockerfileContext  *DockerfileContextBase
-
-	Messages *common.Lister
-}
-
-func Analyze(a Analyzer) (*Analysis, error) {
-	messages := &common.Lister{}
-	a.setMessages(messages)
-	err := a.Init()
-	if err != nil {
-		fmt.Printf("%s Failed to initialize analyzer due to %s\n", common.MsgError, err.Error())
-		return nil, err
-	}
-
-	gitURL := common.LocalGitBranch(a.GetRootDir())
-	gitBranch := common.RemoteGitUrl(a.GetRootDir())
-
-	packages := a.GuessPackages()
-	version := a.FindVersion()
-	dbs := a.FindDatabases()
-	envVars := a.EnvVars()
-
-	services, err := AnalyzeProcfile(a)
-	if err != nil {
-		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
-		return nil, err
-	}
-	err = a.AnalyzeServices(&services)
-	if err != nil {
-		return nil, err
-	}
-	refineServices(&services, envVars, gitBranch, gitURL)
-
-	analysis := &Analysis{
-		PackName:           a.GetPack().Name(),
-		GitBranch:          gitBranch,
-		GitURL:             gitURL,
-		ServiceYAMLContext: a.ServiceYAMLContext(services, dbs),
-		DockerfileContext:  a.DockerfileContext(version, packages),
-		Messages:           messages}
-	return analysis, nil
 }
 
 func AnalyzeProcfile(a Analyzer) ([]*common.Service, error) {
@@ -116,7 +50,7 @@ func AnalyzeProcfile(a Analyzer) ([]*common.Service, error) {
 	return services, nil
 }
 
-func refineServices(services *[]*common.Service, envVars []*common.EnvVar, gitBranch string, gitURL string) {
+func RefineServices(services *[]*common.Service, envVars []*common.EnvVar, gitBranch string, gitURL string) {
 	var err error
 	for _, service := range *services {
 		if service.Command, err = common.ParseEnvironmentVariables(service.Command); err != nil {
