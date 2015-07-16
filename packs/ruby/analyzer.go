@@ -14,15 +14,10 @@ type Analyzer struct {
 }
 
 type Analysis struct {
-	PackName string
-
-	GitURL    string
-	GitBranch string
+	packs.AnalysisBase
 
 	ServiceYAMLContext *ServiceYAMLContext
 	DockerfileContext  *DockerfileContext
-
-	Messages common.Lister
 }
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
@@ -47,12 +42,13 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.RefineServices(&services, envVars, gitBranch, gitURL)
 
 	analysis := &Analysis{
-		PackName:           a.GetPack().Name(),
-		GitBranch:          gitBranch,
-		GitURL:             gitURL,
+		AnalysisBase: packs.AnalysisBase{
+			PackName:  a.GetPack().Name(),
+			GitBranch: gitBranch,
+			GitURL:    gitURL,
+			Messages:  a.Messages},
 		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}},
-		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}},
-		Messages:           a.Messages}
+		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
 	return analysis, nil
 }
 
