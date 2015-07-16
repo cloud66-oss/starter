@@ -18,7 +18,8 @@ func (p *Pack) Detector() packs.Detector {
 func (p *Pack) Analyze(rootDir string, environment string) error {
 	var err error
 	a := Analyzer{
-		AnalyzerBase: packs.AnalyzerBase{PackElement: packs.PackElement{Pack: p},
+		AnalyzerBase: packs.AnalyzerBase{
+			PackElement: packs.PackElement{Pack: p},
 			RootDir:     rootDir,
 			Environment: environment}}
 	p.Analysis, err = a.Analyze()
