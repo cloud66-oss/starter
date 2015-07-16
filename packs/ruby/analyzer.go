@@ -25,27 +25,17 @@ type Analysis struct {
 	Messages common.Lister
 }
 
-func (a *Analyzer) Init() error {
-	a.Gemfile = filepath.Join(a.GetRootDir(), "Gemfile")
-	return nil
-}
-
 func (a *Analyzer) Analyze() (*Analysis, error) {
-	err := a.Init()
-	if err != nil {
-		fmt.Printf("%s Failed to initialize analyzer due to %s\n", common.MsgError, err.Error())
-		return nil, err
-	}
-
-	gitURL := common.LocalGitBranch(a.GetRootDir())
-	gitBranch := common.RemoteGitUrl(a.GetRootDir())
+	a.Gemfile = filepath.Join(a.RootDir, "Gemfile")
+	gitURL := common.LocalGitBranch(a.RootDir)
+	gitBranch := common.RemoteGitUrl(a.RootDir)
 
 	packages := a.GuessPackages()
 	version := a.FindVersion()
 	dbs := a.FindDatabases()
 	envVars := a.EnvVars()
 
-	services, err := packs.AnalyzeProcfile(a)
+	services, err := a.AnalyzeProcfile()
 	if err != nil {
 		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
 		return nil, err
@@ -54,7 +44,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	if err != nil {
 		return nil, err
 	}
-	packs.RefineServices(&services, envVars, gitBranch, gitURL)
+	a.RefineServices(&services, envVars, gitBranch, gitURL)
 
 	analysis := &Analysis{
 		PackName:           a.GetPack().Name(),

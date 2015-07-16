@@ -9,9 +9,7 @@ import (
 
 type Analyzer interface {
 	GetPack() Pack
-	GetRootDir() string
 
-	Init() error
 	AnalyzeServices(*[]*common.Service) error
 	GuessPackages() *common.Lister
 	FindVersion() string
@@ -21,18 +19,16 @@ type Analyzer interface {
 
 type AnalyzerBase struct {
 	PackElement
+
 	RootDir     string
 	Environment string
-	Messages    common.Lister
+
+	Messages common.Lister
 }
 
-func (a *AnalyzerBase) GetRootDir() string {
-	return a.RootDir
-}
-
-func AnalyzeProcfile(a Analyzer) ([]*common.Service, error) {
+func (a *AnalyzerBase) AnalyzeProcfile() ([]*common.Service, error) {
 	services := []*common.Service{}
-	procfilePath := filepath.Join(a.GetRootDir(), "Procfile")
+	procfilePath := filepath.Join(a.RootDir, "Procfile")
 	if !common.FileExists(procfilePath) {
 		return services, nil
 	}
@@ -50,7 +46,7 @@ func AnalyzeProcfile(a Analyzer) ([]*common.Service, error) {
 	return services, nil
 }
 
-func RefineServices(services *[]*common.Service, envVars []*common.EnvVar, gitBranch string, gitURL string) {
+func (a *AnalyzerBase) RefineServices(services *[]*common.Service, envVars []*common.EnvVar, gitBranch string, gitURL string) {
 	var err error
 	for _, service := range *services {
 		if service.Command, err = common.ParseEnvironmentVariables(service.Command); err != nil {
