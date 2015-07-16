@@ -9,19 +9,20 @@ import (
 	"github.com/cloud66/starter/common"
 )
 
-type DockerfileContext struct {
+type DockerfileContextBase struct {
 	Version  string
 	Packages *common.Lister
 }
 
-type DockerfileWriter struct {
+type DockerfileWriterBase struct {
+	PackElement
 	TemplateDir     string
 	OutputDir       string
 	ShouldOverwrite bool
 }
 
-func (w *DockerfileWriter) Write(packName string, context *DockerfileContext) error {
-	templateName := fmt.Sprintf("%s.dockerfile.template", packName)
+func (w *DockerfileWriterBase) Write(context interface{}) error {
+	templateName := fmt.Sprintf("%s.dockerfile.template", w.GetPack().Name())
 	destName := "Dockerfile"
 
 	tmpl, err := template.ParseFiles(filepath.Join(w.TemplateDir, templateName))

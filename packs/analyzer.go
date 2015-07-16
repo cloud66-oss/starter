@@ -18,6 +18,9 @@ type Analyzer interface {
 	FindVersion() string
 	FindDatabases() *common.Lister
 	EnvVars() []*common.EnvVar
+
+	ServiceYAMLContext([]*common.Service, *common.Lister) *ServiceYAMLContextBase
+	DockerfileContext(string, *common.Lister) *DockerfileContextBase
 }
 
 type AnalyzerBase struct {
@@ -25,6 +28,14 @@ type AnalyzerBase struct {
 	RootDir     string
 	Environment string
 	Messages    *common.Lister
+}
+
+func (a *AnalyzerBase) ServiceYAMLContext(services []*common.Service, dbs *common.Lister) *ServiceYAMLContextBase {
+	return &ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}
+}
+
+func (a *AnalyzerBase) DockerfileContext(version string, packages *common.Lister) *DockerfileContextBase {
+	return &DockerfileContextBase{Version: version, Packages: packages}
 }
 
 func (a *AnalyzerBase) GetRootDir() string {
@@ -41,8 +52,8 @@ type Analysis struct {
 	GitURL    string
 	GitBranch string
 
-	ServiceYAMLContext *ServiceYAMLContext
-	DockerfileContext  *DockerfileContext
+	ServiceYAMLContext *ServiceYAMLContextBase
+	DockerfileContext  *DockerfileContextBase
 
 	Messages *common.Lister
 }
@@ -76,16 +87,12 @@ func Analyze(a Analyzer) (*Analysis, error) {
 	refineServices(&services, envVars, gitBranch, gitURL)
 
 	analysis := &Analysis{
-		PackName:  a.GetPack().Name(),
-		GitBranch: gitBranch,
-		GitURL:    gitURL,
-		ServiceYAMLContext: &ServiceYAMLContext{
-			Services: services,
-			Dbs:      dbs.Items},
-		DockerfileContext: &DockerfileContext{
-			Version:  version,
-			Packages: packages},
-		Messages: messages}
+		PackName:           a.GetPack().Name(),
+		GitBranch:          gitBranch,
+		GitURL:             gitURL,
+		ServiceYAMLContext: a.ServiceYAMLContext(services, dbs),
+		DockerfileContext:  a.DockerfileContext(version, packages),
+		Messages:           messages}
 	return analysis, nil
 }
 

@@ -9,18 +9,18 @@ import (
 	"github.com/cloud66/starter/common"
 )
 
-type ServiceYAMLContext struct {
+type ServiceYAMLContextBase struct {
 	Services []*common.Service
 	Dbs      []string
 }
 
-type ServiceYAMLWriter struct {
+type ServiceYAMLWriterBase struct {
 	TemplateDir     string
 	OutputDir       string
 	ShouldOverwrite bool
 }
 
-func (w *ServiceYAMLWriter) Write(context *ServiceYAMLContext) error {
+func (w *ServiceYAMLWriterBase) Write(context interface{}) error {
 	destFullPath := filepath.Join(w.OutputDir, "service.yml")
 
 	tmpl, err := template.ParseFiles(filepath.Join(w.TemplateDir, "service.yml.template"))
