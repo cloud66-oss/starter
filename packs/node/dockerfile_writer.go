@@ -9,7 +9,3 @@ type DockerfileContext struct {
 type DockerfileWriter struct {
 	packs.DockerfileWriterBase
 }
-
-func (w *DockerfileWriter) Write(context *DockerfileContext) error {
-	return w.DockerfileWriterBase.Write(context)
-}
