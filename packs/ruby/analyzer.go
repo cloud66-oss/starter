@@ -13,13 +13,6 @@ type Analyzer struct {
 	Gemfile string
 }
 
-type Analysis struct {
-	packs.AnalysisBase
-
-	ServiceYAMLContext *ServiceYAMLContext
-	DockerfileContext  *DockerfileContext
-}
-
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.Gemfile = filepath.Join(a.RootDir, "Gemfile")
 	gitURL := common.LocalGitBranch(a.RootDir)

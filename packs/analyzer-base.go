@@ -16,15 +16,6 @@ type AnalyzerBase struct {
 	Messages common.Lister
 }
 
-type AnalysisBase struct {
-	PackName string
-
-	GitURL    string
-	GitBranch string
-
-	Messages common.Lister
-}
-
 func (a *AnalyzerBase) AnalyzeProcfile() ([]*common.Service, error) {
 	services := []*common.Service{}
 	procfilePath := filepath.Join(a.RootDir, "Procfile")

@@ -13,13 +13,6 @@ type Analyzer struct {
 	PackageJSON string
 }
 
-type Analysis struct {
-	packs.AnalysisBase
-
-	ServiceYAMLContext *ServiceYAMLContext
-	DockerfileContext  *DockerfileContext
-}
-
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.PackageJSON = filepath.Join(a.RootDir, "package.json")
 	gitURL := common.LocalGitBranch(a.RootDir)

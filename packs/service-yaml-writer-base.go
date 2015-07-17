@@ -9,11 +9,6 @@ import (
 	"github.com/cloud66/starter/common"
 )
 
-type ServiceYAMLContextBase struct {
-	Services []*common.Service
-	Dbs      []string
-}
-
 type ServiceYAMLWriterBase struct {
 	TemplateDir     string
 	OutputDir       string
