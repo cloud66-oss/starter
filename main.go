@@ -57,24 +57,24 @@ func main() {
 
 	pack, err := Detect(flagPath)
 	if err != nil {
-		fmt.Printf("%s Failed to detect framework due to %s", common.MsgError, err.Error())
+		fmt.Printf("%s Failed to detect framework due to: %s\n", common.MsgError, err.Error())
 		return
 	}
 
 	err = pack.Analyze(flagPath, flagEnvironment)
 	if err != nil {
-		fmt.Printf("%s Failed to analyze the project due to %s", common.MsgError, err.Error())
+		fmt.Printf("%s Failed to analyze the project due to: %s\n", common.MsgError, err.Error())
 		return
 	}
 
 	err = pack.WriteDockerfile(flagTemplatePath, flagPath, flagOverwrite)
 	if err != nil {
-		fmt.Printf("%s Failed to write Dockerfile due to %s\n", common.MsgError, err.Error())
+		fmt.Printf("%s Failed to write Dockerfile due to: %s\n", common.MsgError, err.Error())
 	}
 
 	err = pack.WriteServiceYAML(flagTemplatePath, flagPath, flagOverwrite)
 	if err != nil {
-		fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
+		fmt.Printf("%s Failed to write services.yml due to: %s\n", common.MsgError, err.Error())
 	}
 
 	if len(pack.GetMessages()) > 0 {
