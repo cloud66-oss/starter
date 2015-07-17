@@ -23,16 +23,10 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	dbs := a.FindDatabases()
 	envVars := a.EnvVars()
 
-	services, err := a.AnalyzeProcfile()
-	if err != nil {
-		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
-		return nil, err
-	}
-	err = a.AnalyzeServices(&services)
+	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL)
 	if err != nil {
 		return nil, err
 	}
-	a.RefineServices(&services, envVars, gitBranch, gitURL)
 
 	analysis := &Analysis{
 		AnalysisBase: packs.AnalysisBase{
@@ -45,7 +39,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	return analysis, nil
 }
 
-func (a *Analyzer) AnalyzeServices(services *[]*common.Service) error {
+func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	var service *common.Service
 	for _, s := range *services {
 		if s.Name == "web" || s.Name == "custom_web" {

@@ -16,6 +16,20 @@ type AnalyzerBase struct {
 	Messages common.Lister
 }
 
+func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string) ([]*common.Service, error) {
+	services, err := b.AnalyzeProcfile()
+	if err != nil {
+		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
+		return nil, err
+	}
+	err = a.FillServices(&services)
+	if err != nil {
+		return nil, err
+	}
+	b.RefineServices(&services, envVars, gitBranch, gitURL)
+	return services, nil
+}
+
 func (a *AnalyzerBase) AnalyzeProcfile() ([]*common.Service, error) {
 	services := []*common.Service{}
 	procfilePath := filepath.Join(a.RootDir, "Procfile")
