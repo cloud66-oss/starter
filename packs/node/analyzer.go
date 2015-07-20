@@ -21,7 +21,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	}
 	packages := a.GuessPackages()
 	version := a.FindVersion()
-	dbs := a.FindDatabases()
+	dbs := a.ConfirmDatabases(a.FindDatabases())
 	envVars := a.EnvVars()
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)

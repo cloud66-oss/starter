@@ -22,7 +22,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 	packages := a.GuessPackages()
 	version := a.FindVersion()
-	dbs := a.FindDatabases()
+	dbs := a.ConfirmDatabases(a.FindDatabases())
 	envVars := a.EnvVars()
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
@@ -113,27 +113,22 @@ func (a *Analyzer) FindVersion() string {
 func (a *Analyzer) FindDatabases() *common.Lister {
 	dbs := common.NewLister()
 	if hasMysql, _ := common.GetGemVersion(a.Gemfile, "mysql2"); hasMysql {
-		fmt.Println(common.MsgL2, "----> Found Mysql", common.MsgReset)
 		dbs.Add("mysql")
 	}
 
 	if hasPg, _ := common.GetGemVersion(a.Gemfile, "pg"); hasPg {
-		fmt.Println(common.MsgL2, "----> Found PostgreSQL", common.MsgReset)
 		dbs.Add("postgresql")
 	}
 
 	if hasRedis, _ := common.GetGemVersion(a.Gemfile, "redis"); hasRedis {
-		fmt.Println(common.MsgL2, "----> Found Redis", common.MsgReset)
 		dbs.Add("redis")
 	}
 
 	if hasMongoDB, _ := common.GetGemVersion(a.Gemfile, "mongo", "mongo_mapper", "dm-mongo-adapter", "mongoid"); hasMongoDB {
-		fmt.Println(common.MsgL2, "----> Found MongoDB", common.MsgReset)
 		dbs.Add("mongodb")
 	}
 
 	if hasElasticsearch, _ := common.GetGemVersion(a.Gemfile, "elasticsearch", "tire", "flex", "chewy"); hasElasticsearch {
-		fmt.Println(common.MsgL2, "----> Found Elasticsearch", common.MsgReset)
 		dbs.Add("elasticsearch")
 	}
 

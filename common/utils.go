@@ -88,3 +88,23 @@ func AskUser(message string, default_value string) string {
 
 	return value
 }
+
+func AskYesOrNo(color string, message string, defaultValue bool) bool {
+	var prompt string
+	if defaultValue {
+		prompt = "[Y/n]"
+	} else {
+		prompt = "[y/N]"
+	}
+
+	answer := "none"
+	for answer != "y" && answer != "n" && answer != "" {
+		fmt.Print(color, fmt.Sprintf(" %s %s ", message, prompt), MsgReset)
+		if _, err := fmt.Scanln(&answer); err != nil {
+			return defaultValue
+		}
+		answer = strings.TrimSpace(strings.ToLower(answer))
+	}
+
+	return (answer == "" && defaultValue) || answer == "y"
+}

@@ -1,8 +1,11 @@
 package packs
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/cloud66/starter/common"
 )
@@ -25,6 +28,38 @@ func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
 	}
 
 	return gitURL, gitBranch, buildRoot, nil
+}
+
+func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister {
+	var dbs common.Lister
+	for _, db := range foundDbs.Items {
+		if common.AskYesOrNo(common.MsgL2, fmt.Sprintf("----> Found %s, confirm?", db), true) {
+			dbs.Add(db)
+		}
+	}
+
+	var message string
+	var defaultValue bool
+	if len(foundDbs.Items) > 0 {
+		message = "Add any other databases?"
+		defaultValue = false
+	} else {
+		message = "No databases found. Add manually?"
+		defaultValue = true
+	}
+
+	if common.AskYesOrNo(common.MsgL1, message, defaultValue) {
+		fmt.Println(common.MsgL1, fmt.Sprintf("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values"), common.MsgReset)
+		fmt.Println(common.MsgL1, fmt.Sprintf("  Example: 'mysql elasticsearch' "), common.MsgReset)
+		fmt.Print(" > ")
+
+		reader := bufio.NewReader(os.Stdin)
+		otherDbs, err := reader.ReadString('\n')
+		if err == nil {
+			dbs.Add(strings.Fields(otherDbs)...)
+		}
+	}
+	return &dbs
 }
 
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {
