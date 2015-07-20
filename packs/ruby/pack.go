@@ -39,6 +39,7 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldOverw
 func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldOverwrite bool) error {
 	w := ServiceYAMLWriter{
 		packs.ServiceYAMLWriterBase{
+			PackElement:     packs.PackElement{p},
 			TemplateDir:     templateDir,
 			OutputDir:       outputDir,
 			ShouldOverwrite: shouldOverwrite}}

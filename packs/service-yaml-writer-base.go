@@ -10,15 +10,21 @@ import (
 )
 
 type ServiceYAMLWriterBase struct {
+	PackElement
 	TemplateDir     string
 	OutputDir       string
 	ShouldOverwrite bool
 }
 
 func (w *ServiceYAMLWriterBase) Write(context interface{}) error {
+	templateName := fmt.Sprintf("%s.service.yml.template", w.GetPack().Name())
+	if !common.FileExists(filepath.Join(w.TemplateDir, templateName)) {
+		templateName = "service.yml.template" // fall back on generic template
+	}
+
 	destFullPath := filepath.Join(w.OutputDir, "service.yml")
 
-	tmpl, err := template.ParseFiles(filepath.Join(w.TemplateDir, "service.yml.template"))
+	tmpl, err := template.ParseFiles(filepath.Join(w.TemplateDir, templateName))
 	if err != nil {
 		return err
 	}
