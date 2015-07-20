@@ -17,8 +17,8 @@ type AnalyzerBase struct {
 }
 
 func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
-	gitURL := common.LocalGitBranch()
-	gitBranch := common.RemoteGitUrl()
+	gitURL := common.RemoteGitUrl()
+	gitBranch := common.LocalGitBranch()
 	buildRoot, err := common.PathRelativeToGitRoot(a.RootDir)
 	if err != nil {
 		return "", "", "", err
