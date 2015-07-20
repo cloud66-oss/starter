@@ -11,15 +11,17 @@ import (
 )
 
 var (
-	flagPath         string
-	flagTemplatePath string
-	flagOverwrite    bool
-	flagEnvironment  string
+	flagPath                    string
+	flagDockerfileTemplatePath  string
+	flagServiceYAMLTemplatePath string
+	flagOverwrite               bool
+	flagEnvironment             string
 )
 
 func init() {
 	flag.StringVar(&flagPath, "p", "", "project path")
-	flag.StringVar(&flagTemplatePath, "templates", "", "where template files are located")
+	flag.StringVar(&flagDockerfileTemplatePath, "dockerfiles", "", "where Dockerfile template files are located")
+	flag.StringVar(&flagServiceYAMLTemplatePath, "serviceyml", "", "where service.yml template files are located")
 	flag.BoolVar(&flagOverwrite, "o", false, "overwrite existing files")
 	flag.StringVar(&flagEnvironment, "e", "production", "set project environment")
 }
@@ -44,13 +46,20 @@ func main() {
 		flagPath = pwd
 	}
 
-	if flagTemplatePath == "" {
+	if flagDockerfileTemplatePath == "" {
 		execDir, err := osext.Executable()
 		if err != nil {
 			fmt.Printf("%s Unable to detect template folder due to %s", common.MsgError, err.Error())
 		}
+		flagDockerfileTemplatePath = filepath.Join(filepath.Dir(execDir), "templates", "dockerfiles")
+	}
 
-		flagTemplatePath = filepath.Join(filepath.Dir(execDir), "templates")
+	if flagServiceYAMLTemplatePath == "" {
+		execDir, err := osext.Executable()
+		if err != nil {
+			fmt.Printf("%s Unable to detect template folder due to %s", common.MsgError, err.Error())
+		}
+		flagServiceYAMLTemplatePath = filepath.Join(filepath.Dir(execDir), "templates", "service-yml")
 	}
 
 	fmt.Printf("%s Detecting framework for the project at %s%s\n", common.MsgTitle, flagPath, common.MsgReset)
@@ -67,14 +76,14 @@ func main() {
 		return
 	}
 
-	err = pack.WriteDockerfile(flagTemplatePath, flagPath, flagOverwrite)
+	err = pack.WriteDockerfile(flagDockerfileTemplatePath, flagPath, flagOverwrite)
 	if err != nil {
 		fmt.Printf("%s Failed to write Dockerfile due to: %s\n", common.MsgError, err.Error())
 	}
 
-	err = pack.WriteServiceYAML(flagTemplatePath, flagPath, flagOverwrite)
+	err = pack.WriteServiceYAML(flagServiceYAMLTemplatePath, flagPath, flagOverwrite)
 	if err != nil {
-		fmt.Printf("%s Failed to write services.yml due to: %s\n", common.MsgError, err.Error())
+		fmt.Printf("%s Failed to write service.yml due to: %s\n", common.MsgError, err.Error())
 	}
 
 	if len(pack.GetMessages()) > 0 {
