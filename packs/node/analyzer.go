@@ -15,15 +15,16 @@ type Analyzer struct {
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.PackageJSON = filepath.Join(a.RootDir, "package.json")
-	gitURL := common.LocalGitBranch(a.RootDir)
-	gitBranch := common.RemoteGitUrl(a.RootDir)
-
+	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
+	if err != nil {
+		return nil, err
+	}
 	packages := a.GuessPackages()
 	version := a.FindVersion()
 	dbs := a.FindDatabases()
 	envVars := a.EnvVars()
 
-	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL)
+	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
 	if err != nil {
 		return nil, err
 	}

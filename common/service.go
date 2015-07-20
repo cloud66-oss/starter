@@ -7,4 +7,5 @@ type Service struct {
 	Command   string
 	Ports     []string
 	EnvVars   []*EnvVar
+	BuildRoot string
 }
