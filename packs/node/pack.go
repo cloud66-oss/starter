@@ -29,9 +29,10 @@ func (p *Pack) Analyze(rootDir string, environment string) error {
 func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldOverwrite bool) error {
 	w := DockerfileWriter{
 		packs.DockerfileWriterBase{
-			PackElement:     packs.PackElement{p},
-			TemplateDir:     templateDir,
-			OutputDir:       outputDir,
+			PackElement: packs.PackElement{p},
+			TemplateWriterBase: packs.TemplateWriterBase{
+				TemplateDir: templateDir,
+				OutputDir:   outputDir},
 			ShouldOverwrite: shouldOverwrite}}
 	return w.Write(p.Analysis.DockerfileContext)
 }
@@ -39,9 +40,10 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldOverw
 func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldOverwrite bool) error {
 	w := ServiceYAMLWriter{
 		packs.ServiceYAMLWriterBase{
-			PackElement:     packs.PackElement{p},
-			TemplateDir:     templateDir,
-			OutputDir:       outputDir,
+			PackElement: packs.PackElement{p},
+			TemplateWriterBase: packs.TemplateWriterBase{
+				TemplateDir: templateDir,
+				OutputDir:   outputDir},
 			ShouldOverwrite: shouldOverwrite}}
 	return w.Write(p.Analysis.ServiceYAMLContext)
 }
