@@ -26,25 +26,23 @@ func (p *Pack) Analyze(rootDir string, environment string) error {
 	return err
 }
 
-func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldOverwrite bool) error {
+func (p *Pack) WriteDockerfile(templateDir string, outputDir string) error {
 	w := DockerfileWriter{
 		packs.DockerfileWriterBase{
 			PackElement: packs.PackElement{p},
 			TemplateWriterBase: packs.TemplateWriterBase{
 				TemplateDir: templateDir,
-				OutputDir:   outputDir},
-			ShouldOverwrite: shouldOverwrite}}
+				OutputDir:   outputDir}}}
 	return w.Write(p.Analysis.DockerfileContext)
 }
 
-func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldOverwrite bool) error {
+func (p *Pack) WriteServiceYAML(templateDir string, outputDir string) error {
 	w := ServiceYAMLWriter{
 		packs.ServiceYAMLWriterBase{
 			PackElement: packs.PackElement{p},
 			TemplateWriterBase: packs.TemplateWriterBase{
 				TemplateDir: templateDir,
-				OutputDir:   outputDir},
-			ShouldOverwrite: shouldOverwrite}}
+				OutputDir:   outputDir}}}
 	return w.Write(p.Analysis.ServiceYAMLContext)
 }
 
