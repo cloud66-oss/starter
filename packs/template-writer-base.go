@@ -29,7 +29,7 @@ func (w *TemplateWriterBase) WriteTemplate(templateName string, filename string,
 		if err != nil {
 			return err
 		}
-		fmt.Println(common.MsgL1, fmt.Sprintf("Renaming %s to %s...", filename, newName), common.MsgReset)
+		fmt.Println(common.MsgL2, fmt.Sprintf("----> Renaming %s to %s...", filename, newName), common.MsgReset)
 	}
 
 	destFile, err := os.Create(destFullPath)
@@ -42,7 +42,7 @@ func (w *TemplateWriterBase) WriteTemplate(templateName string, filename string,
 		}
 	}()
 
-	fmt.Println(common.MsgL1, fmt.Sprintf("Writing %s...", filename), common.MsgReset)
+	fmt.Println(common.MsgL2, fmt.Sprintf("----> Writing %s...", filename), common.MsgReset)
 	err = tmpl.Execute(destFile, context)
 	if err != nil {
 		return err
