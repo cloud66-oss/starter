@@ -71,7 +71,7 @@ func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion
 		return defaultVersion
 	}
 
-	message := fmt.Sprintf("Found %s version == %s, confirm?", a.GetPack().Name(), version)
+	message := fmt.Sprintf("Found %s version %s, confirm?", a.GetPack().Name(), version)
 	if found && common.AskYesOrNo(common.MsgL1, message, true, a.ShouldNotPrompt) {
 		return version + "-onbuild"
 	}
