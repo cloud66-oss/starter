@@ -70,17 +70,7 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 
 func (a *Analyzer) FindVersion() string {
 	foundNode, nodeVersion := common.GetNodeVersion(a.PackageJSON)
-
-	if foundNode {
-		return fmt.Sprintf("%s-onbuild", nodeVersion)
-	} else {
-		nodeVersion = common.AskUser("Can't find Node version from package.json:", "default")
-		if nodeVersion == "default" {
-			return a.defaultVersion()
-		} else {
-			return fmt.Sprintf("%s-onbuild", nodeVersion)
-		}
-	}
+	return a.ConfirmVersion(foundNode, nodeVersion, a.defaultVersion())
 }
 
 func (a *Analyzer) FindDatabases() *common.Lister {

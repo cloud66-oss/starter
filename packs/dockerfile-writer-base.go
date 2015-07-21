@@ -5,7 +5,6 @@ import "fmt"
 type DockerfileWriterBase struct {
 	PackElement
 	TemplateWriterBase
-	ShouldOverwrite bool
 }
 
 func (w *DockerfileWriterBase) Write(context interface{}) error {

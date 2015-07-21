@@ -12,11 +12,13 @@ import (
 
 var (
 	flagPath        string
+	flagNoPrompt    bool
 	flagEnvironment string
 )
 
 func init() {
 	flag.StringVar(&flagPath, "p", "", "project path")
+	flag.BoolVar(&flagNoPrompt, "y", false, "do not prompt user")
 	flag.StringVar(&flagEnvironment, "e", "production", "set project environment")
 }
 
@@ -55,18 +57,18 @@ func main() {
 		return
 	}
 
-	err = pack.Analyze(flagPath, flagEnvironment)
+	err = pack.Analyze(flagPath, flagEnvironment, flagNoPrompt)
 	if err != nil {
 		fmt.Printf("%s Failed to analyze the project due to: %s\n", common.MsgError, err.Error())
 		return
 	}
 
-	err = pack.WriteDockerfile(dockerfileTemplateDir, flagPath)
+	err = pack.WriteDockerfile(dockerfileTemplateDir, flagPath, flagNoPrompt)
 	if err != nil {
 		fmt.Printf("%s Failed to write Dockerfile due to: %s\n", common.MsgError, err.Error())
 	}
 
-	err = pack.WriteServiceYAML(serviceYAMLTemplateDir, flagPath)
+	err = pack.WriteServiceYAML(serviceYAMLTemplateDir, flagPath, flagNoPrompt)
 	if err != nil {
 		fmt.Printf("%s Failed to write service.yml due to: %s\n", common.MsgError, err.Error())
 	}

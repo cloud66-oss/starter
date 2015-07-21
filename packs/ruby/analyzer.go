@@ -98,16 +98,7 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 
 func (a *Analyzer) FindVersion() string {
 	foundRuby, rubyVersion := common.GetRubyVersion(a.Gemfile)
-	if foundRuby {
-		return fmt.Sprintf("%s-onbuild", rubyVersion)
-	} else {
-		rubyVersion = common.AskUser("Can't find Ruby version from Gemfile:", "default")
-		if rubyVersion == "default" {
-			return a.defaultVersion()
-		} else {
-			return fmt.Sprintf("%s-onbuild", rubyVersion)
-		}
-	}
+	return a.ConfirmVersion(foundRuby, rubyVersion, a.defaultVersion())
 }
 
 func (a *Analyzer) FindDatabases() *common.Lister {

@@ -79,17 +79,25 @@ func ParseUniqueInt(line string) (string, error) {
 	return strings.Replace(line, "{{UNIQUE_INT}}", "_unique:int", -1), nil
 }
 
-func AskUser(message string, default_value string) string {
-	fmt.Print(MsgL1, fmt.Sprintf(" %s [%s] ", message, default_value), MsgReset)
+func AskUser(message string, defaultValue string, shouldNotPrompt bool) string {
+	if shouldNotPrompt {
+		return defaultValue
+	}
+
+	fmt.Print(MsgL1, fmt.Sprintf(" %s [%s] ", message, defaultValue), MsgReset)
 	value := ""
 	if _, err := fmt.Scanln(&value); err != nil || strings.TrimSpace(value) == "" {
-		return default_value
+		return defaultValue
 	}
 
 	return value
 }
 
-func AskYesOrNo(color string, message string, defaultValue bool) bool {
+func AskYesOrNo(color string, message string, defaultValue bool, shouldNotPrompt bool) bool {
+	if shouldNotPrompt {
+		return defaultValue
+	}
+
 	var prompt string
 	if defaultValue {
 		prompt = "[Y/n]"

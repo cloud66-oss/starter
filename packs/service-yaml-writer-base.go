@@ -10,7 +10,6 @@ import (
 type ServiceYAMLWriterBase struct {
 	PackElement
 	TemplateWriterBase
-	ShouldOverwrite bool
 }
 
 func (w *ServiceYAMLWriterBase) Write(context interface{}) error {

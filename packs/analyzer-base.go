@@ -13,8 +13,9 @@ import (
 type AnalyzerBase struct {
 	PackElement
 
-	RootDir     string
-	Environment string
+	RootDir         string
+	Environment     string
+	ShouldNotPrompt bool
 
 	Messages common.Lister
 }
@@ -33,7 +34,10 @@ func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
 func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister {
 	var dbs common.Lister
 	for _, db := range foundDbs.Items {
-		if common.AskYesOrNo(common.MsgL2, fmt.Sprintf("----> Found %s, confirm?", db), true) {
+		if a.ShouldNotPrompt {
+			fmt.Println(common.MsgL2, fmt.Sprintf("----> Found %s", db), common.MsgReset)
+		}
+		if common.AskYesOrNo(common.MsgL2, fmt.Sprintf("----> Found %s, confirm?", db), true, a.ShouldNotPrompt) {
 			dbs.Add(db)
 		}
 	}
@@ -48,7 +52,7 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 		defaultValue = true
 	}
 
-	if common.AskYesOrNo(common.MsgL1, message, defaultValue) {
+	if common.AskYesOrNo(common.MsgL1, message, defaultValue, a.ShouldNotPrompt) && !a.ShouldNotPrompt {
 		fmt.Println(common.MsgL1, fmt.Sprintf("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values"), common.MsgReset)
 		fmt.Println(common.MsgL1, fmt.Sprintf("  Example: 'mysql elasticsearch' "), common.MsgReset)
 		fmt.Print(" > ")
@@ -60,6 +64,24 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 		}
 	}
 	return &dbs
+}
+
+func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion string) string {
+	if !found && a.ShouldNotPrompt {
+		return defaultVersion
+	}
+
+	message := fmt.Sprintf("Found %s version == %s, confirm?", a.GetPack().Name(), version)
+	if found && common.AskYesOrNo(common.MsgL1, message, true, a.ShouldNotPrompt) {
+		return version + "-onbuild"
+	}
+
+	version = common.AskUser(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), "default", a.ShouldNotPrompt)
+	if version == "default" {
+		return defaultVersion
+	} else {
+		return version + "-onbuild"
+	}
 }
 
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {

@@ -10,8 +10,9 @@ import (
 )
 
 type TemplateWriterBase struct {
-	TemplateDir string
-	OutputDir   string
+	TemplateDir     string
+	OutputDir       string
+	ShouldNotPrompt bool
 }
 
 func (w *TemplateWriterBase) WriteTemplate(templateName string, filename string, context interface{}) error {
@@ -21,7 +22,7 @@ func (w *TemplateWriterBase) WriteTemplate(templateName string, filename string,
 	}
 
 	destFullPath := filepath.Join(w.OutputDir, filename)
-	if shouldRenameExistingFile(destFullPath) {
+	if w.shouldRenameExistingFile(destFullPath) {
 		newName := filename + ".old"
 		err = os.Rename(destFullPath, filepath.Join(w.OutputDir, newName))
 		if err != nil {
@@ -49,9 +50,12 @@ func (w *TemplateWriterBase) WriteTemplate(templateName string, filename string,
 	return nil
 }
 
-func shouldRenameExistingFile(filename string) bool {
+func (w *TemplateWriterBase) shouldRenameExistingFile(filename string) bool {
 	if !common.FileExists(filename) {
 		return false
+	}
+	if w.ShouldNotPrompt {
+		return true
 	}
 
 	message := fmt.Sprintf(" %s cannot be written as it already exists. What to do? [o: overwrite, r: rename] ", filepath.Base(filename))
