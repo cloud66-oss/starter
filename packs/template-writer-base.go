@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/cloud66/starter/common"
@@ -58,11 +59,14 @@ func (w *TemplateWriterBase) shouldRenameExistingFile(filename string) bool {
 		return true
 	}
 
-	message := fmt.Sprintf(" %s cannot be written as it already exists. What to do? [o: overwrite, r: rename] ", filepath.Base(filename))
+	message := fmt.Sprintf(" %s cannot be written as it already exists. What to do? [o: overwrite, R: rename] ", filepath.Base(filename))
 	answer := "none"
-	for answer != "o" && answer != "r" {
+	for answer != "o" && answer != "r" && answer != "" {
 		fmt.Print(common.MsgL1, message, common.MsgReset)
-		fmt.Scanln(&answer)
+		if _, err := fmt.Scanln(&answer); err != nil {
+			return true
+		}
+		answer = strings.TrimSpace(strings.ToLower(answer))
 	}
-	return answer == "r"
+	return answer == "r" || answer == ""
 }
