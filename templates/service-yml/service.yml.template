@@ -5,11 +5,12 @@ services:
     git: {{.GitRepo}}
     git_branch: {{.GitBranch}}
     command: {{.Command}}
-    build_root: {{.BuildRoot}} 
+    build_root: {{.BuildRoot}}
     {{if .Ports}}{{range .Ports}}ports:
       - {{.}}{{end}}{{end}}
     {{if .EnvVars}}env_vars:{{range .EnvVars}}
       {{.Key}}: {{.Value}}{{end}}{{end}}
 {{end}}
+##NEWLINE##
 databases:{{range .Dbs}}
   - {{.}}{{end}}
