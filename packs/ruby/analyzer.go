@@ -55,20 +55,20 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	}
 
 	var command string
-	var ports []string
+	ports := []*common.PortMapping{common.NewPortMapping()}
 	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
 	// port depends on the application server. for now we are going to fix to 3000
 	if runsUnicorn, _ := common.GetGemVersion(a.Gemfile, "unicorn", "thin"); runsUnicorn {
 		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
 		// The command here will be found in the Procfile
-		ports = []string{"9292:80:443"}
+		ports[0].Container = "9292"
 	} else {
 		if isRails {
 			command = "bundle exec rails s _env:RAILS_ENV"
-			ports = []string{"3000:80:443"}
+			ports[0].Container = "3000"
 		} else {
 			command = "bundle exec rackup s _env:RACK_ENV"
-			ports = []string{"9292:80:443"}
+			ports[0].Container = "9292"
 		}
 	}
 

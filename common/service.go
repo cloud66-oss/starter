@@ -5,7 +5,7 @@ type Service struct {
 	GitRepo   string
 	GitBranch string
 	Command   string
-	Ports     []string
+	Ports     []*PortMapping
 	EnvVars   []*EnvVar
 	BuildRoot string
 }
