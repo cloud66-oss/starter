@@ -67,21 +67,11 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 }
 
 func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion string) string {
-	if !found && a.ShouldNotPrompt {
-		return defaultVersion
-	}
-
 	message := fmt.Sprintf("Found %s version %s, confirm?", a.GetPack().Name(), version)
 	if found && common.AskYesOrNo(common.MsgL1, message, true, a.ShouldNotPrompt) {
-		return version + "-onbuild"
+		return version
 	}
-
-	version = common.AskUser(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), "default", a.ShouldNotPrompt)
-	if version == "default" {
-		return defaultVersion
-	} else {
-		return version + "-onbuild"
-	}
+	return common.AskUser(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), defaultVersion, a.ShouldNotPrompt)
 }
 
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {

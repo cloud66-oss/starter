@@ -1,7 +1,6 @@
-package node
+package python
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/cloud66/starter/common"
@@ -10,15 +9,16 @@ import (
 
 type Analyzer struct {
 	packs.AnalyzerBase
-	PackageJSON string
+	RequirementsTxt string
 }
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
-	a.PackageJSON = filepath.Join(a.RootDir, "package.json")
+	a.RequirementsTxt = filepath.Join(a.RootDir, "requirements.txt")
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
 	if err != nil {
 		return nil, err
 	}
+
 	packages := a.GuessPackages()
 	version := a.FindVersion()
 	dbs := a.ConfirmDatabases(a.FindDatabases())
@@ -41,36 +41,17 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 }
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
-	var service *common.Service
-	for _, s := range *services {
-		if s.Name == "web" || s.Name == "custom_web" {
-			service = s
-			break
-		}
-	}
-	if service == nil {
-		service = &common.Service{Name: "web"}
-		*services = append(*services, service)
-	}
 	return nil
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
-
-	if runsExpress, _ := common.GetDependencyVersion(a.PackageJSON, "express"); runsExpress {
-		fmt.Println(common.MsgL2, "----> Found Express", common.MsgReset)
-	}
-	if hasScript, script := common.GetScriptsStart(a.PackageJSON); hasScript {
-		fmt.Println(common.MsgL2, "----> Found Script:", script, common.MsgReset)
-	}
-
 	return packages
 }
 
 func (a *Analyzer) FindVersion() string {
-	foundNode, nodeVersion := common.GetNodeVersion(a.PackageJSON)
-	return a.ConfirmVersion(foundNode, nodeVersion, "latest")
+	hasFound, version := common.GetPythonVersion()
+	return a.ConfirmVersion(hasFound, version, "latest")
 }
 
 func (a *Analyzer) FindDatabases() *common.Lister {
