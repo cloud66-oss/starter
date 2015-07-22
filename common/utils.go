@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 
@@ -13,8 +12,8 @@ import (
 )
 
 var (
-	procfileRegex    = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
-	envVarRegex      = regexp.MustCompile("\\$([A-Z_]+[A-Z0-9_]*)")
+	procfileRegex = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
+	envVarRegex   = regexp.MustCompile("\\$([A-Z_]+[A-Z0-9_]*)")
 
 	MsgTitle string = ansi.ColorCode("green+h")
 	MsgL0    string = ansi.ColorCode("magenta")
@@ -22,7 +21,7 @@ var (
 	MsgL2    string = ansi.ColorCode("black+h")
 	MsgReset string = ansi.ColorCode("reset")
 	MsgError string = ansi.ColorCode("red")
-	MsgWarn  string = ansi.ColorCode("yellow")	
+	MsgWarn  string = ansi.ColorCode("yellow")
 )
 
 type Process struct {
@@ -80,30 +79,40 @@ func ParseUniqueInt(line string) (string, error) {
 	return strings.Replace(line, "{{UNIQUE_INT}}", "_unique:int", -1), nil
 }
 
-func LocalGitBranch(folder string) string {
-	b, err := exec.Command("git", "--git-dir", fmt.Sprintf("%s/.git", folder), "name-rev", "--name-only", "HEAD").Output()
-	if err != nil {
-		return ""
+func AskUser(message string, defaultValue string, shouldNotPrompt bool) string {
+	if shouldNotPrompt {
+		return defaultValue
 	}
-	return strings.TrimSpace(strings.Replace(string(b), "https://", "http://", -1))
-}
 
-func RemoteGitUrl(folder string) string {
-	b, err := exec.Command("git", "--git-dir", fmt.Sprintf("%s/.git", folder), "config", "remote.origin.url").Output()
-	if err != nil {
-		return ""
-	}
-	return strings.TrimSpace(strings.Replace(string(b), "https://", "http://", -1))
-}
-
-func AskUser(message string, default_value string) string {
-	fmt.Print(MsgL1, fmt.Sprintf(" %s [%s] ", message, default_value), MsgReset)
+	fmt.Print(MsgL1, fmt.Sprintf(" %s [%s] ", message, defaultValue), MsgReset)
 	value := ""
 	if _, err := fmt.Scanln(&value); err != nil || strings.TrimSpace(value) == "" {
-		return default_value
+		return defaultValue
 	}
 
 	return value
 }
 
+func AskYesOrNo(color string, message string, defaultValue bool, shouldNotPrompt bool) bool {
+	if shouldNotPrompt {
+		return defaultValue
+	}
 
+	var prompt string
+	if defaultValue {
+		prompt = "[Y/n]"
+	} else {
+		prompt = "[y/N]"
+	}
+
+	answer := "none"
+	for answer != "y" && answer != "n" && answer != "" {
+		fmt.Print(color, fmt.Sprintf(" %s %s ", message, prompt), MsgReset)
+		if _, err := fmt.Scanln(&answer); err != nil {
+			return defaultValue
+		}
+		answer = strings.TrimSpace(strings.ToLower(answer))
+	}
+
+	return (answer == "" && defaultValue) || answer == "y"
+}

@@ -5,30 +5,20 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"text/template"
 
 	"github.com/cloud66/starter/common"
-	"github.com/cloud66/starter/packs"
 	"github.com/kardianos/osext"
 )
 
 var (
-	flagPath         string
-	flagTemplatePath string
-	flagOverwrite    bool
-	flagEnvironment  string
-
-	gitUrl    string
-	gitBranch string
-
-	packList *[]packs.Pack
-	context  *common.ParseContext
+	flagPath        string
+	flagNoPrompt    bool
+	flagEnvironment string
 )
 
 func init() {
 	flag.StringVar(&flagPath, "p", "", "project path")
-	flag.StringVar(&flagTemplatePath, "templates", "", "where template files are located")
-	flag.BoolVar(&flagOverwrite, "o", false, "overwrite existing files")
+	flag.BoolVar(&flagNoPrompt, "y", false, "do not prompt user")
 	flag.StringVar(&flagEnvironment, "e", "production", "set project environment")
 }
 
@@ -52,171 +42,43 @@ func main() {
 		flagPath = pwd
 	}
 
-	if flagTemplatePath == "" {
-		execDir, err := osext.Executable()
-		if err != nil {
-			fmt.Printf("%s Unable to detect template folder due to %s", common.MsgError, err.Error())
-		}
-
-		flagTemplatePath = filepath.Join(filepath.Dir(execDir), "templates")
+	execDir, err := osext.Executable()
+	if err != nil {
+		fmt.Printf("%s Unable to detect template folder due to %s", common.MsgError, err.Error())
 	}
-
-	// TODO: this is not a good way
-	packList = &[]packs.Pack{&packs.Ruby{WorkDir: flagPath, Environment: flagEnvironment}, &packs.Node{WorkDir: flagPath, Environment: flagEnvironment}}
+	dockerfileTemplateDir := filepath.Join(filepath.Dir(execDir), "templates", "dockerfiles")
+	serviceYAMLTemplateDir := filepath.Join(filepath.Dir(execDir), "templates", "service-yml")
 
 	fmt.Printf("%s Detecting framework for the project at %s%s\n", common.MsgTitle, flagPath, common.MsgReset)
 
-	found := false
-	for _, r := range *packList {
-		result, err := r.Detect()
-		if err != nil {
-			fmt.Printf(common.MsgError, "Failed to check for %s due to %s\n", r.Name(), err.Error())
-		} else {
-			if result {
-				fmt.Printf("%s Found %s application (%s)\n", common.MsgL0, r.Name(), flagEnvironment)
-			}
-		}
-
-		if result {
-			// this populates the values needed to hydrate Dockerfile.template for this pack
-			context, err := r.Compile()
-			if err != nil {
-				fmt.Printf("%s Failed to compile the project due to %s", common.MsgError, err.Error())
-			}
-
-			// Get the git info
-			gitUrl = common.RemoteGitUrl(flagPath)
-			gitBranch = common.LocalGitBranch(flagPath)
-
-			if err := parseAndWrite(r, fmt.Sprintf("%s.dockerfile.template", r.Name()), "Dockerfile"); err != nil {
-				fmt.Printf("%s Failed to write Dockerfile due to %s\n", common.MsgError, err.Error())
-			}
-
-			context, err = parseProcfile(filepath.Join(flagPath, "Procfile"), context)
-			if err != nil {
-				fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
-			}
-
-			for _, service := range context.Services {
-				service.GitBranch = gitBranch
-				service.GitRepo = gitUrl
-			}
-
-			if err := writeServiceFile(context, r.OutputFolder()); err != nil {
-				fmt.Printf("%s Failed to write services.yml due to %s\n", common.MsgError, err.Error())
-			}
-
-			if len(context.Messages) > 0 {
-				fmt.Printf("%s Warnings: \n", common.MsgWarn)
-				for _, m := range context.Messages {
-					fmt.Printf(" %s %s\n", common.MsgWarn, m)
-				}
-			}
-
-			found = true
-			break
-		}
+	pack, err := Detect(flagPath)
+	if err != nil {
+		fmt.Printf("%s Failed to detect framework due to: %s\n", common.MsgError, err.Error())
+		return
 	}
 
-	if !found {
-		fmt.Println(common.MsgError, "Could not detect any of the supported frameworks", common.MsgReset)
+	err = pack.Analyze(flagPath, flagEnvironment, flagNoPrompt)
+	if err != nil {
+		fmt.Printf("%s Failed to analyze the project due to: %s\n", common.MsgError, err.Error())
+		return
+	}
+
+	err = pack.WriteDockerfile(dockerfileTemplateDir, flagPath, flagNoPrompt)
+	if err != nil {
+		fmt.Printf("%s Failed to write Dockerfile due to: %s\n", common.MsgError, err.Error())
+	}
+
+	err = pack.WriteServiceYAML(serviceYAMLTemplateDir, flagPath, flagNoPrompt)
+	if err != nil {
+		fmt.Printf("%s Failed to write service.yml due to: %s\n", common.MsgError, err.Error())
+	}
+
+	if len(pack.GetMessages()) > 0 {
+		fmt.Printf("%s Warnings: \n", common.MsgWarn)
+		for _, m := range pack.GetMessages() {
+			fmt.Printf(" %s %s\n", common.MsgWarn, m)
+		}
 	}
 
 	fmt.Println(common.MsgTitle, "\n Done", common.MsgReset)
-}
-
-func parseProcfile(procfilePath string, context *common.ParseContext) (*common.ParseContext, error) {
-	if !common.FileExists(procfilePath) {
-		return context, nil
-	}
-
-	fmt.Println(common.MsgL1, "Parsing Procfile")
-	procs, err := common.ParseProcfile(procfilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, proc := range procs {
-		if proc.Name == "web" || proc.Name == "custom_web" {
-			context.Services[0].Command = proc.Command
-		} else {
-			fmt.Printf("%s ----> Found Procfile item %s\n", common.MsgL2, proc.Name)
-			context.Services = append(context.Services, &common.Service{Name: proc.Name, Command: proc.Command})
-		}
-	}
-
-	for _, service := range context.Services {
-		if service.Command, err = common.ParseEnvironmentVariables(service.Command); err != nil {
-			fmt.Printf("%s Failed to replace environment variable placeholder due to %s\n", common.MsgError, err.Error())
-		}
-
-		if service.Command, err = common.ParseUniqueInt(service.Command); err != nil {
-			fmt.Printf("%s Failed to replace UNIQUE_INT variable placeholder due to %s\n", common.MsgError, err.Error())
-		}
-
-		service.EnvVars = context.EnvVars
-	}
-
-	return context, nil
-}
-
-func writeServiceFile(context *common.ParseContext, outputFolder string) error {
-	destFullPath := filepath.Join(outputFolder, "service.yml")
-
-	tmpl, err := template.ParseFiles(filepath.Join(flagTemplatePath, "service.yml.template"))
-	if err != nil {
-		return err
-	}
-
-	if _, err := os.Stat(destFullPath); !os.IsNotExist(err) && !flagOverwrite {
-		return fmt.Errorf("service.yml exists and will not be overwritten unless the overwrite flag (-o) is set")
-	}
-
-	destFile, err := os.Create(destFullPath)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := destFile.Close(); err != nil {
-			fmt.Printf("%s Cannot close file service.yml due to %s\n", common.MsgError, err.Error())
-		}
-	}()
-
-	fmt.Println(common.MsgL1, "Writing service.yml...")
-	err = tmpl.Execute(destFile, context)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func parseAndWrite(pack packs.Pack, templateName string, destName string) error {
-	tmpl, err := template.ParseFiles(filepath.Join(flagTemplatePath, templateName))
-	if err != nil {
-		return err
-	}
-
-	destFullPath := filepath.Join(pack.OutputFolder(), destName)
-
-	if _, err := os.Stat(destFullPath); !os.IsNotExist(err) && !flagOverwrite {
-		return fmt.Errorf("File %s exists and will not be overwritten unless the overwrite flag (-o) is set\n", destName)
-	}
-
-	fmt.Printf("%s Writing %s...%s\n", common.MsgL1, destName, common.MsgReset)
-	destFile, err := os.Create(destFullPath)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := destFile.Close(); err != nil {
-			fmt.Printf("%s Cannot close file %s due to %s\n", common.MsgError, destName, err.Error())
-		}
-	}()
-	err = tmpl.Execute(destFile, pack)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

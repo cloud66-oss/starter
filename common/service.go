@@ -5,6 +5,7 @@ type Service struct {
 	GitRepo   string
 	GitBranch string
 	Command   string
-	Ports     []string
-	EnvVars   []*EnvVar // service level environment variables
+	Ports     []*PortMapping
+	EnvVars   []*EnvVar
+	BuildRoot string
 }
