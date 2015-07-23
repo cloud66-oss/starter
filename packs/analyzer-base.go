@@ -71,7 +71,7 @@ func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion
 	if found && common.AskYesOrNo(common.MsgL1, message, true, a.ShouldNotPrompt) {
 		return version
 	}
-	return common.AskUser(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), defaultVersion, a.ShouldNotPrompt)
+	return common.AskUserWithDefault(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), defaultVersion, a.ShouldNotPrompt)
 }
 
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {

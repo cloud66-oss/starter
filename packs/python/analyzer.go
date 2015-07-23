@@ -1,7 +1,12 @@
 package python
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
@@ -10,10 +15,28 @@ import (
 type Analyzer struct {
 	packs.AnalyzerBase
 	RequirementsTxt string
+	SettingsPy      string
+	WSGIFile        string
 }
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.RequirementsTxt = filepath.Join(a.RootDir, "requirements.txt")
+	var hasFound bool
+	hasFound, a.WSGIFile = a.findWSGIFile()
+	if !hasFound {
+		return nil, fmt.Errorf("Could not find WSGI file")
+	}
+	hasFound, a.SettingsPy = a.findSettingsPy()
+	if !hasFound {
+		return nil, fmt.Errorf("Could not find settings file")
+	}
+
+	content, err := ioutil.ReadFile(a.SettingsPy)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot open %s\n", a.SettingsPy)
+	}
+	fmt.Printf("%s", string(content))
+
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
 	if err != nil {
 		return nil, err
@@ -61,4 +84,55 @@ func (a *Analyzer) FindDatabases() *common.Lister {
 
 func (a *Analyzer) EnvVars() []*common.EnvVar {
 	return []*common.EnvVar{}
+}
+
+func (a *Analyzer) findWSGIFile() (bool, string) {
+	var found []string
+	WSGIPattern := regexp.MustCompile("^(wsgi\\.py|.*\\.wsgi)$")
+	filepath.Walk(a.RootDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+		if WSGIPattern.MatchString(filepath.Base(path)) {
+			found = append(found, path)
+		}
+		return nil
+	})
+
+	wsgi := ""
+	if len(found) == 1 && common.AskYesOrNo(common.MsgL1, fmt.Sprintf("Found WSGI file %s, confirm?", found[0]), true, a.ShouldNotPrompt) {
+		wsgi = found[0]
+	} else if len(found) > 1 && !a.ShouldNotPrompt {
+		answer := common.AskMultipleChoices("Found several potential WSGI files. Please choose one:", append(found, "Other"))
+		if answer != "Other" {
+			wsgi = answer
+		}
+	}
+
+	if wsgi == "" && !a.ShouldNotPrompt {
+		wsgi = common.AskUser("Enter WSGI file path")
+	}
+	return wsgi != "", wsgi
+}
+
+func (a *Analyzer) findSettingsPy() (hasFound bool, path string) {
+	wsgi, err := ioutil.ReadFile(a.WSGIFile)
+	if err != nil {
+		return false, ""
+	}
+
+	settingsPattern := regexp.MustCompile(`(?m)^[[:blank:]]*os.environ.setdefault\("DJANGO_SETTINGS_MODULE", "(.*)"\)`)
+	match := settingsPattern.FindStringSubmatch(string(wsgi))
+	message := "Enter production settings file path"
+	if len(match) > 0 {
+		return true, common.AskUserWithDefault(message, a.module2File(match[1]), a.ShouldNotPrompt)
+	}
+	if !a.ShouldNotPrompt {
+		return true, common.AskUser(message + " (e.g 'yourapp/settings.py')")
+	}
+	return false, ""
+}
+
+func (a *Analyzer) module2File(moduleName string) string {
+	return strings.Replace(moduleName, ".", string(os.PathSeparator), -1) + ".py"
 }
