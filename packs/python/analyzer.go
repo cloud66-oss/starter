@@ -116,6 +116,24 @@ func (a *Analyzer) findWSGIFile() (bool, string) {
 }
 
 func (a *Analyzer) findSettingsPy() (hasFound bool, path string) {
+	hasFound, settingsModule := a.djangoSettingsModule()
+
+	message := "Enter production settings file path"
+	if hasFound {
+		return true, common.AskUserWithDefault(message, a.module2File(settingsModule), a.ShouldNotPrompt)
+	}
+	if !a.ShouldNotPrompt {
+		return true, common.AskUser(message + " (e.g 'yourapp/settings.py')")
+	}
+	return false, ""
+}
+
+func (a *Analyzer) djangoSettingsModule() (bool, string) {
+	settingsModule := os.Getenv("DJANGO_SETTINGS_MODULE")
+	if settingsModule != "" {
+		return true, settingsModule
+	}
+
 	wsgi, err := ioutil.ReadFile(a.WSGIFile)
 	if err != nil {
 		return false, ""
@@ -123,13 +141,10 @@ func (a *Analyzer) findSettingsPy() (hasFound bool, path string) {
 
 	settingsPattern := regexp.MustCompile(`(?m)^[[:blank:]]*os.environ.setdefault\("DJANGO_SETTINGS_MODULE", "(.*)"\)`)
 	match := settingsPattern.FindStringSubmatch(string(wsgi))
-	message := "Enter production settings file path"
 	if len(match) > 0 {
-		return true, common.AskUserWithDefault(message, a.module2File(match[1]), a.ShouldNotPrompt)
+		return true, match[1]
 	}
-	if !a.ShouldNotPrompt {
-		return true, common.AskUser(message + " (e.g 'yourapp/settings.py')")
-	}
+
 	return false, ""
 }
 
