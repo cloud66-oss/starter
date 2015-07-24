@@ -100,16 +100,16 @@ func (a *Analyzer) findWSGIFile() (bool, string) {
 	})
 
 	wsgi := ""
-	if len(found) == 1 && common.AskYesOrNo(common.MsgL1, fmt.Sprintf("Found WSGI file %s, confirm?", found[0]), true, a.ShouldNotPrompt) {
+	if len(found) == 1 && common.AskYesOrNo(common.MsgL1, fmt.Sprintf("Found WSGI file %s, confirm?", found[0]), true, a.ShouldPrompt) {
 		wsgi = found[0]
-	} else if len(found) > 1 && !a.ShouldNotPrompt {
+	} else if len(found) > 1 && a.ShouldPrompt {
 		answer := common.AskMultipleChoices("Found several potential WSGI files. Please choose one:", append(found, "Other"))
 		if answer != "Other" {
 			wsgi = answer
 		}
 	}
 
-	if wsgi == "" && !a.ShouldNotPrompt {
+	if wsgi == "" && a.ShouldPrompt {
 		wsgi = common.AskUser("Enter WSGI file path")
 	}
 	return wsgi != "", wsgi
@@ -120,9 +120,9 @@ func (a *Analyzer) findSettingsPy() (hasFound bool, path string) {
 
 	message := "Enter production settings file path"
 	if hasFound {
-		return true, common.AskUserWithDefault(message, a.module2File(settingsModule), a.ShouldNotPrompt)
+		return true, common.AskUserWithDefault(message, a.module2File(settingsModule), a.ShouldPrompt)
 	}
-	if !a.ShouldNotPrompt {
+	if a.ShouldPrompt {
 		return true, common.AskUser(message + " (e.g 'yourapp/settings.py')")
 	}
 	return false, ""

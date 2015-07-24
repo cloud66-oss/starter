@@ -88,8 +88,8 @@ func AskUser(message string) string {
 	return answer
 }
 
-func AskUserWithDefault(message string, defaultValue string, shouldNotPrompt bool) string {
-	if shouldNotPrompt {
+func AskUserWithDefault(message string, defaultValue string, shouldPrompt bool) string {
+	if !shouldPrompt {
 		return defaultValue
 	}
 
@@ -102,8 +102,8 @@ func AskUserWithDefault(message string, defaultValue string, shouldNotPrompt boo
 	return value
 }
 
-func AskYesOrNo(color string, message string, defaultValue bool, shouldNotPrompt bool) bool {
-	if shouldNotPrompt {
+func AskYesOrNo(color string, message string, defaultValue bool, shouldPrompt bool) bool {
+	if !shouldPrompt {
 		return defaultValue
 	}
 

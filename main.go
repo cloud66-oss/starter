@@ -57,18 +57,18 @@ func main() {
 		return
 	}
 
-	err = pack.Analyze(flagPath, flagEnvironment, flagNoPrompt)
+	err = pack.Analyze(flagPath, flagEnvironment, !flagNoPrompt)
 	if err != nil {
 		fmt.Printf("%s Failed to analyze the project due to: %s\n", common.MsgError, err.Error())
 		return
 	}
 
-	err = pack.WriteDockerfile(dockerfileTemplateDir, flagPath, flagNoPrompt)
+	err = pack.WriteDockerfile(dockerfileTemplateDir, flagPath, !flagNoPrompt)
 	if err != nil {
 		fmt.Printf("%s Failed to write Dockerfile due to: %s\n", common.MsgError, err.Error())
 	}
 
-	err = pack.WriteServiceYAML(serviceYAMLTemplateDir, flagPath, flagNoPrompt)
+	err = pack.WriteServiceYAML(serviceYAMLTemplateDir, flagPath, !flagNoPrompt)
 	if err != nil {
 		fmt.Printf("%s Failed to write service.yml due to: %s\n", common.MsgError, err.Error())
 	}

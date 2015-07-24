@@ -13,9 +13,9 @@ import (
 type AnalyzerBase struct {
 	PackElement
 
-	RootDir         string
-	Environment     string
-	ShouldNotPrompt bool
+	RootDir      string
+	Environment  string
+	ShouldPrompt bool
 
 	Messages common.Lister
 }
@@ -34,10 +34,10 @@ func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
 func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister {
 	var dbs common.Lister
 	for _, db := range foundDbs.Items {
-		if a.ShouldNotPrompt {
+		if !a.ShouldPrompt {
 			fmt.Println(common.MsgL2, fmt.Sprintf("----> Found %s", db), common.MsgReset)
 		}
-		if common.AskYesOrNo(common.MsgL2, fmt.Sprintf("----> Found %s, confirm?", db), true, a.ShouldNotPrompt) {
+		if common.AskYesOrNo(common.MsgL2, fmt.Sprintf("----> Found %s, confirm?", db), true, a.ShouldPrompt) {
 			dbs.Add(db)
 		}
 	}
@@ -52,7 +52,7 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 		defaultValue = true
 	}
 
-	if common.AskYesOrNo(common.MsgL1, message, defaultValue, a.ShouldNotPrompt) && !a.ShouldNotPrompt {
+	if common.AskYesOrNo(common.MsgL1, message, defaultValue, a.ShouldPrompt) && a.ShouldPrompt {
 		fmt.Println(common.MsgL1, fmt.Sprintf("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values"), common.MsgReset)
 		fmt.Println(common.MsgL1, fmt.Sprintf("  Example: 'mysql elasticsearch' "), common.MsgReset)
 		fmt.Print(" > ")
@@ -68,10 +68,10 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 
 func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion string) string {
 	message := fmt.Sprintf("Found %s version %s, confirm?", a.GetPack().Name(), version)
-	if found && common.AskYesOrNo(common.MsgL1, message, true, a.ShouldNotPrompt) {
+	if found && common.AskYesOrNo(common.MsgL1, message, true, a.ShouldPrompt) {
 		return version
 	}
-	return common.AskUserWithDefault(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), defaultVersion, a.ShouldNotPrompt)
+	return common.AskUserWithDefault(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), defaultVersion, a.ShouldPrompt)
 }
 
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {
