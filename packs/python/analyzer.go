@@ -31,12 +31,6 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 		return nil, fmt.Errorf("Could not find settings file")
 	}
 
-	content, err := ioutil.ReadFile(a.SettingsPy)
-	if err != nil {
-		return nil, fmt.Errorf("Cannot open %s\n", a.SettingsPy)
-	}
-	fmt.Printf("%s", string(content))
-
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
 	if err != nil {
 		return nil, err
@@ -44,7 +38,11 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 	packages := a.GuessPackages()
 	version := a.FindVersion()
-	dbs := a.ConfirmDatabases(a.FindDatabases())
+	dbs, err := a.FindDatabases()
+	if err != nil {
+		return nil, err
+	}
+	dbs = a.ConfirmDatabases(dbs)
 	envVars := a.EnvVars()
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
@@ -75,11 +73,40 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 func (a *Analyzer) FindVersion() string {
 	hasFound, version := common.GetPythonVersion()
 	return a.ConfirmVersion(hasFound, version, "latest")
-}
 
-func (a *Analyzer) FindDatabases() *common.Lister {
+}
+func (a *Analyzer) FindDatabases() (*common.Lister, error) {
 	dbs := common.NewLister()
-	return dbs
+	settings, err := ioutil.ReadFile(a.SettingsPy)
+	if err != nil {
+		return nil, err
+	}
+
+	dbNames := map[string]string{
+		"mysql":                 "mysql",      // Django built-in
+		"postgresql_psycopg2":   "postgresql", // Django built-in
+		"RedisCache":            "redis",      // https://github.com/niwinz/django-redis or https://github.com/sebleier/django-redis-cache
+		"django_mongodb_engine": "mongodb",    // https://github.com/django-nonrel/mongodb-engine
+		"mongodb":               "mongodb",    // https://github.com/peterbe/django-mongokit
+	}
+
+	databaseDictionaryPattern := regexp.MustCompile(`(?m)^[[:blank:]]*(?:DATABASES|CACHES)[[:blank:]]*=[[:blank:]]*{(?:.|\n)*?^}`)
+	databasePattern := regexp.MustCompile(`(?m)^[[:blank:]]*['"](?:ENGINE|BACKEND)['"][[:blank:]]*:[[:blank:]]*['"](?:[[:word:]]*\.)*([[:word:]]*)['"]`)
+	for _, dictionary := range databaseDictionaryPattern.FindAllString(string(settings), -1) {
+		for _, match := range databasePattern.FindAllStringSubmatch(dictionary, -1) {
+			pythonDbName := match[1]
+			if pythonDbName == "sqlite3" {
+				continue
+			}
+			db := dbNames[pythonDbName]
+			if db == "" {
+				return nil, fmt.Errorf("Found not supported database backend %s, aborting", pythonDbName)
+			}
+			dbs.Add(db)
+		}
+	}
+
+	return dbs, nil
 }
 
 func (a *Analyzer) EnvVars() []*common.EnvVar {
