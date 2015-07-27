@@ -70,7 +70,7 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 
 func (a *Analyzer) FindVersion() string {
 	foundNode, nodeVersion := common.GetNodeVersion(a.PackageJSON)
-	return a.ConfirmVersion(foundNode, nodeVersion, a.defaultVersion())
+	return a.ConfirmVersion(foundNode, nodeVersion, "latest")
 }
 
 func (a *Analyzer) FindDatabases() *common.Lister {
@@ -80,8 +80,4 @@ func (a *Analyzer) FindDatabases() *common.Lister {
 
 func (a *Analyzer) EnvVars() []*common.EnvVar {
 	return []*common.EnvVar{}
-}
-
-func (a *Analyzer) defaultVersion() string {
-	return "onbuild"
 }

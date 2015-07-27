@@ -98,7 +98,7 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 
 func (a *Analyzer) FindVersion() string {
 	foundRuby, rubyVersion := common.GetRubyVersion(a.Gemfile)
-	return a.ConfirmVersion(foundRuby, rubyVersion, a.defaultVersion())
+	return a.ConfirmVersion(foundRuby, rubyVersion, "latest")
 }
 
 func (a *Analyzer) FindDatabases() *common.Lister {
@@ -145,8 +145,4 @@ func (a *Analyzer) EnvVars() []*common.EnvVar {
 	return []*common.EnvVar{
 		&common.EnvVar{Key: "RAILS_ENV", Value: a.Environment},
 		&common.EnvVar{Key: "RACK_ENV", Value: a.Environment}}
-}
-
-func (a *Analyzer) defaultVersion() string {
-	return "onbuild"
 }

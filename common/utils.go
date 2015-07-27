@@ -79,8 +79,17 @@ func ParseUniqueInt(line string) (string, error) {
 	return strings.Replace(line, "{{UNIQUE_INT}}", "_unique:int", -1), nil
 }
 
-func AskUser(message string, defaultValue string, shouldNotPrompt bool) string {
-	if shouldNotPrompt {
+func AskUser(message string) string {
+	answer := ""
+	for strings.TrimSpace(answer) == "" {
+		fmt.Print(MsgL1, fmt.Sprintf(" %s: ", message), MsgReset)
+		fmt.Scanln(&answer)
+	}
+	return answer
+}
+
+func AskUserWithDefault(message string, defaultValue string, shouldPrompt bool) string {
+	if !shouldPrompt {
 		return defaultValue
 	}
 
@@ -93,8 +102,8 @@ func AskUser(message string, defaultValue string, shouldNotPrompt bool) string {
 	return value
 }
 
-func AskYesOrNo(color string, message string, defaultValue bool, shouldNotPrompt bool) bool {
-	if shouldNotPrompt {
+func AskYesOrNo(color string, message string, defaultValue bool, shouldPrompt bool) bool {
+	if !shouldPrompt {
 		return defaultValue
 	}
 
@@ -115,4 +124,19 @@ func AskYesOrNo(color string, message string, defaultValue bool, shouldNotPrompt
 	}
 
 	return (answer == "" && defaultValue) || answer == "y"
+}
+
+func AskMultipleChoices(message string, choices []string) string {
+	answer := -1
+	fmt.Println(MsgL1, fmt.Sprintf("%s", message), MsgReset)
+	for answer < 1 || answer > len(choices) {
+		for i, choice := range choices {
+			fmt.Printf("    %d: %s\n", i+1, choice)
+		}
+		fmt.Printf(" > ")
+		if _, err := fmt.Scanln(&answer); err != nil {
+			fmt.Fprint(os.Stderr, "Not a valid integer\n")
+		}
+	}
+	return choices[answer-1]
 }

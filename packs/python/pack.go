@@ -1,4 +1,4 @@
-package ruby
+package python
 
 import "github.com/cloud66/starter/packs"
 
@@ -8,7 +8,7 @@ type Pack struct {
 }
 
 func (p *Pack) Name() string {
-	return "ruby"
+	return "python"
 }
 
 func (p *Pack) Detector() packs.Detector {
