@@ -20,7 +20,7 @@ type Analyzer struct {
 }
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
-	a.RequirementsTxt = filepath.Join(a.RootDir, "requirements.txt")
+	a.RequirementsTxt = a.findRequirementsTxt()
 	var hasFound bool
 	hasFound, a.WSGIFile = a.findWSGIFile()
 	if !hasFound {
@@ -57,7 +57,9 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			GitURL:    gitURL,
 			Messages:  a.Messages},
 		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}},
-		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
+		DockerfileContext: &DockerfileContext{
+			DockerfileContextBase: packs.DockerfileContextBase{Version: version, Packages: packages},
+			RequirementsTxt:       a.RequirementsTxt}}
 	return analysis, nil
 }
 
@@ -111,6 +113,10 @@ func (a *Analyzer) FindDatabases() (*common.Lister, error) {
 
 func (a *Analyzer) EnvVars() []*common.EnvVar {
 	return []*common.EnvVar{}
+}
+
+func (a *Analyzer) findRequirementsTxt() string {
+	return common.AskUserWithDefault("Enter path to requirements file", "requirements.txt", a.ShouldPrompt)
 }
 
 func (a *Analyzer) findWSGIFile() (bool, string) {
