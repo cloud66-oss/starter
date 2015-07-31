@@ -41,17 +41,6 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 }
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
-	var service *common.Service
-	for _, s := range *services {
-		if s.Name == "web" || s.Name == "custom_web" {
-			service = s
-			break
-		}
-	}
-	if service == nil {
-		service = &common.Service{Name: "web"}
-		*services = append(*services, service)
-	}
 	return nil
 }
 

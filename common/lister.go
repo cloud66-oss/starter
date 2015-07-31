@@ -24,3 +24,7 @@ func (l *Lister) Add(items ...string) {
 		l.Items = append(l.Items, item)
 	}
 }
+
+func (l *Lister) Contains(item string) bool {
+	return ContainsString(l.Items, item)
+}

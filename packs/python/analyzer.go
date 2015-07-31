@@ -17,15 +17,24 @@ type Analyzer struct {
 	RequirementsTxt string
 	SettingsPy      string
 	WSGIFile        string
+	PythonPackages  []string
 }
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
-	a.RequirementsTxt = a.findRequirementsTxt()
 	var hasFound bool
+	var err error
+
+	a.RequirementsTxt = a.findRequirementsTxt()
+	a.PythonPackages, err = common.PythonPackages(a.RequirementsTxt)
+	if err != nil {
+		return nil, err
+	}
+
 	hasFound, a.WSGIFile = a.findWSGIFile()
 	if !hasFound {
 		return nil, fmt.Errorf("Could not find WSGI file")
 	}
+
 	hasFound, a.SettingsPy = a.findSettingsPy()
 	if !hasFound {
 		return nil, fmt.Errorf("Could not find settings file")
@@ -64,7 +73,42 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 }
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
+	service := a.GetOrCreateWebService(services)
+	var command string
+	ports := []*common.PortMapping{common.NewPortMapping()}
+	hasFound, server := a.detectWebServer()
+	if hasFound {
+		// The command was found in the Procfile
+		switch server {
+		case "gunicorn":
+			ports[0].Container = "8000"
+
+		}
+	} else {
+		if common.IsDjangoProject(a.RootDir) {
+			command = "python manage.py runserver"
+			ports[0].Container = "8000"
+		} else {
+			//TODO:
+		}
+	}
+
+	if service.Command == "" {
+		service.Command = command
+	}
+	if service.Ports == nil {
+		service.Ports = ports
+	}
+
 	return nil
+}
+
+func (a *Analyzer) detectWebServer() (hasFound bool, server string) {
+	if common.ContainsString(a.PythonPackages, "gunicorn") {
+		fmt.Println(common.MsgL2, "----> Found gunicorn", common.MsgReset)
+		return true, "gunicorn"
+	}
+	return false, ""
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {

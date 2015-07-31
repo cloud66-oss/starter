@@ -42,25 +42,14 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 }
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
-	var service *common.Service
-	for _, s := range *services {
-		if s.Name == "web" || s.Name == "custom_web" {
-			service = s
-			break
-		}
-	}
-	if service == nil {
-		service = &common.Service{Name: "web"}
-		*services = append(*services, service)
-	}
-
+	service := a.GetOrCreateWebService(services)
 	var command string
 	ports := []*common.PortMapping{common.NewPortMapping()}
 	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
 	// port depends on the application server. for now we are going to fix to 3000
 	if runsUnicorn, _ := common.GetGemVersion(a.Gemfile, "unicorn", "thin"); runsUnicorn {
 		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
-		// The command here will be found in the Procfile
+		// The command was found in the Procfile
 		ports[0].Container = "9292"
 	} else {
 		if isRails {

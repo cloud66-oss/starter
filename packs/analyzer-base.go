@@ -80,6 +80,7 @@ func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, git
 		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
 		return nil, err
 	}
+
 	err = a.FillServices(&services)
 	if err != nil {
 		return nil, err
@@ -107,6 +108,21 @@ func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
 		services = append(services, &common.Service{Name: proc.Name, Command: proc.Command})
 	}
 	return services, nil
+}
+
+func (a *AnalyzerBase) GetOrCreateWebService(services *[]*common.Service) *common.Service {
+	var service *common.Service
+	for _, s := range *services {
+		if s.Name == "web" || s.Name == "custom_web" {
+			service = s
+			break
+		}
+	}
+	if service == nil {
+		service = &common.Service{Name: "web"}
+		*services = append(*services, service)
+	}
+	return service
 }
 
 func (a *AnalyzerBase) refineServices(services *[]*common.Service) {

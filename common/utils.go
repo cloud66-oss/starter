@@ -37,6 +37,15 @@ func FileExists(filename string) bool {
 	}
 }
 
+func ContainsString(slice []string, desired string) bool {
+	for _, item := range slice {
+		if item == desired {
+			return true
+		}
+	}
+	return false
+}
+
 func CompareVersions(desired string, actual string) (bool, error) {
 	act, err := version.NewVersion(actual)
 	if err != nil {
