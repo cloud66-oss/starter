@@ -137,6 +137,15 @@ func (a *AnalyzerBase) GetOrCreateWebService(services *[]*common.Service) *commo
 	return service
 }
 
+func (a *AnalyzerBase) AskForCommand(defaultCommand string, step string) string {
+	confirmed := common.AskYesOrNo(common.MsgL1, fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
+	if confirmed {
+		return defaultCommand
+	} else {
+		return common.AskUserWithDefault(fmt.Sprintf("Enter command to run after each %s:", step), "", a.ShouldPrompt)
+	}
+}
+
 func (a *AnalyzerBase) refineServices(services *[]*common.Service) {
 	var err error
 	for _, service := range *services {

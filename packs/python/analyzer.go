@@ -93,9 +93,9 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	if service.Command == "" {
 		service.Command = command
 	}
-	if service.Ports == nil {
-		service.Ports = ports
-	}
+
+	service.BuildCommand = a.AskForCommand("python manage.py migrate", "build")
+	service.DeployCommand = a.AskForCommand("python manage.py migrate", "deployment")
 
 	return nil
 }

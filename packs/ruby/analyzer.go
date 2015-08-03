@@ -6,7 +6,7 @@ import (
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/packs/python/webservers"
+	"github.com/cloud66/starter/packs/ruby/webservers"
 )
 
 type Analyzer struct {
@@ -46,13 +46,12 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	service := a.GetOrCreateWebService(services)
 	var command string
 	ports := []*common.PortMapping{common.NewPortMapping()}
-	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
-	// port depends on the application server. for now we are going to fix to 3000
-	if runsUnicorn, _ := common.GetGemVersion(a.Gemfile, "unicorn", "thin"); runsUnicorn {
-		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
+	hasFound, server := a.detectWebServer()
+	if hasFound {
 		// The command was found in the Procfile
-		ports[0].Container = "9292"
+		ports[0].Container = server.Port(service.Command)
 	} else {
+		isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
 		if isRails {
 			command = "bundle exec rails s _env:RAILS_ENV"
 			ports[0].Container = "3000"
@@ -65,9 +64,9 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	if service.Command == "" {
 		service.Command = command
 	}
-	if service.Ports == nil {
-		service.Ports = ports
-	}
+
+	service.BuildCommand = a.AskForCommand("bundle exec rake db:schema:load", "build")
+	service.DeployCommand = a.AskForCommand("bundle exec rake db:migrate", "deployment")
 
 	return nil
 }
@@ -78,8 +77,9 @@ func (a *Analyzer) HasPackage(pack string) bool {
 }
 
 func (a *Analyzer) detectWebServer() (hasFound bool, server packs.WebServer) {
-	gunicorn := &webservers.Gunicorn{}
-	servers := []packs.WebServer{gunicorn}
+	unicorn := &webservers.Unicorn{}
+	thin := &webservers.Thin{}
+	servers := []packs.WebServer{unicorn, thin}
 	return a.AnalyzerBase.DetectWebServer(a, servers)
 }
 
