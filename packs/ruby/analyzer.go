@@ -44,25 +44,32 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	service := a.GetOrCreateWebService(services)
-	var command string
-	ports := []*common.PortMapping{common.NewPortMapping()}
-	hasFound, server := a.detectWebServer()
-	if hasFound {
-		// The command was found in the Procfile
-		ports[0].Container = server.Port(service.Command)
-	} else {
-		isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
-		if isRails {
-			command = "bundle exec rails s _env:RAILS_ENV"
-			ports[0].Container = "3000"
-		} else {
-			command = "bundle exec rackup s _env:RACK_ENV"
-			ports[0].Container = "9292"
-		}
-	}
+	service.Ports = []*common.PortMapping{common.NewPortMapping()}
+	hasFoundServer, server := a.detectWebServer(service.Command)
 
 	if service.Command == "" {
-		service.Command = command
+		isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
+		if isRails {
+			service.Command = "bundle exec rails s _env:RAILS_ENV"
+			service.Ports[0].Container = "3000"
+		} else {
+			service.Command = "bundle exec rackup s _env:RACK_ENV"
+			service.Ports[0].Container = "9292"
+		}
+	} else {
+		if hasFoundServer {
+			service.Ports[0].Container = server.Port(service.Command)
+		} else {
+			hasFound, port := common.ParsePort(service.Command)
+			if hasFound {
+				service.Ports[0].Container = port
+			} else {
+				if !a.ShouldPrompt {
+					return fmt.Errorf("Could not find port to open corresponding to command '%s'", service.Command)
+				}
+				service.Ports[0].Container = common.AskUser(fmt.Sprintf("Which port to open to run web service with command '%s'?", service.Command))
+			}
+		}
 	}
 
 	service.BuildCommand = a.AskForCommand("bundle exec rake db:schema:load", "build")
@@ -76,11 +83,11 @@ func (a *Analyzer) HasPackage(pack string) bool {
 	return hasFound
 }
 
-func (a *Analyzer) detectWebServer() (hasFound bool, server packs.WebServer) {
+func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.WebServer) {
 	unicorn := &webservers.Unicorn{}
 	thin := &webservers.Thin{}
 	servers := []packs.WebServer{unicorn, thin}
-	return a.AnalyzerBase.DetectWebServer(a, servers)
+	return a.AnalyzerBase.DetectWebServer(a, command, servers)
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {

@@ -75,23 +75,30 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	service := a.GetOrCreateWebService(services)
-	var command string
-	ports := []*common.PortMapping{common.NewPortMapping()}
-	hasFound, server := a.detectWebServer()
-	if hasFound {
-		// The command was found in the Procfile
-		ports[0].Container = server.Port(service.Command)
-	} else {
+	service.Ports = []*common.PortMapping{common.NewPortMapping()}
+	hasFoundServer, server := a.detectWebServer(service.Command)
+
+	if service.Command == "" {
 		if common.IsDjangoProject(a.RootDir) {
-			command = "python manage.py runserver"
-			ports[0].Container = "8000"
+			service.Command = "python manage.py runserver"
+			service.Ports[0].Container = "8000"
 		} else {
 			//TODO:
 		}
-	}
-
-	if service.Command == "" {
-		service.Command = command
+	} else {
+		if hasFoundServer {
+			service.Ports[0].Container = server.Port(service.Command)
+		} else {
+			hasFound, port := common.ParsePort(service.Command)
+			if hasFound {
+				service.Ports[0].Container = port
+			} else {
+				if !a.ShouldPrompt {
+					return fmt.Errorf("Could not find port to open corresponding to command '%s'", service.Command)
+				}
+				service.Ports[0].Container = common.AskUser(fmt.Sprintf("Which port to open to run web service with command '%s'?", service.Command))
+			}
+		}
 	}
 
 	service.BuildCommand = a.AskForCommand("python manage.py migrate", "build")
@@ -104,10 +111,10 @@ func (a *Analyzer) HasPackage(pack string) bool {
 	return common.ContainsString(a.PythonPackages, pack)
 }
 
-func (a *Analyzer) detectWebServer() (hasFound bool, server packs.WebServer) {
+func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.WebServer) {
 	gunicorn := &webservers.Gunicorn{}
 	servers := []packs.WebServer{gunicorn}
-	return a.AnalyzerBase.DetectWebServer(a, servers)
+	return a.AnalyzerBase.DetectWebServer(a, command, servers)
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {

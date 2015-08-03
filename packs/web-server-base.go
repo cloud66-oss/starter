@@ -1,6 +1,6 @@
 package packs
 
-import "regexp"
+import "github.com/cloud66/starter/common"
 
 type WebServerBase struct {
 }
@@ -15,11 +15,5 @@ func (b *WebServerBase) Port(w WebServer, command string) string {
 }
 
 func (w *WebServerBase) ParsePort(command string) (hasFound bool, port string) {
-	portPattern := regexp.MustCompile(`(?:-p|--port=)[[:blank:]]*(\d+)`)
-	ports := portPattern.FindAllStringSubmatch(command, -1)
-	if len(ports) != 1 {
-		return false, ""
-	} else {
-		return true, ports[0][1]
-	}
+	return common.ParsePort(command)
 }

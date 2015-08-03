@@ -88,6 +88,16 @@ func ParseUniqueInt(line string) (string, error) {
 	return strings.Replace(line, "{{UNIQUE_INT}}", "_unique:int", -1), nil
 }
 
+func ParsePort(command string) (hasFound bool, port string) {
+	portPattern := regexp.MustCompile(`(?:-p|--port=)[[:blank:]]*(\d+)`)
+	ports := portPattern.FindAllStringSubmatch(command, -1)
+	if len(ports) != 1 {
+		return false, ""
+	} else {
+		return true, ports[0][1]
+	}
+}
+
 func AskUser(message string) string {
 	answer := ""
 	for strings.TrimSpace(answer) == "" {

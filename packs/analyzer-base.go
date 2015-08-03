@@ -90,10 +90,10 @@ func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, git
 	return services, nil
 }
 
-func (b *AnalyzerBase) DetectWebServer(a Analyzer, servers []WebServer) (hasFound bool, webserver WebServer) {
+func (b *AnalyzerBase) DetectWebServer(a Analyzer, command string, servers []WebServer) (hasFound bool, webserver WebServer) {
 	for _, server := range servers {
 		for _, name := range server.Names() {
-			if a.HasPackage(name) {
+			if a.HasPackage(name) || strings.HasPrefix(command, name) {
 				fmt.Println(common.MsgL2, "----> Found "+name, common.MsgReset)
 				return true, server
 			}
