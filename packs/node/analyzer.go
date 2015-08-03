@@ -44,6 +44,11 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	return nil
 }
 
+func (a *Analyzer) HasPackage(pack string) bool {
+	hasFound, _ := common.GetDependencyVersion(a.PackageJSON, pack)
+	return hasFound
+}
+
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
 

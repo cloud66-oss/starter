@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
+	"github.com/cloud66/starter/packs/python/webservers"
 )
 
 type Analyzer struct {
@@ -79,11 +80,7 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	hasFound, server := a.detectWebServer()
 	if hasFound {
 		// The command was found in the Procfile
-		switch server {
-		case "gunicorn":
-			ports[0].Container = "8000"
-
-		}
+		ports[0].Container = server.Port(service.Command)
 	} else {
 		if common.IsDjangoProject(a.RootDir) {
 			command = "python manage.py runserver"
@@ -103,12 +100,14 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	return nil
 }
 
-func (a *Analyzer) detectWebServer() (hasFound bool, server string) {
-	if common.ContainsString(a.PythonPackages, "gunicorn") {
-		fmt.Println(common.MsgL2, "----> Found gunicorn", common.MsgReset)
-		return true, "gunicorn"
-	}
-	return false, ""
+func (a *Analyzer) HasPackage(pack string) bool {
+	return common.ContainsString(a.PythonPackages, pack)
+}
+
+func (a *Analyzer) detectWebServer() (hasFound bool, server packs.WebServer) {
+	gunicorn := &webservers.Gunicorn{}
+	servers := []packs.WebServer{gunicorn}
+	return a.AnalyzerBase.DetectWebServer(a, servers)
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {

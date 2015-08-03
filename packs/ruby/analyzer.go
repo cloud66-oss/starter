@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
+	"github.com/cloud66/starter/packs/python/webservers"
 )
 
 type Analyzer struct {
@@ -69,6 +70,17 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	}
 
 	return nil
+}
+
+func (a *Analyzer) HasPackage(pack string) bool {
+	hasFound, _ := common.GetGemVersion(a.Gemfile, pack)
+	return hasFound
+}
+
+func (a *Analyzer) detectWebServer() (hasFound bool, server packs.WebServer) {
+	gunicorn := &webservers.Gunicorn{}
+	servers := []packs.WebServer{gunicorn}
+	return a.AnalyzerBase.DetectWebServer(a, servers)
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {

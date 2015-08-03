@@ -90,6 +90,18 @@ func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, git
 	return services, nil
 }
 
+func (b *AnalyzerBase) DetectWebServer(a Analyzer, servers []WebServer) (hasFound bool, webserver WebServer) {
+	for _, server := range servers {
+		for _, name := range server.Names() {
+			if a.HasPackage(name) {
+				fmt.Println(common.MsgL2, "----> Found "+name, common.MsgReset)
+				return true, server
+			}
+		}
+	}
+	return false, nil
+}
+
 func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
 	services := []*common.Service{}
 	procfilePath := filepath.Join(a.RootDir, "Procfile")
