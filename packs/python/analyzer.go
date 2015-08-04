@@ -26,7 +26,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	var err error
 
 	a.RequirementsTxt = a.findRequirementsTxt()
-	a.PythonPackages, err = common.PythonPackages(a.RequirementsTxt)
+	a.PythonPackages, err = common.PythonPackages(filepath.Join(a.RootDir, a.RequirementsTxt))
 	if err != nil {
 		return nil, err
 	}
@@ -203,10 +203,10 @@ func (a *Analyzer) findSettingsPy() (hasFound bool, path string) {
 
 	message := "Enter production settings file path"
 	if hasFound {
-		return true, common.AskUserWithDefault(message, a.module2File(settingsModule), a.ShouldPrompt)
+		return true, filepath.Join(a.RootDir, common.AskUserWithDefault(message, a.module2File(settingsModule), a.ShouldPrompt))
 	}
 	if a.ShouldPrompt {
-		return true, common.AskUser(message + " (e.g 'yourapp/settings.py')")
+		return true, filepath.Join(a.RootDir, common.AskUser(message+" (e.g 'yourapp/settings.py')"))
 	}
 	return false, ""
 }

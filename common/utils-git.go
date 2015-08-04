@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-func LocalGitBranch() string {
-	gitRootDir, err := GitRootDir()
+func LocalGitBranch(dir string) string {
+	gitRootDir, err := GitRootDir(dir)
 	if err != nil {
 		return ""
 	}
@@ -22,8 +22,8 @@ func LocalGitBranch() string {
 	return strings.TrimSpace(strings.Replace(string(b), "https://", "http://", -1))
 }
 
-func RemoteGitUrl() string {
-	gitRootDir, err := GitRootDir()
+func RemoteGitUrl(dir string) string {
+	gitRootDir, err := GitRootDir(dir)
 	if err != nil {
 		return ""
 	}
@@ -35,8 +35,10 @@ func RemoteGitUrl() string {
 	return strings.TrimSpace(strings.Replace(string(b), "https://", "http://", -1))
 }
 
-func GitRootDir() (string, error) {
-	b, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
+func GitRootDir(dir string) (string, error) {
+	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	cmd.Dir = dir
+	b, err := cmd.Output()
 	if err != nil {
 		return "", err
 	} else {
@@ -59,10 +61,11 @@ func PathRelativeToGitRoot(dirPath string) (string, error) {
 		return "", err
 	}
 
-	gitRootDir, err := GitRootDir()
+	gitRootDir, err := GitRootDir(dirPath)
 	if err != nil {
 		return "", err
 	}
+
 	root, err := os.Open(gitRootDir)
 	if err != nil {
 		return "", err
