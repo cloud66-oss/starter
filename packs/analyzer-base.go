@@ -80,6 +80,7 @@ func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, git
 		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
 		return nil, err
 	}
+
 	err = a.FillServices(&services)
 	if err != nil {
 		return nil, err
@@ -87,6 +88,18 @@ func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, git
 	b.refineServices(&services)
 	b.inheritProjectContext(&services, envVars, gitBranch, gitURL, buildRoot)
 	return services, nil
+}
+
+func (b *AnalyzerBase) DetectWebServer(a Analyzer, command string, servers []WebServer) (hasFound bool, webserver WebServer) {
+	for _, server := range servers {
+		for _, name := range server.Names() {
+			if a.HasPackage(name) || strings.HasPrefix(command, name) {
+				fmt.Println(common.MsgL2, "----> Found "+name, common.MsgReset)
+				return true, server
+			}
+		}
+	}
+	return false, nil
 }
 
 func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
@@ -107,6 +120,30 @@ func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
 		services = append(services, &common.Service{Name: proc.Name, Command: proc.Command})
 	}
 	return services, nil
+}
+
+func (a *AnalyzerBase) GetOrCreateWebService(services *[]*common.Service) *common.Service {
+	var service *common.Service
+	for _, s := range *services {
+		if s.Name == "web" || s.Name == "custom_web" {
+			service = s
+			break
+		}
+	}
+	if service == nil {
+		service = &common.Service{Name: "web"}
+		*services = append(*services, service)
+	}
+	return service
+}
+
+func (a *AnalyzerBase) AskForCommand(defaultCommand string, step string) string {
+	confirmed := common.AskYesOrNo(common.MsgL1, fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
+	if confirmed {
+		return defaultCommand
+	} else {
+		return common.AskUserWithDefault(fmt.Sprintf("Enter command to run after each %s:", step), "", a.ShouldPrompt)
+	}
 }
 
 func (a *AnalyzerBase) refineServices(services *[]*common.Service) {

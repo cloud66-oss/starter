@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
+	"github.com/cloud66/starter/packs/ruby/webservers"
 )
 
 type Analyzer struct {
@@ -42,44 +43,51 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 }
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
-	var service *common.Service
-	for _, s := range *services {
-		if s.Name == "web" || s.Name == "custom_web" {
-			service = s
-			break
-		}
-	}
-	if service == nil {
-		service = &common.Service{Name: "web"}
-		*services = append(*services, service)
-	}
-
-	var command string
-	ports := []*common.PortMapping{common.NewPortMapping()}
-	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
-	// port depends on the application server. for now we are going to fix to 3000
-	if runsUnicorn, _ := common.GetGemVersion(a.Gemfile, "unicorn", "thin"); runsUnicorn {
-		fmt.Println(common.MsgL2, "----> Found non Webrick application server", common.MsgReset)
-		// The command here will be found in the Procfile
-		ports[0].Container = "9292"
-	} else {
-		if isRails {
-			command = "bundle exec rails s _env:RAILS_ENV"
-			ports[0].Container = "3000"
-		} else {
-			command = "bundle exec rackup s _env:RACK_ENV"
-			ports[0].Container = "9292"
-		}
-	}
+	service := a.GetOrCreateWebService(services)
+	service.Ports = []*common.PortMapping{common.NewPortMapping()}
+	hasFoundServer, server := a.detectWebServer(service.Command)
 
 	if service.Command == "" {
-		service.Command = command
-	}
-	if service.Ports == nil {
-		service.Ports = ports
+		isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
+		if isRails {
+			service.Command = "bundle exec rails s _env:RAILS_ENV"
+			service.Ports[0].Container = "3000"
+		} else {
+			service.Command = "bundle exec rackup s _env:RACK_ENV"
+			service.Ports[0].Container = "9292"
+		}
+	} else {
+		if hasFoundServer {
+			service.Ports[0].Container = server.Port(service.Command)
+		} else {
+			hasFound, port := common.ParsePort(service.Command)
+			if hasFound {
+				service.Ports[0].Container = port
+			} else {
+				if !a.ShouldPrompt {
+					return fmt.Errorf("Could not find port to open corresponding to command '%s'", service.Command)
+				}
+				service.Ports[0].Container = common.AskUser(fmt.Sprintf("Which port to open to run web service with command '%s'?", service.Command))
+			}
+		}
 	}
 
+	service.BuildCommand = a.AskForCommand("bundle exec rake db:schema:load", "build")
+	service.DeployCommand = a.AskForCommand("bundle exec rake db:migrate", "deployment")
+
 	return nil
+}
+
+func (a *Analyzer) HasPackage(pack string) bool {
+	hasFound, _ := common.GetGemVersion(a.Gemfile, pack)
+	return hasFound
+}
+
+func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.WebServer) {
+	unicorn := &webservers.Unicorn{}
+	thin := &webservers.Thin{}
+	servers := []packs.WebServer{unicorn, thin}
+	return a.AnalyzerBase.DetectWebServer(a, command, servers)
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {

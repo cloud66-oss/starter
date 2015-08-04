@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
+	"github.com/cloud66/starter/packs/python/webservers"
 )
 
 type Analyzer struct {
@@ -17,15 +18,24 @@ type Analyzer struct {
 	RequirementsTxt string
 	SettingsPy      string
 	WSGIFile        string
+	PythonPackages  []string
 }
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
-	a.RequirementsTxt = filepath.Join(a.RootDir, "requirements.txt")
 	var hasFound bool
+	var err error
+
+	a.RequirementsTxt = a.findRequirementsTxt()
+	a.PythonPackages, err = common.PythonPackages(a.RequirementsTxt)
+	if err != nil {
+		return nil, err
+	}
+
 	hasFound, a.WSGIFile = a.findWSGIFile()
 	if !hasFound {
 		return nil, fmt.Errorf("Could not find WSGI file")
 	}
+
 	hasFound, a.SettingsPy = a.findSettingsPy()
 	if !hasFound {
 		return nil, fmt.Errorf("Could not find settings file")
@@ -57,12 +67,54 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			GitURL:    gitURL,
 			Messages:  a.Messages},
 		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}},
-		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
+		DockerfileContext: &DockerfileContext{
+			DockerfileContextBase: packs.DockerfileContextBase{Version: version, Packages: packages},
+			RequirementsTxt:       a.RequirementsTxt}}
 	return analysis, nil
 }
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
+	service := a.GetOrCreateWebService(services)
+	service.Ports = []*common.PortMapping{common.NewPortMapping()}
+	hasFoundServer, server := a.detectWebServer(service.Command)
+
+	if service.Command == "" {
+		if common.IsDjangoProject(a.RootDir) {
+			service.Command = "python manage.py runserver"
+			service.Ports[0].Container = "8000"
+		} else {
+			//TODO:
+		}
+	} else {
+		if hasFoundServer {
+			service.Ports[0].Container = server.Port(service.Command)
+		} else {
+			hasFound, port := common.ParsePort(service.Command)
+			if hasFound {
+				service.Ports[0].Container = port
+			} else {
+				if !a.ShouldPrompt {
+					return fmt.Errorf("Could not find port to open corresponding to command '%s'", service.Command)
+				}
+				service.Ports[0].Container = common.AskUser(fmt.Sprintf("Which port to open to run web service with command '%s'?", service.Command))
+			}
+		}
+	}
+
+	service.BuildCommand = a.AskForCommand("python manage.py migrate", "build")
+	service.DeployCommand = a.AskForCommand("python manage.py migrate", "deployment")
+
 	return nil
+}
+
+func (a *Analyzer) HasPackage(pack string) bool {
+	return common.ContainsString(a.PythonPackages, pack)
+}
+
+func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.WebServer) {
+	gunicorn := &webservers.Gunicorn{}
+	servers := []packs.WebServer{gunicorn}
+	return a.AnalyzerBase.DetectWebServer(a, command, servers)
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {
@@ -111,6 +163,10 @@ func (a *Analyzer) FindDatabases() (*common.Lister, error) {
 
 func (a *Analyzer) EnvVars() []*common.EnvVar {
 	return []*common.EnvVar{}
+}
+
+func (a *Analyzer) findRequirementsTxt() string {
+	return common.AskUserWithDefault("Enter path to requirements file", "requirements.txt", a.ShouldPrompt)
 }
 
 func (a *Analyzer) findWSGIFile() (bool, string) {

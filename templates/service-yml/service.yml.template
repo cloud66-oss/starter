@@ -6,6 +6,8 @@ services:
     git: {{.GitRepo}}
     git_branch: {{.GitBranch}}
     command: {{.Command}}
+    {{if .BuildCommand}}build_command: {{.BuildCommand}}{{end}}
+    {{if .DeployCommand}}deploy_command: {{.DeployCommand}}{{end}}
     build_root: {{.BuildRoot}}
 
     {{if .Ports}}ports:{{range .Ports}}

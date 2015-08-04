@@ -37,6 +37,15 @@ func FileExists(filename string) bool {
 	}
 }
 
+func ContainsString(slice []string, desired string) bool {
+	for _, item := range slice {
+		if item == desired {
+			return true
+		}
+	}
+	return false
+}
+
 func CompareVersions(desired string, actual string) (bool, error) {
 	act, err := version.NewVersion(actual)
 	if err != nil {
@@ -77,6 +86,16 @@ func ParseEnvironmentVariables(line string) (string, error) {
 
 func ParseUniqueInt(line string) (string, error) {
 	return strings.Replace(line, "{{UNIQUE_INT}}", "_unique:int", -1), nil
+}
+
+func ParsePort(command string) (hasFound bool, port string) {
+	portPattern := regexp.MustCompile(`(?:-p|--port=)[[:blank:]]*(\d+)`)
+	ports := portPattern.FindAllStringSubmatch(command, -1)
+	if len(ports) != 1 {
+		return false, ""
+	} else {
+		return true, ports[0][1]
+	}
 }
 
 func AskUser(message string) string {
