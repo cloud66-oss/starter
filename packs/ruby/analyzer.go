@@ -101,6 +101,11 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 		packages.Add("libsqlite3-dev")
 		fmt.Println(common.MsgL2, "----> Found sqlite", common.MsgReset)
 	}
+
+	if hasMemcache, _ := common.GetGemVersion(a.Gemfile, "dalli"); hasMemcache {
+		packages.Add("memcached")
+		fmt.Println(common.MsgL2, "----> Found Memcache", common.MsgReset)
+	}
 	return packages
 }
 
