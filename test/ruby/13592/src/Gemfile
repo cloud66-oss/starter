@@ -1,0 +1,157 @@
+source 'https://rubygems.org'
+ruby "2.1.2"
+
+gem "builder"
+gem 'unicorn'
+gem 'unicorn-worker-killer'
+gem 'connection_pool'
+#gem 'puma'
+
+gem 'rails', "~> 4.1.10"
+gem 'sass-rails', "~> 4.0.0"
+gem 'jquery-rails'
+gem 'jquery-ui-rails'
+gem 'fancybox-rails', :path=>'vendor/gems/fancybox-rails-wt'
+gem 'pg'
+gem "handle_invalid_percent_encoding_requests"
+
+# performance metrics add-ons
+gem "rollbar"
+gem 'coffee-rails', "~> 4.0.0"
+gem 'uglifier', '>= 1.3.0'
+
+group :production do
+  gem 'dalli', :git=>'git://github.com/mperham/dalli.git'
+  gem 'memcachier'
+  #gem 'rack-utf8_sanitizer'
+end
+
+gem 'newrelic-redis'
+gem 'newrelic_rpm'
+gem 'get_process_mem'
+
+group :test do
+  gem "factory_girl_rails", "~> 3.0"
+  gem 'capybara'
+  gem 'poltergeist'
+  gem 'database_cleaner'
+  gem 'spring'
+  gem 'selenium-webdriver'
+  gem 'fakeredis'
+end
+
+group :development, :test do
+  gem 'guard-rspec', "~> 2.5"
+  gem 'rspec-rails', ">= 2.14"
+  gem 'guard-livereload'
+  gem "parallel_tests"
+  gem 'better_errors'
+  gem 'binding_of_caller'
+  gem 'meta_request'
+  gem 'rb-fsevent', '~> 0.9'
+  gem "yard", "~> 0.8.7.2"
+  gem 'qunit-rails'
+  gem 'awesome_print'
+  gem 'dotenv-rails'
+  gem 'byebug'
+end
+
+gem 'resque'
+gem 'resque-web'
+gem "hiredis", "~> 0.4.0"
+gem "redis", "~> 3.0", :require => ["redis/connection/hiredis", "redis"]
+gem 'resque_mailer'
+gem 'resque-rollbar', git: "git://github.com/CrowdFlower/resque-rollbar.git"
+gem "hirefire-resource"
+gem 'cancan', git: "https://github.com/nukturnal/cancan.git"
+gem 'devise'
+gem 'devise-encryptable'
+
+# omniauth/integration gems
+gem "omniauth-facebook"
+gem "omniauth"
+gem "omniauth-withings", github: "octanner/omniauth-withings"
+gem "simplificator-withings", github: "simplificator/simplificator-withings"
+gem "omniauth-moves", github: "nickelser/omniauth-moves"
+gem "moves"
+gem "omniauth-mapmyfitness"
+gem 'omniauth-jawbone'
+gem 'fitgem'
+gem 'omniauth-mapmyfitness-oauth2', github: 'jgadbois/omniauth-mapmyfitness-oauth2'
+
+gem 'paperclip'
+gem 'aws-sdk'
+gem "rake"
+gem 'friendly_id', git: "https://github.com/jgadbois/friendly_id.git"#github: "FriendlyId/friendly_id"
+gem 'hpricot'
+gem 'kaminari'
+gem "simple-navigation"
+gem 'ransack', github: 'activerecord-hackery/ransack', branch: 'rails-4.1'#gem 'ransack'
+gem 'amazon-product-advertising-api'
+gem 'ckeditor'
+gem 'stripe'
+gem 'acts-as-taggable-on', "~> 3.2.6"
+gem 'ancestry'
+gem 'geocoder'
+gem 'profanity_filter'
+
+# for top 100 blogs
+gem "feedzirra"
+gem "grackle"
+gem "rmagick"
+gem 'hominid'
+
+gem "letter_opener", :group => :development
+
+# workout logger
+gem 'rack-contrib'
+gem 'soulmate', :require => 'soulmate/server', :github => 'jgadbois/soulmate'
+
+# previously plugins - moving to gems
+gem 'wicked_pdf', :git => 'git://github.com/mileszs/wicked_pdf.git'
+gem 'dynamic_form'
+
+# Timeout
+gem "SystemTimer", :require => "system_timer", :platforms => :ruby_18
+gem "rack-timeout"
+
+gem 'pusher'
+gem 'bourbon'
+gem 'roadie' # inline css for emails
+gem 'rails_autolink' # autolinking
+gem 'leaderboard', "~> 2.2.0"
+gem 'wicked'
+gem 'rack-rewrite'
+gem 'select2-rails', "~> 3.5.4"
+gem 'koala', ">= 2.0.0"
+gem 'health_graph', github: 'endoze/health_graph', branch: 'replace-jeweler-with-bundler-for-build-and-release-of-gem'
+gem 'twilio-ruby'
+gem 'country_select'
+gem 'oauth'
+gem 'mandrill-api', '>= 1.0.41'
+gem "active_model_serializers", "~> 0.8.0"
+gem "bust_rails_etags"
+#gem 'cache_digests'
+gem 'truncate_html'
+
+# JS stuff
+gem 'ember-rails'
+gem 'ember-source', '>= 1.9.1' # or the version you need
+gem 'ember-data-source', '~> 1.0.0.beta.12' # or the version you need
+gem "jquery-fileupload-rails"
+gem 'modernizr-rails'
+gem 'foundation-rails'
+gem 'fancybox2-rails', '~> 0.2.7'
+gem 'foundation-icons-sass-rails'
+gem 'activerecord-session_store'
+gem 'rails-observers', '~>0.1.1'
+
+gem 'protected_attributes', '~>1.0.7' #Used until attr_accessible are all removed
+gem 'rails_12factor'
+#May not need these, read further in the book to make sure
+#gem 'rails-perftest', '~>0.0.2'
+#gem 'activeresource', '~>4.0.0'
+gem 'polyamorous', github: 'activerecord-hackery/polyamorous'
+gem 'redis-namespace'
+gem 'dossier'
+gem 'mailboxer'
