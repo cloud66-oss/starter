@@ -21,8 +21,8 @@ type AnalyzerBase struct {
 }
 
 func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
-	gitURL := common.RemoteGitUrl()
-	gitBranch := common.LocalGitBranch()
+	gitURL := common.RemoteGitUrl(a.RootDir)
+	gitBranch := common.LocalGitBranch(a.RootDir)
 	buildRoot, err := common.PathRelativeToGitRoot(a.RootDir)
 	if err != nil {
 		return "", "", "", err
@@ -102,6 +102,24 @@ func (b *AnalyzerBase) DetectWebServer(a Analyzer, command string, servers []Web
 	return false, nil
 }
 
+func (a *AnalyzerBase) FindPort(hasFoundServer bool, server WebServer, command *string) (string, error) {
+	if hasFoundServer {
+		return server.Port(command), nil
+	}
+
+	withoutPortEnvVar := common.RemovePortIfEnvVar(*command)
+	hasFound, port := common.ParsePort(withoutPortEnvVar)
+	if hasFound {
+		*command = withoutPortEnvVar
+		return port, nil
+	}
+
+	if !a.ShouldPrompt {
+		return "", fmt.Errorf("Could not find port to open corresponding to command '%s'", *command)
+	}
+	return common.AskUser(fmt.Sprintf("Which port to open to run web service with command '%s'?", *command)), nil
+}
+
 func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
 	services := []*common.Service{}
 	procfilePath := filepath.Join(a.RootDir, "Procfile")
@@ -138,7 +156,7 @@ func (a *AnalyzerBase) GetOrCreateWebService(services *[]*common.Service) *commo
 }
 
 func (a *AnalyzerBase) AskForCommand(defaultCommand string, step string) string {
-	confirmed := common.AskYesOrNo(common.MsgL1, fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
+	confirmed := defaultCommand != "" && common.AskYesOrNo(common.MsgL1, fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
 	if confirmed {
 		return defaultCommand
 	} else {

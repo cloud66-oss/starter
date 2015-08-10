@@ -1,0 +1,34 @@
+development:
+  adapter: postgresql
+  database: <%= ENV.fetch('DB', 'wt_dev') %>
+  template: template0
+  pool: 5
+  username: <%= ENV.fetch('DB_USER', 'docker') %>
+  password: <%= ENV.fetch('DB_PASS', 'docker') %>
+  host: <%= ENV.fetch('DB_1_PORT_5432_TCP_ADDR', 'localhost') %>
+  port: <%= ENV.fetch('DB_1_PORT_5432_TCP_PORT', '5432') %>
+
+staging:
+  adapter: postgresql
+  database: <%= ENV['PG_DB'] %>
+  username: <%= ENV['PG_DB_USER'] %>
+  password: <%= ENV['PG_DB_PASS'] %>
+  host: <%= ENV['PG_DB_HOST'] || 'localhost' %>
+  port: 5432
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test: &test
+  adapter: postgresql
+  database: wt_test
+  username: **REDACTED**
+  password: **REDACTED**
+  host: localhost
+
+production:
+  adapter: postgresql
+  database: wt_dev
+  username: **REDACTED**
+  password: **REDACTED**
+  host: <%= ENV['POSTGRESQL_ADDRESS'] || 'localhost' %>

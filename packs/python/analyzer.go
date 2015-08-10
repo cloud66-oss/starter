@@ -26,7 +26,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	var err error
 
 	a.RequirementsTxt = a.findRequirementsTxt()
-	a.PythonPackages, err = common.PythonPackages(a.RequirementsTxt)
+	a.PythonPackages, err = common.PythonPackages(filepath.Join(a.RootDir, a.RequirementsTxt))
 	if err != nil {
 		return nil, err
 	}
@@ -86,18 +86,10 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 			//TODO:
 		}
 	} else {
-		if hasFoundServer {
-			service.Ports[0].Container = server.Port(service.Command)
-		} else {
-			hasFound, port := common.ParsePort(service.Command)
-			if hasFound {
-				service.Ports[0].Container = port
-			} else {
-				if !a.ShouldPrompt {
-					return fmt.Errorf("Could not find port to open corresponding to command '%s'", service.Command)
-				}
-				service.Ports[0].Container = common.AskUser(fmt.Sprintf("Which port to open to run web service with command '%s'?", service.Command))
-			}
+		var err error
+		service.Ports[0].Container, err = a.FindPort(hasFoundServer, server, &service.Command)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -203,10 +195,10 @@ func (a *Analyzer) findSettingsPy() (hasFound bool, path string) {
 
 	message := "Enter production settings file path"
 	if hasFound {
-		return true, common.AskUserWithDefault(message, a.module2File(settingsModule), a.ShouldPrompt)
+		return true, filepath.Join(a.RootDir, common.AskUserWithDefault(message, a.module2File(settingsModule), a.ShouldPrompt))
 	}
 	if a.ShouldPrompt {
-		return true, common.AskUser(message + " (e.g 'yourapp/settings.py')")
+		return true, filepath.Join(a.RootDir, common.AskUser(message+" (e.g 'yourapp/settings.py')"))
 	}
 	return false, ""
 }

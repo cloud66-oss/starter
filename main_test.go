@@ -1,0 +1,66 @@
+package main
+
+import (
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path"
+	"regexp"
+	"testing"
+)
+
+func AssertFilesHaveSameContent(t *testing.T, expectedFile string, generatedFile string) {
+	filename := path.Base(expectedFile)
+	expected, err1 := ioutil.ReadFile(expectedFile)
+	if err1 != nil {
+		t.Errorf("Cannot open/read %s", expectedFile)
+	}
+	generated, err2 := ioutil.ReadFile(generatedFile)
+	if err2 != nil {
+		t.Errorf("Cannot open/read %s", generatedFile)
+	}
+
+	if filename == "service.yml" {
+		// NOTE: starter will be detected as the test projects git repo, so in order
+		// for tests to always work we replace the current starter branch (which may
+		// change) to 'master' in the generated file.
+		generated = regexp.MustCompile(`git_branch: .*`).ReplaceAll(generated, []byte("git_branch: master"))
+	}
+
+	if string(expected) != string(generated) {
+		t.Errorf("%s generated is wrong\nGenerated:\n%s\nExpected:\n%s\n", filename, string(generated), string(expected))
+	}
+}
+
+func testApplication(t *testing.T, path string) {
+	rootDir := "test/" + path
+	command := exec.Command("starter", "-y", "-p", rootDir+"/src")
+	defer os.Remove(rootDir + "/src/Dockerfile")
+	defer os.Remove(rootDir + "/src/service.yml")
+	_, err := command.Output()
+	if err != nil {
+		t.FailNow()
+	}
+	AssertFilesHaveSameContent(t, rootDir+"/expected/Dockerfile", rootDir+"/src/Dockerfile")
+	AssertFilesHaveSameContent(t, rootDir+"/expected/service.yml", rootDir+"/src/service.yml")
+}
+
+func TestRuby13592(t *testing.T) {
+	testApplication(t, "ruby/13592")
+}
+
+func TestRuby15333(t *testing.T) {
+	testApplication(t, "ruby/15333")
+}
+
+func TestRuby23080(t *testing.T) {
+	testApplication(t, "ruby/23080")
+}
+
+func TestRuby25528(t *testing.T) {
+	testApplication(t, "ruby/25528")
+}
+
+func TestRuby25769(t *testing.T) {
+	testApplication(t, "ruby/25769")
+}

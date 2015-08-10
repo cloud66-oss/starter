@@ -45,35 +45,33 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	service := a.GetOrCreateWebService(services)
 	service.Ports = []*common.PortMapping{common.NewPortMapping()}
-	hasFoundServer, server := a.detectWebServer(service.Command)
+	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
 
 	if service.Command == "" {
-		isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
 		if isRails {
-			service.Command = "bundle exec rails s _env:RAILS_ENV"
+			service.Command = "bundle exec rails server -e _env:RAILS_ENV"
 			service.Ports[0].Container = "3000"
 		} else {
-			service.Command = "bundle exec rackup s _env:RACK_ENV"
+			service.Command = "bundle exec rackup -E _env:RACK_ENV"
 			service.Ports[0].Container = "9292"
 		}
 	} else {
-		if hasFoundServer {
-			service.Ports[0].Container = server.Port(service.Command)
-		} else {
-			hasFound, port := common.ParsePort(service.Command)
-			if hasFound {
-				service.Ports[0].Container = port
-			} else {
-				if !a.ShouldPrompt {
-					return fmt.Errorf("Could not find port to open corresponding to command '%s'", service.Command)
-				}
-				service.Ports[0].Container = common.AskUser(fmt.Sprintf("Which port to open to run web service with command '%s'?", service.Command))
-			}
+		var err error
+		hasFoundServer, server := a.detectWebServer(service.Command)
+		service.Ports[0].Container, err = a.FindPort(hasFoundServer, server, &service.Command)
+
+		if err != nil {
+			return err
 		}
 	}
 
-	service.BuildCommand = a.AskForCommand("bundle exec rake db:schema:load", "build")
-	service.DeployCommand = a.AskForCommand("bundle exec rake db:migrate", "deployment")
+	if isRails {
+		service.BuildCommand = a.AskForCommand("bundle exec rake db:schema:load", "build")
+		service.DeployCommand = a.AskForCommand("bundle exec rake db:migrate", "deployment")
+	} else {
+		service.BuildCommand = a.AskForCommand("", "build")
+		service.DeployCommand = a.AskForCommand("", "deployment")
+	}
 
 	return nil
 }
@@ -92,7 +90,7 @@ func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.
 
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
-	if hasRmagick, _ := common.GetGemVersion(a.Gemfile, "rmagick"); hasRmagick {
+	if hasRmagick, _ := common.GetGemVersion(a.Gemfile, "rmagick", "refile-mini_magick", "mini_magick"); hasRmagick {
 		fmt.Println(common.MsgL2, "----> Found Image Magick", common.MsgReset)
 		packages.Add("imagemagick", "libmagickwand-dev")
 	}
@@ -100,6 +98,11 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 	if hasSqlite, _ := common.GetGemVersion(a.Gemfile, "sqlite"); hasSqlite {
 		packages.Add("libsqlite3-dev")
 		fmt.Println(common.MsgL2, "----> Found sqlite", common.MsgReset)
+	}
+
+	if hasMemcache, _ := common.GetGemVersion(a.Gemfile, "dalli"); hasMemcache {
+		packages.Add("memcached")
+		fmt.Println(common.MsgL2, "----> Found Memcache", common.MsgReset)
 	}
 	return packages
 }
@@ -119,7 +122,7 @@ func (a *Analyzer) FindDatabases() *common.Lister {
 		dbs.Add("postgresql")
 	}
 
-	if hasRedis, _ := common.GetGemVersion(a.Gemfile, "redis"); hasRedis {
+	if hasRedis, _ := common.GetGemVersion(a.Gemfile, "redis", "redis-rails"); hasRedis {
 		dbs.Add("redis")
 	}
 
