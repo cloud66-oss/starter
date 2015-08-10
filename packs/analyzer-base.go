@@ -138,7 +138,7 @@ func (a *AnalyzerBase) GetOrCreateWebService(services *[]*common.Service) *commo
 }
 
 func (a *AnalyzerBase) AskForCommand(defaultCommand string, step string) string {
-	confirmed := common.AskYesOrNo(common.MsgL1, fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
+	confirmed := defaultCommand != "" && common.AskYesOrNo(common.MsgL1, fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
 	if confirmed {
 		return defaultCommand
 	} else {

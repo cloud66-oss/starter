@@ -46,14 +46,14 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	service := a.GetOrCreateWebService(services)
 	service.Ports = []*common.PortMapping{common.NewPortMapping()}
 	hasFoundServer, server := a.detectWebServer(service.Command)
+	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
 
 	if service.Command == "" {
-		isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
 		if isRails {
 			service.Command = "bundle exec rails s _env:RAILS_ENV"
 			service.Ports[0].Container = "3000"
 		} else {
-			service.Command = "bundle exec rackup s _env:RACK_ENV"
+			service.Command = "bundle exec rackup _env:RACK_ENV"
 			service.Ports[0].Container = "9292"
 		}
 	} else {
@@ -72,8 +72,13 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 		}
 	}
 
-	service.BuildCommand = a.AskForCommand("bundle exec rake db:schema:load", "build")
-	service.DeployCommand = a.AskForCommand("bundle exec rake db:migrate", "deployment")
+	if isRails {
+		service.BuildCommand = a.AskForCommand("bundle exec rake db:schema:load", "build")
+		service.DeployCommand = a.AskForCommand("bundle exec rake db:migrate", "deployment")
+	} else {
+		service.BuildCommand = a.AskForCommand("", "build")
+		service.DeployCommand = a.AskForCommand("", "deployment")
+	}
 
 	return nil
 }
@@ -92,7 +97,7 @@ func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.
 
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
-	if hasRmagick, _ := common.GetGemVersion(a.Gemfile, "rmagick"); hasRmagick {
+	if hasRmagick, _ := common.GetGemVersion(a.Gemfile, "rmagick", "refile-mini_magick", "mini_magick"); hasRmagick {
 		fmt.Println(common.MsgL2, "----> Found Image Magick", common.MsgReset)
 		packages.Add("imagemagick", "libmagickwand-dev")
 	}
@@ -124,7 +129,7 @@ func (a *Analyzer) FindDatabases() *common.Lister {
 		dbs.Add("postgresql")
 	}
 
-	if hasRedis, _ := common.GetGemVersion(a.Gemfile, "redis"); hasRedis {
+	if hasRedis, _ := common.GetGemVersion(a.Gemfile, "redis", "redis-rails"); hasRedis {
 		dbs.Add("redis")
 	}
 

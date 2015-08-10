@@ -1,0 +1,21 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8
+  pool: 100
+  timeout: 5000
+  database: <%= ENV['MYSQL_DATABASE'] %>
+  username: <%= ENV['MYSQL_USERNAME'] %>
+  password: <%= ENV['MYSQL_PASSWORD'] %>
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+  database: cappexchange_test
+
+staging:
+  <<: *default
+
+production:
+  <<: *default

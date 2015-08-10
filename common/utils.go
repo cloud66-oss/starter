@@ -111,8 +111,13 @@ func AskUserWithDefault(message string, defaultValue string, shouldPrompt bool) 
 	if !shouldPrompt {
 		return defaultValue
 	}
-
-	fmt.Print(MsgL1, fmt.Sprintf(" %s [%s] ", message, defaultValue), MsgReset)
+	
+	printedDefaultValue := defaultValue
+	if printedDefaultValue == "" {
+		printedDefaultValue = "default: none"
+	}
+	
+	fmt.Print(MsgL1, fmt.Sprintf(" %s [%s] ", message, printedDefaultValue), MsgReset)
 	value := ""
 	if _, err := fmt.Scanln(&value); err != nil || strings.TrimSpace(value) == "" {
 		return defaultValue

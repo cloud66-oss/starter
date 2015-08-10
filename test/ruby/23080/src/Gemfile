@@ -1,0 +1,28 @@
+source "http://rubygems.org/"
+
+gem 'rake'
+
+gem 'hiredis'
+gem 'redis', :require => ["redis", "redis/connection/hiredis"]
+
+gem 'json'
+
+gem 'mongoid'
+
+gem 'sidekiq'
+gem 'sidekiq-status'
+
+gem 'newrelic_rpm'
+
+gem 'dotenv'
+
+gem 'sinatra'
+gem 'sinatra-contrib', require: false
+
+gem 'vine'
+
+gem 'bugsnag'
+
+gem 'aws-sdk', '~> 2'
+
+gem 'httparty'
