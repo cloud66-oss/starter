@@ -86,18 +86,10 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 			//TODO:
 		}
 	} else {
-		if hasFoundServer {
-			service.Ports[0].Container = server.Port(service.Command)
-		} else {
-			hasFound, port := common.ParsePort(service.Command)
-			if hasFound {
-				service.Ports[0].Container = port
-			} else {
-				if !a.ShouldPrompt {
-					return fmt.Errorf("Could not find port to open corresponding to command '%s'", service.Command)
-				}
-				service.Ports[0].Container = common.AskUser(fmt.Sprintf("Which port to open to run web service with command '%s'?", service.Command))
-			}
+		var err error
+		service.Ports[0].Container, err = a.FindPort(hasFoundServer, server, &service.Command)
+		if err != nil {
+			return err
 		}
 	}
 

@@ -10,7 +10,7 @@ func (g *Gunicorn) Names() []string {
 	return []string{"gunicorn"}
 }
 
-func (g *Gunicorn) Port(command string) string {
+func (g *Gunicorn) Port(command *string) string {
 	return g.WebServerBase.Port(g, command)
 }
 

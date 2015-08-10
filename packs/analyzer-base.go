@@ -102,6 +102,24 @@ func (b *AnalyzerBase) DetectWebServer(a Analyzer, command string, servers []Web
 	return false, nil
 }
 
+func (a *AnalyzerBase) FindPort(hasFoundServer bool, server WebServer, command *string) (string, error) {
+	if hasFoundServer {
+		return server.Port(command), nil
+	}
+
+	withoutPortEnvVar := common.RemovePortIfEnvVar(*command)
+	hasFound, port := common.ParsePort(withoutPortEnvVar)
+	if hasFound {
+		*command = withoutPortEnvVar
+		return port, nil
+	}
+
+	if !a.ShouldPrompt {
+		return "", fmt.Errorf("Could not find port to open corresponding to command '%s'", *command)
+	}
+	return common.AskUser(fmt.Sprintf("Which port to open to run web service with command '%s'?", *command)), nil
+}
+
 func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
 	services := []*common.Service{}
 	procfilePath := filepath.Join(a.RootDir, "Procfile")

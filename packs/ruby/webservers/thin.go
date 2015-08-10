@@ -10,7 +10,7 @@ func (t *Thin) Names() []string {
 	return []string{"thin"}
 }
 
-func (t *Thin) Port(command string) string {
+func (t *Thin) Port(command *string) string {
 	return t.WebServerBase.Port(t, command)
 }
 

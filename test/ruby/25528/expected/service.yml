@@ -5,7 +5,7 @@ services:
   web:
     git: git@github.com:cloud66/starter.git
     git_branch: master
-    command: bundle exec unicorn -p _env:PORT
+    command: bundle exec unicorn -v
     build_command: bundle exec rake db:schema:load
     deploy_command: bundle exec rake db:migrate
     build_root: test/ruby/25528/src/

@@ -13,7 +13,8 @@ import (
 
 var (
 	procfileRegex = regexp.MustCompile("^([A-Za-z0-9_]+):\\s*(.+)$")
-	envVarRegex   = regexp.MustCompile("\\$([A-Z_]+[A-Z0-9_]*)")
+	envVarPattern = "\\$([A-Z_]+[A-Z0-9_]*)"
+	envVarRegex   = regexp.MustCompile(envVarPattern)
 
 	MsgTitle string = ansi.ColorCode("green+h")
 	MsgL0    string = ansi.ColorCode("magenta")
@@ -89,13 +90,18 @@ func ParseUniqueInt(line string) (string, error) {
 }
 
 func ParsePort(command string) (hasFound bool, port string) {
-	portPattern := regexp.MustCompile(`(?:-p|--port=)[[:blank:]]*(\d+)`)
-	ports := portPattern.FindAllStringSubmatch(command, -1)
+	portRegexp := regexp.MustCompile(`(?:-p|--port=)[[:blank:]]*(\d+)`)
+	ports := portRegexp.FindAllStringSubmatch(command, -1)
 	if len(ports) != 1 {
 		return false, ""
 	} else {
 		return true, ports[0][1]
 	}
+}
+
+func RemovePortIfEnvVar(command string) string {
+	portEnvVarRegexp := regexp.MustCompile(`[[:blank:]]*(-p|--port=)[[:blank:]]*` + envVarPattern)
+	return portEnvVarRegexp.ReplaceAllString(command, "")
 }
 
 func AskUser(message string) string {
@@ -111,12 +117,12 @@ func AskUserWithDefault(message string, defaultValue string, shouldPrompt bool) 
 	if !shouldPrompt {
 		return defaultValue
 	}
-	
+
 	printedDefaultValue := defaultValue
 	if printedDefaultValue == "" {
 		printedDefaultValue = "default: none"
 	}
-	
+
 	fmt.Print(MsgL1, fmt.Sprintf(" %s [%s] ", message, printedDefaultValue), MsgReset)
 	value := ""
 	if _, err := fmt.Scanln(&value); err != nil || strings.TrimSpace(value) == "" {
