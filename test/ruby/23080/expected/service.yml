@@ -5,7 +5,7 @@ services:
   web:
     git: git@github.com:cloud66/starter.git
     git_branch: master
-    command: bundle exec rackup _env:RACK_ENV
+    command: bundle exec rackup -E _env:RACK_ENV
     build_root: test/ruby/23080/src/
     ports:
       - container: 9292

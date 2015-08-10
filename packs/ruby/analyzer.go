@@ -50,10 +50,10 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 
 	if service.Command == "" {
 		if isRails {
-			service.Command = "bundle exec rails s _env:RAILS_ENV"
+			service.Command = "bundle exec rails server -e _env:RAILS_ENV"
 			service.Ports[0].Container = "3000"
 		} else {
-			service.Command = "bundle exec rackup _env:RACK_ENV"
+			service.Command = "bundle exec rackup -E _env:RACK_ENV"
 			service.Ports[0].Container = "9292"
 		}
 	} else {
