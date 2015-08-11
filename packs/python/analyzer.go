@@ -83,6 +83,7 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 		if common.IsDjangoProject(a.RootDir) {
 			service.Command = "python manage.py runserver"
 			service.Ports[0].Container = "8000"
+			a.Messages.Add("No command was defined for 'web' service so '" + service.Command + "' was assumed. NOTE: This is not *suitable* for production! Please define in your Procfile the command to run you production server.")
 		} else {
 			//TODO:
 		}

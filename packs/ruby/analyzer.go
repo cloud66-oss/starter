@@ -56,6 +56,7 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 			service.Command = "bundle exec rackup -E _env:RACK_ENV"
 			service.Ports[0].Container = "9292"
 		}
+		a.Messages.Add("No command was defined for 'web' service so '" + service.Command + "' was assumed. Please make sure this is using a production server.")
 	} else {
 		var err error
 		hasFoundServer, server := a.detectWebServer(service.Command)

@@ -55,7 +55,7 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 	if common.AskYesOrNo(message, defaultValue, a.ShouldPrompt) && a.ShouldPrompt {
 		common.PrintlnL1("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values")
 		common.PrintlnL1("  Example: 'mysql elasticsearch' ")
-		common.PrintL1(" > ")
+		common.PrintL1("> ")
 
 		reader := bufio.NewReader(os.Stdin)
 		otherDbs, err := reader.ReadString('\n')
@@ -130,6 +130,7 @@ func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
 	services := []*common.Service{}
 	procfilePath := filepath.Join(a.RootDir, "Procfile")
 	if !common.FileExists(procfilePath) {
+		a.Messages.Add("No Procfile was detected. It is strongly advised to add one in order to specify the commands to run your services.")
 		return services, nil
 	}
 
