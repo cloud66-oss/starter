@@ -75,7 +75,7 @@ func main() {
 	if len(pack.GetMessages()) > 0 {
 		common.PrintlnWarning("Warnings:")
 		for _, warning := range pack.GetMessages() {
-			common.PrintlnWarning(warning)
+			common.PrintlnWarning(" * " + warning)
 		}
 	}
 

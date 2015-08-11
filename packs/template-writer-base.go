@@ -68,7 +68,7 @@ func (w *TemplateWriterBase) shouldOverwriteExistingFile(filename string) bool {
 
 	answer := "none"
 	for answer != "o" && answer != "r" && answer != "" {
-		common.PrintL1(" %s cannot be written as it already exists. What to do? [o: overwrite, R: rename] ", filepath.Base(filename))
+		common.PrintL1("%s cannot be written as it already exists. What to do? [o: overwrite, R: rename] ", filepath.Base(filename))
 		if _, err := fmt.Scanln(&answer); err != nil {
 			return false
 		}

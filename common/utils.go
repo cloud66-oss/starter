@@ -143,7 +143,7 @@ func AskUserWithDefault(message string, defaultValue string, shouldPrompt bool) 
 	return value
 }
 
-func AskYesOrNo(printer func(string, ...interface{}), message string, defaultValue bool, shouldPrompt bool) bool {
+func AskYesOrNo(message string, defaultValue bool, shouldPrompt bool) bool {
 	if !shouldPrompt {
 		return defaultValue
 	}
@@ -157,7 +157,7 @@ func AskYesOrNo(printer func(string, ...interface{}), message string, defaultVal
 
 	answer := "none"
 	for answer != "y" && answer != "n" && answer != "" {
-		printer("%s %s ", message, prompt)
+		PrintL1("%s %s ", message, prompt)
 		if _, err := fmt.Scanln(&answer); err != nil {
 			return defaultValue
 		}

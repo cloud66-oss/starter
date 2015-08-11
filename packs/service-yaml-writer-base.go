@@ -33,7 +33,7 @@ func (w *ServiceYAMLWriterBase) Write(context interface{}) error {
 // Templates can have a lot of blank lines when some parts of it are evaluated
 // empty. There is currently no way to avoid this with Go templates (See
 // https://github.com/golang/go/issues/9969 for more information)
-// What we do is:
+// What we do to avoid this is:
 // 		* Removing all blank lines from the evaluated template
 // 		* If a line contains '##NEWLINE##', replace it by a newline
 func (w *TemplateWriterBase) removeBlankLines() error {

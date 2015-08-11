@@ -90,6 +90,7 @@ func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.
 
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
+	common.PrintlnL2("Analyzing dependencies")
 	if hasRmagick, _ := common.GetGemVersion(a.Gemfile, "rmagick", "refile-mini_magick", "mini_magick"); hasRmagick {
 		packages.Add("imagemagick", "libmagickwand-dev")
 		common.PrintlnL2("Found Image Magick")

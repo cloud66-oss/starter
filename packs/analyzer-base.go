@@ -37,7 +37,7 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 		if !a.ShouldPrompt {
 			common.PrintlnL2("Found %s", db)
 		}
-		if common.AskYesOrNo(common.PrintL2, fmt.Sprintf("Found %s, confirm?", db), true, a.ShouldPrompt) {
+		if common.AskYesOrNo(fmt.Sprintf("Found %s, confirm?", db), true, a.ShouldPrompt) {
 			dbs.Add(db)
 		}
 	}
@@ -52,7 +52,7 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 		defaultValue = true
 	}
 
-	if common.AskYesOrNo(common.PrintL1, message, defaultValue, a.ShouldPrompt) && a.ShouldPrompt {
+	if common.AskYesOrNo(message, defaultValue, a.ShouldPrompt) && a.ShouldPrompt {
 		common.PrintlnL1("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values")
 		common.PrintlnL1("  Example: 'mysql elasticsearch' ")
 		common.PrintL1(" > ")
@@ -68,7 +68,7 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 
 func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion string) string {
 	message := fmt.Sprintf("Found %s version %s, confirm?", a.GetPack().Name(), version)
-	if found && common.AskYesOrNo(common.PrintL1, message, true, a.ShouldPrompt) {
+	if found && common.AskYesOrNo(message, true, a.ShouldPrompt) {
 		return version
 	}
 	return common.AskUserWithDefault(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), defaultVersion, a.ShouldPrompt)
@@ -127,7 +127,7 @@ func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
 		return services, nil
 	}
 
-	common.PrintlnL1("Parsing Procfile")
+	common.PrintlnL2("Parsing Procfile")
 	procs, err := common.ParseProcfile(procfilePath)
 	if err != nil {
 		return nil, err
@@ -156,7 +156,7 @@ func (a *AnalyzerBase) GetOrCreateWebService(services *[]*common.Service) *commo
 }
 
 func (a *AnalyzerBase) AskForCommand(defaultCommand string, step string) string {
-	confirmed := defaultCommand != "" && common.AskYesOrNo(common.PrintL1, fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
+	confirmed := defaultCommand != "" && common.AskYesOrNo(fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
 	if confirmed {
 		return defaultCommand
 	} else {

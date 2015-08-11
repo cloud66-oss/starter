@@ -175,7 +175,7 @@ func (a *Analyzer) findWSGIFile() (bool, string) {
 	})
 
 	wsgi := ""
-	if len(found) == 1 && common.AskYesOrNo(common.PrintL1, fmt.Sprintf("Found WSGI file %s, confirm?", found[0]), true, a.ShouldPrompt) {
+	if len(found) == 1 && common.AskYesOrNo(fmt.Sprintf("Found WSGI file %s, confirm?", found[0]), true, a.ShouldPrompt) {
 		wsgi = found[0]
 	} else if len(found) > 1 && a.ShouldPrompt {
 		answer := common.AskMultipleChoices("Found several potential WSGI files. Please choose one:", append(found, "Other"))
