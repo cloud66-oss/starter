@@ -25,6 +25,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	dbs := a.ConfirmDatabases(a.FindDatabases())
 	envVars := a.EnvVars()
 	packages := a.GuessPackages()
+	a.CheckNotSupportedPackages(packages)
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
 	if err != nil {

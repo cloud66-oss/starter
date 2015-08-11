@@ -74,6 +74,12 @@ func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion
 	return common.AskUserWithDefault(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), defaultVersion, a.ShouldPrompt)
 }
 
+func (a *AnalyzerBase) CheckNotSupportedPackages(packages *common.Lister) {
+	if packages.Contains("memcached") {
+		a.Messages.Add("Memcached was detected but is not currently supported. Please use Redis instead.")
+	}
+}
+
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {
 	services, err := b.analyzeProcfile()
 	if err != nil {
