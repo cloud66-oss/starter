@@ -19,10 +19,10 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	if err != nil {
 		return nil, err
 	}
-	packages := a.GuessPackages()
 	version := a.FindVersion()
 	dbs := a.ConfirmDatabases(a.FindDatabases())
 	envVars := a.EnvVars()
+	packages := a.GuessPackages()
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
 	if err != nil {
