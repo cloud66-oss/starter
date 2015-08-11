@@ -20,7 +20,7 @@ func Detect(rootDir string) (packs.Pack, error) {
 	for _, d := range detectors {
 		if d.Detect(rootDir) {
 			packs = append(packs, d.GetPack())
-			fmt.Printf("%s Found %s application\n", common.MsgL0, d.GetPack().Name())
+			common.PrintlnL0("Found %s application", d.GetPack().Name())
 		}
 	}
 

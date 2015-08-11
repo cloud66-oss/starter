@@ -16,14 +16,25 @@ var (
 	envVarPattern = "\\$([A-Z_]+[A-Z0-9_]*)"
 	envVarRegex   = regexp.MustCompile(envVarPattern)
 
-	MsgTitle string = ansi.ColorCode("green+h")
-	MsgL0    string = ansi.ColorCode("magenta")
-	MsgL1    string = ansi.ColorCode("white")
-	MsgL2    string = ansi.ColorCode("black+h")
 	MsgReset string = ansi.ColorCode("reset")
-	MsgError string = ansi.ColorCode("red")
-	MsgWarn  string = ansi.ColorCode("yellow")
+
+	PrintTitle, PrintlnTitle     = printers(" ", ansi.ColorCode("green+h"))
+	PrintL0, PrintlnL0           = printers(" ", ansi.ColorCode("magenta"))
+	PrintL1, PrintlnL1           = printers(" ", ansi.ColorCode("white"))
+	PrintL2, PrintlnL2           = printers(" ----> ", ansi.ColorCode("black+h"))
+	PrintError, PrintlnError     = printers(" ", ansi.ColorCode("red"))
+	PrintWarning, PrintlnWarning = printers(" ", ansi.ColorCode("yellow"))
 )
+
+func printers(prefix string, color string) (print func(format string, a ...interface{}), println func(format string, a ...interface{})) {
+	print = func(format string, a ...interface{}) {
+		fmt.Printf(color+prefix+format+MsgReset, a...)
+	}
+	println = func(format string, a ...interface{}) {
+		print(format+"\n", a...)
+	}
+	return print, println
+}
 
 type Process struct {
 	Name    string
@@ -107,7 +118,7 @@ func RemovePortIfEnvVar(command string) string {
 func AskUser(message string) string {
 	answer := ""
 	for strings.TrimSpace(answer) == "" {
-		fmt.Print(MsgL1, fmt.Sprintf(" %s: ", message), MsgReset)
+		PrintL1("%s: ", message)
 		fmt.Scanln(&answer)
 	}
 	return answer
@@ -123,7 +134,7 @@ func AskUserWithDefault(message string, defaultValue string, shouldPrompt bool) 
 		printedDefaultValue = "default: none"
 	}
 
-	fmt.Print(MsgL1, fmt.Sprintf(" %s [%s] ", message, printedDefaultValue), MsgReset)
+	PrintL1("%s [%s] ", message, printedDefaultValue)
 	value := ""
 	if _, err := fmt.Scanln(&value); err != nil || strings.TrimSpace(value) == "" {
 		return defaultValue
@@ -132,7 +143,7 @@ func AskUserWithDefault(message string, defaultValue string, shouldPrompt bool) 
 	return value
 }
 
-func AskYesOrNo(color string, message string, defaultValue bool, shouldPrompt bool) bool {
+func AskYesOrNo(printer func(string, ...interface{}), message string, defaultValue bool, shouldPrompt bool) bool {
 	if !shouldPrompt {
 		return defaultValue
 	}
@@ -146,7 +157,7 @@ func AskYesOrNo(color string, message string, defaultValue bool, shouldPrompt bo
 
 	answer := "none"
 	for answer != "y" && answer != "n" && answer != "" {
-		fmt.Print(color, fmt.Sprintf(" %s %s ", message, prompt), MsgReset)
+		printer("%s %s ", message, prompt)
 		if _, err := fmt.Scanln(&answer); err != nil {
 			return defaultValue
 		}
@@ -158,7 +169,7 @@ func AskYesOrNo(color string, message string, defaultValue bool, shouldPrompt bo
 
 func AskMultipleChoices(message string, choices []string) string {
 	answer := -1
-	fmt.Println(MsgL1, fmt.Sprintf("%s", message), MsgReset)
+	PrintL1(message)
 	for answer < 1 || answer > len(choices) {
 		for i, choice := range choices {
 			fmt.Printf("    %d: %s\n", i+1, choice)

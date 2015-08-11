@@ -35,9 +35,9 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 	var dbs common.Lister
 	for _, db := range foundDbs.Items {
 		if !a.ShouldPrompt {
-			fmt.Println(common.MsgL2, fmt.Sprintf("----> Found %s", db), common.MsgReset)
+			common.PrintlnL2("Found %s", db)
 		}
-		if common.AskYesOrNo(common.MsgL2, fmt.Sprintf("----> Found %s, confirm?", db), true, a.ShouldPrompt) {
+		if common.AskYesOrNo(common.PrintL2, fmt.Sprintf("Found %s, confirm?", db), true, a.ShouldPrompt) {
 			dbs.Add(db)
 		}
 	}
@@ -52,10 +52,10 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 		defaultValue = true
 	}
 
-	if common.AskYesOrNo(common.MsgL1, message, defaultValue, a.ShouldPrompt) && a.ShouldPrompt {
-		fmt.Println(common.MsgL1, fmt.Sprintf("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values"), common.MsgReset)
-		fmt.Println(common.MsgL1, fmt.Sprintf("  Example: 'mysql elasticsearch' "), common.MsgReset)
-		fmt.Print(" > ")
+	if common.AskYesOrNo(common.PrintL1, message, defaultValue, a.ShouldPrompt) && a.ShouldPrompt {
+		common.PrintlnL1("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values")
+		common.PrintlnL1("  Example: 'mysql elasticsearch' ")
+		common.PrintL1(" > ")
 
 		reader := bufio.NewReader(os.Stdin)
 		otherDbs, err := reader.ReadString('\n')
@@ -68,7 +68,7 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 
 func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion string) string {
 	message := fmt.Sprintf("Found %s version %s, confirm?", a.GetPack().Name(), version)
-	if found && common.AskYesOrNo(common.MsgL1, message, true, a.ShouldPrompt) {
+	if found && common.AskYesOrNo(common.PrintL1, message, true, a.ShouldPrompt) {
 		return version
 	}
 	return common.AskUserWithDefault(fmt.Sprintf("Enter %s version:", a.GetPack().Name()), defaultVersion, a.ShouldPrompt)
@@ -77,7 +77,7 @@ func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {
 	services, err := b.analyzeProcfile()
 	if err != nil {
-		fmt.Printf("%s Failed to parse Procfile due to %s\n", common.MsgError, err.Error())
+		common.PrintlnError("Failed to parse Procfile due to %s", err.Error())
 		return nil, err
 	}
 
@@ -94,7 +94,7 @@ func (b *AnalyzerBase) DetectWebServer(a Analyzer, command string, servers []Web
 	for _, server := range servers {
 		for _, name := range server.Names() {
 			if a.HasPackage(name) || strings.HasPrefix(command, name) {
-				fmt.Println(common.MsgL2, "----> Found "+name, common.MsgReset)
+				common.PrintlnL2("Found %s", name)
 				return true, server
 			}
 		}
@@ -127,14 +127,14 @@ func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
 		return services, nil
 	}
 
-	fmt.Println(common.MsgL1, "Parsing Procfile")
+	common.PrintlnL1("Parsing Procfile")
 	procs, err := common.ParseProcfile(procfilePath)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, proc := range procs {
-		fmt.Printf("%s ----> Found Procfile item %s\n", common.MsgL2, proc.Name)
+		common.PrintlnL2("Found Procfile item %s", proc.Name)
 		services = append(services, &common.Service{Name: proc.Name, Command: proc.Command})
 	}
 	return services, nil
@@ -156,7 +156,7 @@ func (a *AnalyzerBase) GetOrCreateWebService(services *[]*common.Service) *commo
 }
 
 func (a *AnalyzerBase) AskForCommand(defaultCommand string, step string) string {
-	confirmed := defaultCommand != "" && common.AskYesOrNo(common.MsgL1, fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
+	confirmed := defaultCommand != "" && common.AskYesOrNo(common.PrintL1, fmt.Sprintf("This command will be run after each %s: '%s', confirm?", step, defaultCommand), true, a.ShouldPrompt)
 	if confirmed {
 		return defaultCommand
 	} else {
@@ -168,11 +168,11 @@ func (a *AnalyzerBase) refineServices(services *[]*common.Service) {
 	var err error
 	for _, service := range *services {
 		if service.Command, err = common.ParseEnvironmentVariables(service.Command); err != nil {
-			fmt.Printf("%s Failed to replace environment variable placeholder due to %s\n", common.MsgError, err.Error())
+			common.PrintlnError("Failed to replace environment variable placeholder due to %s", err.Error())
 		}
 
 		if service.Command, err = common.ParseUniqueInt(service.Command); err != nil {
-			fmt.Printf("%s Failed to replace UNIQUE_INT variable placeholder due to %s\n", common.MsgError, err.Error())
+			common.PrintlnError("Failed to replace UNIQUE_INT variable placeholder due to %s", err.Error())
 		}
 	}
 }

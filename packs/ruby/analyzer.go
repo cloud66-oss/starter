@@ -91,18 +91,18 @@ func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
 	if hasRmagick, _ := common.GetGemVersion(a.Gemfile, "rmagick", "refile-mini_magick", "mini_magick"); hasRmagick {
-		fmt.Println(common.MsgL2, "----> Found Image Magick", common.MsgReset)
 		packages.Add("imagemagick", "libmagickwand-dev")
+		common.PrintlnL2("Found Image Magick")
 	}
 
 	if hasSqlite, _ := common.GetGemVersion(a.Gemfile, "sqlite"); hasSqlite {
 		packages.Add("libsqlite3-dev")
-		fmt.Println(common.MsgL2, "----> Found sqlite", common.MsgReset)
+		common.PrintlnL2("Found sqlite")
 	}
 
 	if hasMemcache, _ := common.GetGemVersion(a.Gemfile, "dalli"); hasMemcache {
 		packages.Add("memcached")
-		fmt.Println(common.MsgL2, "----> Found Memcache", common.MsgReset)
+		common.PrintlnL2("Found Memcache")
 	}
 	return packages
 }
@@ -135,7 +135,7 @@ func (a *Analyzer) FindDatabases() *common.Lister {
 	}
 
 	if hasDatabaseYaml := common.FileExists("config/database.yml"); hasDatabaseYaml {
-		fmt.Println(common.MsgL2, "----> Found config/database.yml", common.MsgReset)
+		common.PrintlnL2("Found config/database.yml")
 		a.Messages.Add(
 			fmt.Sprintf("%s %s-> %s",
 				"database.yml: Make sure you are using environment variables.",
@@ -143,7 +143,7 @@ func (a *Analyzer) FindDatabases() *common.Lister {
 	}
 
 	if hasMongoIdYaml := common.FileExists("config/mongoid.yml"); hasMongoIdYaml {
-		fmt.Println(common.MsgL2, "----> Found config/mongoid.yml", common.MsgReset)
+		common.PrintlnL2("Found config/mongoid.yml")
 		a.Messages.Add(
 			fmt.Sprintf("%s %s-> %s",
 				"mongoid.yml: Make sure you are using environment variables.",

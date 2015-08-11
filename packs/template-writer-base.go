@@ -32,7 +32,7 @@ func (w *TemplateWriterBase) WriteTemplate(templateName string, filename string,
 		if err != nil {
 			return err
 		}
-		fmt.Println(common.MsgL2, fmt.Sprintf("----> Renaming %s to %s...", filename, newName), common.MsgReset)
+		common.PrintlnL2("Renaming %s to %s...", filename, newName)
 	}
 
 	destFile, err := os.Create(destFullPath)
@@ -41,11 +41,11 @@ func (w *TemplateWriterBase) WriteTemplate(templateName string, filename string,
 	}
 	defer func() {
 		if err := destFile.Close(); err != nil {
-			fmt.Printf("%s Cannot close file %s due to: %s\n", common.MsgError, filename, err.Error())
+			common.PrintlnError("Cannot close file %s due to: %s", filename, err.Error())
 		}
 	}()
 
-	fmt.Println(common.MsgL2, fmt.Sprintf("----> Writing %s...", filename), common.MsgReset)
+	common.PrintlnL2("Writing %s...", filename)
 	err = tmpl.Execute(destFile, context)
 	if err != nil {
 		return err
@@ -66,10 +66,9 @@ func (w *TemplateWriterBase) shouldOverwriteExistingFile(filename string) bool {
 		return isStarterTemplate
 	}
 
-	message := fmt.Sprintf(" %s cannot be written as it already exists. What to do? [o: overwrite, R: rename] ", filepath.Base(filename))
 	answer := "none"
 	for answer != "o" && answer != "r" && answer != "" {
-		fmt.Print(common.MsgL1, message, common.MsgReset)
+		common.PrintL1(" %s cannot be written as it already exists. What to do? [o: overwrite, R: rename] ", filepath.Base(filename))
 		if _, err := fmt.Scanln(&answer); err != nil {
 			return false
 		}

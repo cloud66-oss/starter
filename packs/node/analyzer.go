@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/cloud66/starter/common"
@@ -53,10 +52,10 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
 
 	if runsExpress, _ := common.GetDependencyVersion(a.PackageJSON, "express"); runsExpress {
-		fmt.Println(common.MsgL2, "----> Found Express", common.MsgReset)
+		common.PrintlnL2("Found Express")
 	}
 	if hasScript, script := common.GetScriptsStart(a.PackageJSON); hasScript {
-		fmt.Println(common.MsgL2, "----> Found Script:", script, common.MsgReset)
+		common.PrintlnL2("Found Script: %s", script)
 	}
 
 	return packages
