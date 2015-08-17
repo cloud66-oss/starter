@@ -30,8 +30,8 @@ Cloud 66 Starter ~ (c) 2015 Cloud 66
  ----> Found Procfile item web
  ----> Found Procfile item worker
  ----> Found unicorn
- This command will be run after each build: 'bundle exec rake db:schema:load', confirm? [Y/n]
- This command will be run after each deployment: 'bundle exec rake db:migrate', confirm? [Y/n]
+ This command will be run after each build: 'RAILS_ENV=_env:RAILS_ENV bundle exec rake db:schema:load', confirm? [Y/n]
+ This command will be run after each deployment: 'RAILS_ENV=_env:RAILS_ENV bundle exec rake db:migrate', confirm? [Y/n]
  ----> Writing Dockerfile...
  ----> Writing service.yml...
  Done
@@ -48,7 +48,7 @@ $ starter -p /my/project
 For more options, please see:
 
 ```
-$ starter --help 
+$ starter --help
 ```
 
 ### Supported Languages / Frameworks
