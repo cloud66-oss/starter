@@ -68,8 +68,8 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	}
 
 	if isRails {
-		service.BuildCommand = a.AskForCommand("bundle exec rake db:schema:load", "build")
-		service.DeployCommand = a.AskForCommand("bundle exec rake db:migrate", "deployment")
+		service.BuildCommand = a.AskForCommand("RAILS_ENV=_env:RAILS_ENV bundle exec rake db:schema:load", "build")
+		service.DeployCommand = a.AskForCommand("RAILS_ENV=_env:RAILS_ENV bundle exec rake db:migrate", "deployment")
 	} else {
 		service.BuildCommand = a.AskForCommand("", "build")
 		service.DeployCommand = a.AskForCommand("", "deployment")

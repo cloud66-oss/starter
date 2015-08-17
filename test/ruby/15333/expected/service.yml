@@ -15,8 +15,8 @@ services:
     git: git@github.com:cloud66/starter.git
     git_branch: master
     command: bundle exec rails server -e _env:RAILS_ENV
-    build_command: bundle exec rake db:schema:load
-    deploy_command: bundle exec rake db:migrate
+    build_command: RAILS_ENV=_env:RAILS_ENV bundle exec rake db:schema:load
+    deploy_command: RAILS_ENV=_env:RAILS_ENV bundle exec rake db:migrate
     build_root: test/ruby/15333/src/
     ports:
       - container: 3000
