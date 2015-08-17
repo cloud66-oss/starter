@@ -1,8 +1,8 @@
 # Cloud 66 Starter
 
-Cloud 66 starter is an open source command line tool to generate `Dockerfile` and `service.yml` (Cloud 66 service definition file for docker containers) from source code.
+Cloud 66 starter is an open-source command line tool to generate a `Dockerfile` and a `service.yml` file from arbitrary source code. The `service.yml` file is a Cloud 66 service definition file which is used to define the service configurations on a stack.
 
-It works in the same way as BuildPacks but only to generate the above mentioned files so the compile step happens on the [BuildGrid](http://help.cloud66.com/building-your-stack/introduction-to-docker-deployments). It also does not have any third party requirements or frameworks to work (it's compiled as a Go executable).
+Starter works in the same way as BuildPacks do, but only generates the above mentioned files; the image compile step happens on the [BuildGrid](http://help.cloud66.com/building-your-stack/introduction-to-docker-deployments). Starter does not require any additional third party tools or frameworks to work (it's compiled as a Go executable).
 
 ## Get Started
 
@@ -13,7 +13,7 @@ $ cd /my/project
 $ starter
 ```
 
-This will analyze the project in the current folder and generates the two files: `Dockerfile` and `service.yml` in the same folder.
+This will analyze the project in the current folder and generate the two files: `Dockerfile` and `service.yml` in the same folder, prompting for information when required.
 
 ```
 Cloud 66 Starter ~ (c) 2015 Cloud 66
@@ -43,6 +43,12 @@ To use starter on a different folder, you can use the `p` option:
 
 ```
 $ starter -p /my/project
+```
+
+For more options, please see:
+
+```
+$ starter --help 
 ```
 
 ### Supported Languages / Frameworks
