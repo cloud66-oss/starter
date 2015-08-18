@@ -8,6 +8,8 @@ import (
 	"path"
 	"regexp"
 	"testing"
+
+	"github.com/cloud66/starter/common"
 )
 
 func AssertFilesHaveSameContent(t *testing.T, expectedFile string, generatedFile string) {
@@ -35,7 +37,14 @@ func AssertFilesHaveSameContent(t *testing.T, expectedFile string, generatedFile
 
 func testApplication(t *testing.T, path string) {
 	rootDir := "test/" + path
-	command := exec.Command("./starter", "-y", "-p", rootDir+"/src")
+	var binPath string
+	if common.FileExists("./starter") {
+		binPath = "./starter"
+	} else {
+		binPath = "./starter-source"
+	}
+
+	command := exec.Command(binPath, "-y", "-p", rootDir+"/src")
 	defer os.Remove(rootDir + "/src/Dockerfile")
 	defer os.Remove(rootDir + "/src/service.yml")
 	_, err := command.Output()
