@@ -30,7 +30,7 @@ func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool) er
 func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPrompt bool) error {
 	w := DockerfileWriter{
 		packs.DockerfileWriterBase{
-			PackElement: packs.PackElement{p},
+			PackElement: packs.PackElement{Pack: p},
 			TemplateWriterBase: packs.TemplateWriterBase{
 				TemplateDir:  templateDir,
 				OutputDir:    outputDir,
@@ -41,7 +41,7 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldPrompt bool) error {
 	w := ServiceYAMLWriter{
 		packs.ServiceYAMLWriterBase{
-			PackElement: packs.PackElement{p},
+			PackElement: packs.PackElement{Pack: p},
 			TemplateWriterBase: packs.TemplateWriterBase{
 				TemplateDir:  templateDir,
 				OutputDir:    outputDir,
