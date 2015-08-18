@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -46,21 +47,31 @@ func testApplication(t *testing.T, path string) {
 }
 
 func TestRuby13592(t *testing.T) {
-	// testApplication(t, "ruby/13592")
+	testApplication(t, "ruby/13592")
 }
 
 func TestRuby15333(t *testing.T) {
-	// testApplication(t, "ruby/15333")
+	testApplication(t, "ruby/15333")
 }
 
 func TestRuby23080(t *testing.T) {
-	// testApplication(t, "ruby/23080")
+	testApplication(t, "ruby/23080")
 }
 
 func TestRuby25528(t *testing.T) {
-	// testApplication(t, "ruby/25528")
+	testApplication(t, "ruby/25528")
 }
 
 func TestRuby25769(t *testing.T) {
-	// testApplication(t, "ruby/25769")
+	testApplication(t, "ruby/25769")
+}
+
+func init() {
+	fmt.Println("Building starter..")
+	err := exec.Command("go", "build").Run()
+	if err != nil {
+		fmt.Println("Failed to build starter")
+		fmt.Println(err.Error())
+		return
+	}
 }
