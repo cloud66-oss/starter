@@ -6,8 +6,8 @@ services:
     git: git@github.com:cloud66/starter.git
     git_branch: master
     command: bundle exec unicorn -v
-    build_command: bundle exec rake db:schema:load
-    deploy_command: bundle exec rake db:migrate
+    build_command: /bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:schema:load"
+    deploy_command: /bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:migrate"
     build_root: test/ruby/25528/src/
     ports:
       - container: 8080

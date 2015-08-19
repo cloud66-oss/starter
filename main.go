@@ -13,6 +13,8 @@ var (
 	flagPath        string
 	flagNoPrompt    bool
 	flagEnvironment string
+	VERSION         string = "dev"
+	BUILD_DATE      string = ""
 )
 
 func init() {
@@ -26,6 +28,11 @@ func main() {
 
 	if len(args) > 0 && args[0] == "help" {
 		flag.PrintDefaults()
+		return
+	}
+
+	if len(args) > 0 && args[0] == "version" {
+		common.PrintlnTitle("Starter version: %s (%s)", VERSION, BUILD_DATE)
 		return
 	}
 
