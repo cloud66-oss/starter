@@ -1,0 +1,30 @@
+---
+services:
+{{range .Services}}
+##NEWLINE##
+  {{.Name}}:
+    git: {{.GitRepo}}
+    git_branch: {{.GitBranch}}
+    command: {{.Command}}
+    {{if .BuildCommand}}build_command: {{.BuildCommand}}{{end}}
+    {{if .DeployCommand}}deploy_command: {{.DeployCommand}}{{end}}
+    build_root: {{.BuildRoot}}
+
+    {{if .Ports}}ports:{{range .Ports}}
+      - {{if .Container}}container: {{.Container}}{{end}}
+        {{if .HTTP}}http: {{.HTTP}}{{end}}
+        {{if .HTTPS}}https: {{.HTTPS}}{{end}}
+        {{if .TCP}}tcp: {{.TCP}}{{end}}
+        {{if .UDP}}udp: {{.UDP}}{{end}}
+    {{end}}{{end}}
+
+    {{if .EnvVars}}env_vars:{{range .EnvVars}}
+      {{.Key}}: {{.Value}}
+    {{end}}{{end}}
+{{end}}
+
+{{if .Dbs}}
+##NEWLINE##
+databases:{{range .Dbs}}
+  - {{.}}
+{{end}}{{end}}

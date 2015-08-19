@@ -1,0 +1,131 @@
+source "https://rubygems.org"
+
+gem "rails",                      "~> 4.2.3"
+gem "rack-cors", require: "rack/cors"
+
+# Provides Engine for Sites
+gem 'sites', :git => "git@github.com:viewbook/module-gallery-slideshow.git", :ref => "f63501124972e376df6379f2325c4f8c983c5ed0"
+
+# Json serialization
+gem "active_model_serializers", "~> 0.9.3"
+
+# Database dependencies
+gem "mysql2",                     "~> 0.3.11"
+gem "pg"
+
+# Basic dependencies
+gem "json"
+gem "nokogiri"
+
+gem "sass",                       require: "sass"
+gem "sass-rails",                 "~> 4.0.3"
+
+# Authorization and authentication
+gem "devise",                     "~> 3.4.0"
+gem "devise-encryptable",         "~> 0.1.0"
+
+# State machine for old and deprecated subscriptions model
+gem "simple_state_machine",       "~> 0.6.0"
+# Maintain list of all domain suffixes in use
+gem "public_suffix",              "~> 1.4.0"
+
+# HTML Sanitizer. In Rails 4.2 and above this gem will be responsible for sanitizing HTML fragments
+# Can be removed as explicit dependency when this app runs 4.2
+gem "rails-html-sanitizer"
+
+# Task scheduling
+gem "whenever",                   require: false
+gem "delayed_job"
+gem "delayed_job_active_record"
+
+# Miscellaneous libraries
+gem "patron"
+
+# Used by Plug::Session to keep a persistent connection to the API server.
+gem "net-http-persistent"
+
+# Intercom
+gem "intercom",                   "~> 2.4.4", require: false
+
+# Mailchimp api to sync user emails to mailchimp
+gem "mailchimp-api",              require: false
+
+# Views and frontend
+gem "kaminari"
+
+# Storage on S3
+gem "aws-sdk",                    "~> 2.1.0", require: false
+
+# Used by sites pages to format pages
+gem "color"
+gem "radius"
+gem "htmlentities",               "~> 4.3.3"
+gem "hpricot",                    "0.8.3"
+gem "simple-rss"
+
+# Used for validating EU VAT numbers
+gem "valvat",                     "~>0.6.8"
+
+# Used to detect device types and browser capabilities
+gem "browser",                    "~>0.7.0"
+
+# Naive bayes implementation used for spam detection
+gem "nbayes",                     require: false
+
+# For generating PDF files
+gem "prawn-rails"
+
+# React rendering
+gem "execjs",                     "~> 2.3.0"
+gem "therubyracer",               "~> 0.12.1"
+gem "connection_pool",            "~> 2.1.1"
+
+# Calculate image sizes
+gem "rmagick"
+
+group :assets do
+  gem "sprockets",                "~> 2.11"
+  gem "jquery-rails",             "~> 3.0.0"
+  gem "uglifier",                 "~> 2.1.0"
+end
+
+group :development do
+  gem "letter_opener"
+  gem "thin"
+end
+
+group :development, :test do
+  gem "rspec-rails",              "~> 3.3.0"
+end
+
+group :test do
+  gem "shoulda-matchers"
+
+  gem "minitest",                 require: false
+  gem "webmock",                  require: false
+
+  gem "coveralls",                require: false
+end
+
+group :development, :production, :staging do
+  # ActiveAdmin adds a load time of about three seconds to the
+  # test suite we'd rather not wait for that.
+  gem "activeadmin", github: "gregbell/active_admin"
+end
+group :staging do
+  # Memcache as the cache store
+  gem 'dalli'
+end
+
+group :production do
+  # Redis as the cache store
+  gem "redis-rails"
+end
+
+group :staging, :production do
+  # Track errors
+  gem "sentry-raven",             "~> 0.12.3"
+
+  # New relic
+  gem "newrelic_rpm"
+end
