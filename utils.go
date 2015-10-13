@@ -7,9 +7,13 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/cloud66/starter/common"
 )
 
 func fetch(url string, mod *time.Time) (io.ReadCloser, error) {
+	common.PrintlnL2("Downloading from %s", url)
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
