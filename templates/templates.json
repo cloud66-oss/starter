@@ -1,0 +1,11 @@
+{
+  "version" : "1.0.0",
+  "dockerfiles" : [
+    { "name": "node.dockerfile.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/dockerfiles/node.dockerfile.template"},
+    { "name": "python.dockerfile.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/dockerfiles/python.dockerfile.template"},
+    { "name": "ruby.dockerfile.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/dockerfiles/ruby.dockerfile.template"}
+  ],
+  "service-ymls" : [
+    { "name": "service.yml.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/service-yml/service.yml.template"}
+  ]
+}
