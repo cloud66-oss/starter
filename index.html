@@ -30,14 +30,14 @@
       <section>
         <h3>Welcome to Starter</h3>
 
-        <p>Cloud 66 starter is an open-source command line tool to generate a Dockerfile and a service.yml file from arbitrary source code. The service.yml file is a Cloud 66 service definition file which is used to define the service configurations on a stack.</p>
-        <p>Starter works in the same way as BuildPacks do, but only generates the above mentioned files; the image compile step happens on the BuildGrid. Starter does not require any additional third party tools or frameworks to work (it's compiled as a Go executable).</p>
+        <p>Cloud 66 Starter is an open-source command line tool to generate a <code>Dockerfile</code> and a <code>service.yml</code> file from arbitrary source code. The service.yml file is a Cloud 66 service definition file which is used to define the service configurations on a stack.</p>
+        <p>Starter works in the same way as <a href="https://devcenter.heroku.com/articles/buildpacks">BuildPacks</a> do, but only generates the above mentioned files; the image compile step happens on the <a href="http://help.cloud66.com/building-your-stack/building-your-docker-service">BuildGrid</a>. Starter does not require any additional third party tools or frameworks to work (it's compiled as a Go executable).</p>
 
-        <h3>Get Started</h3>
-        <p>If you are on OS X, the best way to install starter is using <b>homebrew</b></p>
+        <h3>Getting Started</h3>
+        <p>If you are on OS X, the best way to install starter is using <a href="http://brew.sh/">homebrew</a></p>
         <pre><code>$ brew tap cloud66/tap
 $ brew install c66starter</code></pre>
-        <p>Alternatively you can download the executable and run it on your development machine.</p>
+        <p>Alternatively you can <a href="https://github.com/cloud66/c66starter/releases">download the latest release executable</a> and run it on your development machine.</p>
         <pre><code>$ cd /my/project
 $ starter</code></pre>
         <p>This will analyze the project in the current folder and generate the two files: <code>Dockerfile</code> and <code>service.yml</code> in the same folder, prompting for information when required.</p>
@@ -62,7 +62,7 @@ This command will be run after each deployment: '/bin/sh -c "RAILS_ENV=_env:RAIL
 ----> Writing service.yml...
 Done</code></pre>
 
-        <p>Starter supports Procfiles and generates a service in service.yml for each item in the Procfile. It is highly advised to use a Procfile to define your own service commands as starter will only detect the web service otherwise.</p>
+        <p>Starter supports <a href="https://devcenter.heroku.com/articles/procfile">Procfiles</a> and generates a service in <code>service.yml</code> for each item in the Procfile. It is highly advised to use a Procfile to define your own service commands as starter will only detect the web service otherwise.</p>
         <p>To use starter on a different folder, you can use the <code>p</code> option:</p>
 
         <pre><code>$ starter -p /my/project</code></pre>
@@ -74,10 +74,24 @@ Done</code></pre>
 
         <ul>
           <li>Ruby, Rack (Rails, Sinatra, Padrino)</li>
-          <li>Python (django)</li>
+          <li>Python (django) (experimental)</li>
         </ul>
 
-        <h3>Contributing &amp; Adding support for new frameworks and languages</h3>
+        <h3>Deploying your app to your servers</h3>
+        <p>Once you have the <code>service.yml</code> and <code>Dockerfile</code> generated you can open them up in your favourite text editor for inspection or modifications.</p>
+        <pre><code>$ atom Dockerfile
+$ atom service.yml</code></pre>
+        <p>If you are happy with the contents you can use them to build and deploy your application on Cloud 66 (you need a <a href="https://app.cloud66.com/users/sign_up">free Cloud 66 account</a> for this).</p>
+        <p>Cloud 66 expects your <code>Dockerfile</code> to be with your source code, so we need to commit that with the code into your repositoty.</p>
+        <pre><code>$ git add Dockerfile
+$ git commit -m "adding Dockerfile"
+$ git push origin master</code></pre>
+        <p>Now you can use the web interface to <a href="http://help.cloud66.com/introduction-to-cloud-66/introduction-to-cloud-66">create a new stack</a> for your app in Cloud 66. All you need to do is to copy and paste the generated <code>service.yml</code> to the advanced settings of the stack creation step.</p>
+        <p>Alternatively you can use <a href="http://help.cloud66.com/toolbelt/toolbelt-introduction">Cloud 66 Toolbelt</a> to create your stack from the command line:</p>
+        <pre><code>$ cx stacks create --name "My Awesome Stack" --environment "production" --service_yaml service.yaml</code></pre>
+        <p>Find more information on <a href="http://help.cloud66.com/toolbelt/toolbelt-stack-management">creating a stack with the Toolbelt</a>.</p>
+
+        <h3>Contributing &amp; adding support for new frameworks and languages</h3>
 
         <p>We will be adding support for new languages and frameworks over the time. However, if you find yourself interested in adding one, it's fairly easy to do:</p>
         <ul>
