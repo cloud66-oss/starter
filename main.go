@@ -125,11 +125,10 @@ func downloadTemplates(tempDir string, td templateDefinition) error {
 
 func downloadSingleFile(tempDir string, temp downloadFile) error {
 	r, err := fetch(strings.Replace(temp.Url, "{{.branch}}", flagBranch, -1), nil)
-	defer r.Close()
-
 	if err != nil {
 		return err
 	}
+	defer r.Close()
 
 	output, err := os.Create(filepath.Join(tempDir, temp.Name))
 	if err != nil {
