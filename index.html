@@ -28,13 +28,16 @@
 
       </header>
       <section>
-        <h3>Welcome to Starter.</h3>
+        <h3>Welcome to Starter</h3>
 
         <p>Cloud 66 starter is an open-source command line tool to generate a Dockerfile and a service.yml file from arbitrary source code. The service.yml file is a Cloud 66 service definition file which is used to define the service configurations on a stack.</p>
         <p>Starter works in the same way as BuildPacks do, but only generates the above mentioned files; the image compile step happens on the BuildGrid. Starter does not require any additional third party tools or frameworks to work (it's compiled as a Go executable).</p>
 
         <h3>Get Started</h3>
-        <p>To get started download the executable and run it on your development machine.</p>
+        <p>If you are on OS X, the best way to install starter is using <b>homebrew</b></p>
+        <pre><code>$ brew tap cloud66/tap
+$ brew install c66starter</code></pre>
+        <p>Alternatively you can download the executable and run it on your development machine.</p>
         <pre><code>$ cd /my/project
 $ starter</code></pre>
         <p>This will analyze the project in the current folder and generate the two files: <code>Dockerfile</code> and <code>service.yml</code> in the same folder, prompting for information when required.</p>
@@ -71,6 +74,7 @@ Done</code></pre>
 
         <ul>
           <li>Ruby, Rack (Rails, Sinatra, Padrino)</li>
+          <li>Python (django)</li>
         </ul>
 
         <h3>Contributing &amp; Adding support for new frameworks and languages</h3>
