@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bugsnag/bugsnag-go"
 	"github.com/cloud66/starter/common"
 )
 
@@ -42,6 +44,11 @@ const (
 )
 
 func init() {
+	bugsnag.Configure(bugsnag.Configuration{
+		APIKey:     "916591d12b54e689edde67e641c5843d",
+		AppVersion: VERSION,
+	})
+
 	flag.StringVar(&flagPath, "p", "", "project path")
 	flag.BoolVar(&flagNoPrompt, "y", false, "do not prompt user")
 	flag.StringVar(&flagEnvironment, "e", "production", "set project environment")
@@ -149,6 +156,12 @@ func main() {
 
 	if len(args) > 0 && args[0] == "help" {
 		flag.PrintDefaults()
+		return
+	}
+
+	if len(args) > 0 && (args[0] == "version" || args[0] == "v") {
+		fmt.Printf("Cloud 66 Starter (%s)\n", VERSION)
+		fmt.Println("Copyright 2015 Cloud66 Inc.")
 		return
 	}
 
