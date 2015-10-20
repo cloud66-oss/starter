@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"bufio"
 
 	"github.com/hashicorp/go-version"
 	"github.com/mgutz/ansi"
@@ -135,12 +136,15 @@ func AskUserWithDefault(message string, defaultValue string, shouldPrompt bool) 
 	}
 
 	PrintL1("%s [%s] ", message, printedDefaultValue)
-	value := ""
-	if _, err := fmt.Scanln(&value); err != nil || strings.TrimSpace(value) == "" {
+
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+
+	if scanner.Err() != nil || strings.TrimSpace(scanner.Text()) == "" {
 		return defaultValue
 	}
 
-	return value
+	return scanner.Text()
 }
 
 func AskYesOrNo(message string, defaultValue bool, shouldPrompt bool) bool {
