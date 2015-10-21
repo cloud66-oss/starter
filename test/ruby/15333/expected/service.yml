@@ -3,7 +3,7 @@
 services:
 
   worker:
-    git: git@github.com:cloud66/starter.git
+    git_url: git@github.com:cloud66/starter.git
     git_branch: master
     command: bundle exec rake jobs:work
     build_root: test/ruby/15333/src/
