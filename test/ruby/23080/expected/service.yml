@@ -3,7 +3,7 @@
 services:
 
   web:
-    git: git@github.com:cloud66/starter.git
+    git_url: git@github.com:cloud66/starter.git
     git_branch: master
     command: bundle exec rackup -E _env:RACK_ENV
     build_root: test/ruby/23080/src/
