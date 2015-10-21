@@ -3,7 +3,7 @@ services:
 {{range .Services}}
 ##NEWLINE##
   {{.Name}}:
-    git: {{.GitRepo}}
+    git_url: {{.GitRepo}}
     git_branch: {{.GitBranch}}
     command: {{.Command}}
     {{if .BuildCommand}}build_command: {{.BuildCommand}}{{end}}
