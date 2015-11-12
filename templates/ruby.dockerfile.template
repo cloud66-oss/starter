@@ -1,6 +1,6 @@
 FROM ruby:{{.Version}}
 
-RUN apt-get update -qq && apt-get install -y build-essential {{.Packages.ToList " "}}
+RUN apt-get update -qq && apt-get install -y build-essential nodejs {{.Packages.ToList " "}}
 
 ENV APP_HOME /app
 RUN mkdir $APP_HOME
