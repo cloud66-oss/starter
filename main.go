@@ -24,6 +24,7 @@ type templateDefinition struct {
 	Version     string         `json:"version"`
 	Dockerfiles []downloadFile `json:"dockerfiles"`
 	ServiceYmls []downloadFile `json:"service-ymls"`
+	DockerComposeYmls []downloadFile `json:"docker-compose-ymls"`
 }
 
 var (
@@ -38,6 +39,7 @@ var (
 
 	serviceYAMLTemplateDir string
 	dockerfileTemplateDir  string
+	dockerComposeYAMLTemplateDir string
 )
 
 const (
@@ -129,6 +131,13 @@ func downloadTemplates(tempDir string, td templateDefinition) error {
 		}
 	}
 
+	for _, temp := range td.DockerComposeYmls {
+		err := downloadSingleFile(tempDir, temp)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -174,7 +183,7 @@ func main() {
 
 	flag.Parse()
 
-	common.PrintlnTitle("Cloud 66 Starter ~ (c) 2015 Cloud 66")
+	common.PrintlnTitle("Cloud 66 Starter ~ (c) 2016 Cloud 66")
 
 	if flagPath == "" {
 		pwd, err := os.Getwd()
@@ -198,6 +207,8 @@ func main() {
 
 		dockerfileTemplateDir = flagTemplates
 		serviceYAMLTemplateDir = flagTemplates
+		dockerComposeYAMLTemplateDir = flagTemplates
+
 	} else {
 		common.PrintlnTitle("Using local templates at %s", flagTemplates)
 		flagTemplates, err := filepath.Abs(flagTemplates)
@@ -207,6 +218,7 @@ func main() {
 		}
 		dockerfileTemplateDir = flagTemplates
 		serviceYAMLTemplateDir = flagTemplates
+		dockerComposeYAMLTemplateDir = flagTemplates
 	}
 
 	common.PrintlnTitle("Detecting framework for the project at %s", flagPath)
@@ -252,6 +264,11 @@ func main() {
 	if err != nil {
 		common.PrintlnError("Failed to write service.yml due to: %s", err.Error())
 		os.Exit(2)
+	}
+
+	err = pack.WriteDockerComposeYAML(dockerComposeYAMLTemplateDir, flagPath, !flagNoPrompt)
+	if err != nil {
+		common.PrintlnError("Failed to write docker-compose.yml due to: %s", err.Error())
 	}
 
 	if len(pack.GetMessages()) > 0 {

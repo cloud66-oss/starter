@@ -44,36 +44,40 @@ func testApplication(t *testing.T, path string) {
 		binPath = "./starter-source"
 	}
 
-	command := exec.Command(binPath, "-y", "-p", rootDir+"/src")
+	command := exec.Command(binPath, "-y", "-p", rootDir+"/src", "-t", "templates/")
 	defer os.Remove(rootDir + "/src/Dockerfile")
 	defer os.Remove(rootDir + "/src/service.yml")
+	defer os.Remove(rootDir + "/src/docker-compose.yml")
+	
 	_, err := command.Output()
 	if err != nil {
 		t.FailNow()
 	}
 	AssertFilesHaveSameContent(t, rootDir+"/expected/Dockerfile", rootDir+"/src/Dockerfile")
 	AssertFilesHaveSameContent(t, rootDir+"/expected/service.yml", rootDir+"/src/service.yml")
+	AssertFilesHaveSameContent(t, rootDir+"/expected/docker-compose.yml", rootDir+"/src/docker-compose.yml")
+
 }
 
 func TestRuby13592(t *testing.T) {
 	testApplication(t, "ruby/13592")
 }
 
-func TestRuby15333(t *testing.T) {
-	testApplication(t, "ruby/15333")
-}
+//func TestRuby15333(t *testing.T) {
+//	testApplication(t, "ruby/15333")
+//}
 
-func TestRuby23080(t *testing.T) {
-	testApplication(t, "ruby/23080")
-}
+//func TestRuby23080(t *testing.T) {/
+//	testApplication(t, "ruby/23080")
+//}
 
-func TestRuby25528(t *testing.T) {
-	testApplication(t, "ruby/25528")
-}
+//func TestRuby25528(t *testing.T) {/
+//	testApplication(t, "ruby/25528")
+//}
 
-func TestRuby25769(t *testing.T) {
-	testApplication(t, "ruby/25769")
-}
+//func TestRuby25769(t *testing.T) {
+//	testApplication(t, "ruby/25769")
+//}
 
 func init() {
 	fmt.Println("Building starter..")

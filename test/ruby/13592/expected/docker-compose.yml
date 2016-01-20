@@ -1,0 +1,17 @@
+custom_web:
+  build: .
+  links:
+  	- postgresql
+  	- redis
+
+worker:
+  build: .
+  links:
+  	- postgresql
+  	- redis
+
+postgresql:
+  image: postgresql
+
+redis:
+  image: redis

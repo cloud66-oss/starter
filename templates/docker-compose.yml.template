@@ -1,0 +1,5 @@
+---
+{{range .Services}}
+{{.Name}}:
+  build: .
+{{end}}
