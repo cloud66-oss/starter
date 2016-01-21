@@ -3,11 +3,7 @@
 services:
 
   custom_web:
-<<<<<<< Updated upstream
     git_url: git@github.com:cloud66/starter.git
-=======
-    git_url: http://github.com/kamerblauwlicht/starter.git
->>>>>>> Stashed changes
     git_branch: master
     command: bundle exec unicorn_rails -c config/unicorn.rb -E _env:RAILS_ENV -D
     build_command: /bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:schema:load"
@@ -21,15 +17,5 @@ services:
       RAILS_ENV: production
       RACK_ENV: production
 
-  worker:
-    git_url: http://github.com/kamerblauwlicht/starter.git
-    git_branch: master
-    command: bundle exec rake jobs:work
-    build_root: test/ruby/13592/src/
-    env_vars:
-      RAILS_ENV: production
-      RACK_ENV: production
-
 databases:
-  - postgresql
-  - redis
+  - mysql

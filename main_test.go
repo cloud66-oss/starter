@@ -28,6 +28,7 @@ func AssertFilesHaveSameContent(t *testing.T, expectedFile string, generatedFile
 		// for tests to always work we replace the current starter branch (which may
 		// change) to 'master' in the generated file.
 		generated = regexp.MustCompile(`git_branch: .*`).ReplaceAll(generated, []byte("git_branch: master"))
+		generated = regexp.MustCompile(`git_url: .*`).ReplaceAll(generated, []byte("git_url: git@github.com:cloud66/starter.git"))
 	}
 
 	if string(expected) != string(generated) {
@@ -44,7 +45,7 @@ func testApplication(t *testing.T, path string) {
 		binPath = "./starter-source"
 	}
 
-	command := exec.Command(binPath, "-y", "-p", rootDir+"/src", "-t", "templates/")
+	command := exec.Command(binPath, "-y", "-p", rootDir+"/src", "-templates", "templates/")
 	defer os.Remove(rootDir + "/src/Dockerfile")
 	defer os.Remove(rootDir + "/src/service.yml")
 	defer os.Remove(rootDir + "/src/docker-compose.yml")

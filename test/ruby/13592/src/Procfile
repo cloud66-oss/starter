@@ -1,2 +1,1 @@
-custom_web: bundle exec unicorn_rails -c config/unicorn.rb -E $RAILS_ENV -D
-worker:  bundle exec rake jobs:work
+custom_web: bundle exec rails s -p 3000 -E $RAILS_ENV -D

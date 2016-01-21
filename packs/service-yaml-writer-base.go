@@ -26,7 +26,7 @@ func (w *ServiceYAMLWriterBase) Write(context interface{}) error {
 		return err
 	}
 
-	return w.removeBlankLines()
+	return w.removeBlankLines("service.yml")
 }
 
 // NOTE
@@ -36,8 +36,8 @@ func (w *ServiceYAMLWriterBase) Write(context interface{}) error {
 // What we do to avoid this is:
 // 		* Removing all blank lines from the evaluated template
 // 		* If a line contains '##NEWLINE##', replace it by a newline
-func (w *TemplateWriterBase) removeBlankLines() error {
-	fullPath := filepath.Join(w.OutputDir, "service.yml")
+func (w *TemplateWriterBase) removeBlankLines(name string) error {
+	fullPath := filepath.Join(w.OutputDir, name)
 	content, err := ioutil.ReadFile(fullPath)
 	if err != nil {
 		return err

@@ -28,6 +28,22 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.CheckNotSupportedPackages(packages)
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
+
+
+	// inject all the services with the databases used in the infrastructure
+	// TODO: move somewhere else
+
+	var databases []*common.Database = []*common.Database{
+		&common.Database{Name: "mysql", EnvVars: []*common.EnvVar{
+		&common.EnvVar{Key: "MYSQL_ALLOW_EMPTY_PASSWORD", Value: "true"}}}}
+	
+
+
+
+	for _, service := range services {
+		service.Databases = databases
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -38,11 +54,12 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			GitBranch: gitBranch,
 			GitURL:    gitURL,
 			Messages:  a.Messages},
-		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs.Items}},
+		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: databases}},
 		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}},
 		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
 	return analysis, nil
 }
+
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	service := a.GetOrCreateWebService(services)
@@ -158,6 +175,7 @@ func (a *Analyzer) FindDatabases() *common.Lister {
 
 func (a *Analyzer) EnvVars() []*common.EnvVar {
 	return []*common.EnvVar{
+		&common.EnvVar{Key: "MYSQL_DATABASE_HOST", Value: "mysql.cloud66.local"},
 		&common.EnvVar{Key: "RAILS_ENV", Value: a.Environment},
 		&common.EnvVar{Key: "RACK_ENV", Value: a.Environment}}
 }

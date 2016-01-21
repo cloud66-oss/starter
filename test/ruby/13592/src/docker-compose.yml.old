@@ -3,3 +3,19 @@
 custom_web:
   build: .
   
+  ports:
+    
+ 	   
+  - "3000:3000"
+    	
+    
+  
+  	
+  links:
+	
+  - mysql
+  - mysql:mysql.cloud66.local
+	
+  environment:
+  	
+  - 

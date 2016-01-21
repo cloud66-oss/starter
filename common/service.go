@@ -10,4 +10,5 @@ type Service struct {
 	Ports         []*PortMapping
 	EnvVars       []*EnvVar
 	BuildRoot     string
+	Databases 	  []*Database
 }
