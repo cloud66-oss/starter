@@ -1,11 +1,9 @@
 ---
 {{range .Services}}
 {{.Name}}:
-  build: .
+  build: {{.BuildRoot}}
+  command: {{.Command}}
   {{if .Ports}}
-  volumes:
-  - ${PWD}:/app
-  command: /bin/sh -c "rake db:setup; rails s"
   ports:
     {{range .Ports}}
  	   {{if .Container}}
@@ -16,8 +14,8 @@
   {{if .Databases}}	
   links:
   	{{range .Databases}}
-  - {{.Name}}
-  - {{.Name}}:{{.Name}}.cloud66.local
+  - {{.}}
+  - {{.}}:{{.}}.cloud66.local
 	  {{end}}
   {{end}}
   {{if .EnvVars}}
@@ -28,11 +26,7 @@
 
 {{if .Dbs}}	
 {{range .Dbs}}
-{{.Name}}:
-  image: {{.Name}}
-  {{if .EnvVars}}
-  environment:{{range .EnvVars}}
-    - {{.Key}}={{.Value}}
-  {{end}}{{end}}  
+{{.}}:
+  image: {{.}}
 {{end}}
 {{end}}
