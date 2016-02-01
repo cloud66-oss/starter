@@ -82,6 +82,8 @@ func (a *AnalyzerBase) CheckNotSupportedPackages(packages *common.Lister) {
 
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {
 	services, err := b.analyzeProcfile()
+
+
 	if err != nil {
 		common.PrintlnError("Failed to parse Procfile due to %s", err.Error())
 		return nil, err
@@ -148,6 +150,7 @@ func (a *AnalyzerBase) analyzeProcfile() ([]*common.Service, error) {
 }
 
 func (a *AnalyzerBase) GetOrCreateWebService(services *[]*common.Service) *common.Service {
+
 	var service *common.Service
 	for _, s := range *services {
 		if s.Name == "web" || s.Name == "custom_web" {

@@ -1,0 +1,32 @@
+---
+{{range .Services}}
+{{.Name}}:
+  build: {{.BuildRoot}}
+  command: {{.Command}}
+  {{if .Ports}}
+  ports:
+    {{range .Ports}}
+ 	   {{if .Container}}
+  - "{{.Container}}:{{.Container}}"
+    	{{end}}
+    {{end}}
+  {{end}}
+  {{if .Databases}}	
+  links:
+  	{{range .Databases}}
+  - {{.}}
+  - {{.}}:{{.}}.cloud66.local
+	  {{end}}
+  {{end}}
+  {{if .EnvVars}}
+  environment:{{range .EnvVars}}
+    - {{.Key}}={{.Value}}
+  {{end}}{{end}}  
+{{end}}
+
+{{if .Dbs}}	
+{{range .Dbs}}
+{{.}}:
+  image: {{.}}
+{{end}}
+{{end}}

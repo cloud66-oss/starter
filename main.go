@@ -24,6 +24,7 @@ type templateDefinition struct {
 	Version     string         `json:"version"`
 	Dockerfiles []downloadFile `json:"dockerfiles"`
 	ServiceYmls []downloadFile `json:"service-ymls"`
+	DockerComposeYmls []downloadFile `json:"docker-compose-ymls"`
 }
 
 var (
@@ -32,11 +33,13 @@ var (
 	flagEnvironment string
 	flagTemplates   string
 	flagBranch      string
+	flagOverwrite   bool
 	VERSION         string = "dev"
 	BUILD_DATE      string = ""
 
 	serviceYAMLTemplateDir string
 	dockerfileTemplateDir  string
+	dockerComposeYAMLTemplateDir string
 )
 
 const (
@@ -51,6 +54,7 @@ func init() {
 
 	flag.StringVar(&flagPath, "p", "", "project path")
 	flag.BoolVar(&flagNoPrompt, "y", false, "do not prompt user")
+	flag.BoolVar(&flagOverwrite, "overwrite", false, "overwrite existing files")
 	flag.StringVar(&flagEnvironment, "e", "production", "set project environment")
 	flag.StringVar(&flagTemplates, "templates", "", "location of the templates directory")
 	flag.StringVar(&flagBranch, "branch", "master", "template branch in github")
@@ -127,6 +131,13 @@ func downloadTemplates(tempDir string, td templateDefinition) error {
 		}
 	}
 
+	for _, temp := range td.DockerComposeYmls {
+		err := downloadSingleFile(tempDir, temp)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -172,7 +183,7 @@ func main() {
 
 	flag.Parse()
 
-	common.PrintlnTitle("Cloud 66 Starter ~ (c) 2015 Cloud 66")
+	common.PrintlnTitle("Cloud 66 Starter ~ (c) 2016 Cloud 66")
 
 	if flagPath == "" {
 		pwd, err := os.Getwd()
@@ -196,6 +207,8 @@ func main() {
 
 		dockerfileTemplateDir = flagTemplates
 		serviceYAMLTemplateDir = flagTemplates
+		dockerComposeYAMLTemplateDir = flagTemplates
+
 	} else {
 		common.PrintlnTitle("Using local templates at %s", flagTemplates)
 		flagTemplates, err := filepath.Abs(flagTemplates)
@@ -205,6 +218,7 @@ func main() {
 		}
 		dockerfileTemplateDir = flagTemplates
 		serviceYAMLTemplateDir = flagTemplates
+		dockerComposeYAMLTemplateDir = flagTemplates
 	}
 
 	common.PrintlnTitle("Detecting framework for the project at %s", flagPath)
@@ -212,23 +226,49 @@ func main() {
 	pack, err := Detect(flagPath)
 	if err != nil {
 		common.PrintlnError("Failed to detect framework due to: %s", err.Error())
-		return
+		os.Exit(2)
+	}
+
+	// check for Dockerfile (before analysis to avoid wasting time)
+	dockerfilePath := filepath.Join(flagPath, "Dockerfile")
+	if _, err := os.Stat(dockerfilePath); err == nil {
+		// file exists. should we overwrite?
+		if !flagOverwrite {
+			common.PrintlnError("Dockerfile already exists. Use overwrite flag to overwrite it")
+			os.Exit(1)
+		}
+	}
+
+	serviceYAMLPath := filepath.Join(flagPath, "service.yml")
+	if _, err := os.Stat(serviceYAMLPath); err == nil {
+		// file exists. should we overwrite?
+		if !flagOverwrite {
+			common.PrintlnError("service.yml already exists. Use overwrite flag to overwrite it")
+			os.Exit(1)
+		}
 	}
 
 	err = pack.Analyze(flagPath, flagEnvironment, !flagNoPrompt)
 	if err != nil {
 		common.PrintlnError("Failed to analyze the project due to: %s", err.Error())
-		return
+		os.Exit(2)
 	}
 
 	err = pack.WriteDockerfile(dockerfileTemplateDir, flagPath, !flagNoPrompt)
 	if err != nil {
 		common.PrintlnError("Failed to write Dockerfile due to: %s", err.Error())
+		os.Exit(2)
 	}
 
 	err = pack.WriteServiceYAML(serviceYAMLTemplateDir, flagPath, !flagNoPrompt)
 	if err != nil {
 		common.PrintlnError("Failed to write service.yml due to: %s", err.Error())
+		os.Exit(2)
+	}
+
+	err = pack.WriteDockerComposeYAML(dockerComposeYAMLTemplateDir, flagPath, !flagNoPrompt)
+	if err != nil {
+		common.PrintlnError("Failed to write docker-compose.yml due to: %s", err.Error())
 	}
 
 	if len(pack.GetMessages()) > 0 {
@@ -237,6 +277,14 @@ func main() {
 			common.PrintlnWarning(" * " + warning)
 		}
 	}
+
+	common.PrintlnL0("Now you can add the newly created Dockerfile to your git and create a stack")
+	common.PrintlnL0("To do that you will need to run the following commands:\n\n")
+	fmt.Printf("cd %s\n", flagPath)
+	fmt.Println("git add Dockerfile")
+	fmt.Println("git commit -m 'Adding Dockerfile'")
+	fmt.Printf("cx stacks create --name='CHANGEME' --environment='%s' --service_yaml=service.yml\n\n",
+		flagEnvironment)
 
 	common.PrintlnTitle("Done")
 }

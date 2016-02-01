@@ -1,34 +1,53 @@
-development:
-  adapter: postgresql
-  database: <%= ENV.fetch('DB', 'wt_dev') %>
-  template: template0
+# MySQL.  Versions 5.0+ are recommended.
+#
+# Install the MYSQL driver
+#   gem install mysql2
+#
+# Ensure the MySQL gem is defined in your Gemfile
+#   gem 'mysql2'
+#
+# And be sure to use new-style password hashing:
+#   http://dev.mysql.com/doc/refman/5.0/en/old-client.html
+#
+default: &default
+  adapter: mysql2
+  encoding: utf8
   pool: 5
-  username: <%= ENV.fetch('DB_USER', 'docker') %>
-  password: <%= ENV.fetch('DB_PASS', 'docker') %>
-  host: <%= ENV.fetch('DB_1_PORT_5432_TCP_ADDR', 'localhost') %>
-  port: <%= ENV.fetch('DB_1_PORT_5432_TCP_PORT', '5432') %>
+  username: root
+  host: <%= ENV['MYSQL_DATABASE_HOST'] %>
 
-staging:
-  adapter: postgresql
-  database: <%= ENV['PG_DB'] %>
-  username: <%= ENV['PG_DB_USER'] %>
-  password: <%= ENV['PG_DB_PASS'] %>
-  host: <%= ENV['PG_DB_HOST'] || 'localhost' %>
-  port: 5432
+development:
+  <<: *default
+  database: rails-mysql-app_development
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
-test: &test
-  adapter: postgresql
-  database: wt_test
-  username: **REDACTED**
-  password: **REDACTED**
-  host: localhost
+test:
+  <<: *default
+  database: rails-mysql-app_test
 
+# As with config/secrets.yml, you never want to store sensitive information,
+# like your database password, in your source code. If your source code is
+# ever seen by anyone, they now have access to your database.
+#
+# Instead, provide the password as a unix environment variable when you boot
+# the app. Read http://guides.rubyonrails.org/configuring.html#configuring-a-database
+# for a full rundown on how to provide these environment variables in a
+# production deployment.
+#
+# On Heroku and other platform providers, you may have a full connection URL
+# available as an environment variable. For example:
+#
+#   DATABASE_URL="mysql2://myuser:mypass@localhost/somedatabase"
+#
+# You can use this database configuration with:
+#
+#   production:
+#     url: <%= ENV['DATABASE_URL'] %>
+#
 production:
-  adapter: postgresql
-  database: wt_dev
-  username: **REDACTED**
-  password: **REDACTED**
-  host: <%= ENV['POSTGRESQL_ADDRESS'] || 'localhost' %>
+  <<: *default
+  database: rails-mysql-app_production
+  username: rails-mysql-app
+  password: <%= ENV['RAILS-MYSQL-APP_DATABASE_PASSWORD'] %>

@@ -1,0 +1,27 @@
+{
+	"ImportPath": "github.com/cloud66/starter",
+	"GoVersion": "go1.5.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/bugsnag/bugsnag-go",
+			"Comment": "v1.0.5",
+			"Rev": "9ee24c1db7e2c5b87e7228acb3e587a35124a041"
+		},
+		{
+			"ImportPath": "github.com/bugsnag/osext",
+			"Rev": "0dd3f918b21bec95ace9dc86c7e70266cfc5c702"
+		},
+		{
+			"ImportPath": "github.com/bugsnag/panicwrap",
+			"Rev": "e5f9854865b9778a45169fc249e99e338d4d6f27"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/go-version",
+			"Rev": "999359b6b7a041ce16e695d51e92145b83f01087"
+		},
+		{
+			"ImportPath": "github.com/mgutz/ansi",
+			"Rev": "452f5f5396543168418a299cd963697ac742b56e"
+		}
+	]
+}

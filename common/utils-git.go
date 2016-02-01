@@ -22,6 +22,34 @@ func LocalGitBranch(dir string) string {
 	return strings.TrimSpace(strings.Replace(string(b), "https://", "http://", -1))
 }
 
+func AddFile(dir string, file string) error {
+	gitRootDir, err := GitRootDir(dir)
+	if err != nil {
+		return err
+	}
+
+	_, err = exec.Command("git", "--git-dir", fmt.Sprintf("%s/.git", gitRootDir), "add", file).Output()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func Commit(dir string, message string) error {
+	gitRootDir, err := GitRootDir(dir)
+	if err != nil {
+		return err
+	}
+
+	_, err = exec.Command("git", "--git-dir", fmt.Sprintf("%s/.git", gitRootDir), "commit", "-m", fmt.Sprintf("'%s'", message)).Output()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func RemoteGitUrl(dir string) string {
 	gitRootDir, err := GitRootDir(dir)
 	if err != nil {
