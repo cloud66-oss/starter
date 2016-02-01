@@ -12,7 +12,7 @@ services:
       RACK_ENV: production
 
   web:
-    git: git@github.com:cloud66/starter.git
+    git_url: git@github.com:cloud66/starter.git
     git_branch: master
     command: bundle exec rails server -e _env:RAILS_ENV
     build_command: /bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:schema:load"

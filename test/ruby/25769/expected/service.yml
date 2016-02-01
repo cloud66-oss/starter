@@ -18,7 +18,7 @@ services:
       RACK_ENV: production
 
   worker:
-    git: git@github.com:cloud66/starter.git
+    git_url: git@github.com:cloud66/starter.git
     git_branch: master
     command: bundle exec sidekiq
     build_root: test/ruby/25769/src/
