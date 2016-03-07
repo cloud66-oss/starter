@@ -45,6 +45,7 @@ func testApplication(t *testing.T, path string) {
 		binPath = "./starter-source"
 	}
 
+	//TODO: test for opt-out docker-compose.yml
 	command := exec.Command(binPath, "-y", "-p", rootDir+"/src", "-templates", "templates/")
 	defer os.Remove(rootDir + "/src/Dockerfile")
 	defer os.Remove(rootDir + "/src/service.yml")
