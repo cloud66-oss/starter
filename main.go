@@ -7,12 +7,12 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
 
 	"github.com/bugsnag/bugsnag-go"
 	"github.com/cloud66/starter/common"
+	"github.com/mitchellh/go-homedir"
 )
 
 type downloadFile struct {
@@ -195,8 +195,7 @@ func main() {
 
 	// if templateFolder is specified we're going to use that otherwise download
 	if flagTemplates == "" {
-		usr, _ := user.Current()
-		homeDir := usr.HomeDir
+		homeDir,_ := homedir.Dir()
 
 		flagTemplates = filepath.Join(homeDir, ".starter")
 		err := getTempaltes(flagTemplates)
