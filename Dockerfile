@@ -1,4 +1,4 @@
-#use the ruby base image
+#use the golang base image
 FROM golang:1.5
 MAINTAINER Daniël van Gils
 
