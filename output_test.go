@@ -32,8 +32,8 @@ func convertServiceYaml(generated []byte) ([]byte) {
 }
 
 var _ = Describe("Generating files with Starter", func() {
-	Context("using a Rails project", func() {
-		var projectFixturePath string = "test/ruby/13592"
+	Context("using a Rails project with a Mysql database", func() {
+		var projectFixturePath string = "test/ruby/rails_mysql"
 		
 		BeforeEach(func() {
 			_, err := runStarterWithProject(projectFixturePath)
@@ -50,7 +50,65 @@ var _ = Describe("Generating files with Starter", func() {
 			Expect(dockerfile_generated).To(Equal(dockerfile_expected))
 		})
 
-		It("should generate a Service.yml", func() {
+		It("should generate a service.yml", func() {
+			service_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
+			service_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
+			service_yaml_generated = convertServiceYaml(service_yaml_generated)
+			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+	})
+	
+	Context("using a Rails project running Unicorn and using a Mysql database", func() {
+		var projectFixturePath string = "test/ruby/rails_unicorn_mysql"
+		
+		BeforeEach(func() {
+			_, err := runStarterWithProject(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+    	AfterEach(func() {
+			cleanupGeneratedFiles(projectFixturePath)
+		})
+
+		It("should generate a Dockerfile", func() {
+			dockerfile_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/Dockerfile")
+			dockerfile_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/Dockerfile")
+			Expect(dockerfile_generated).To(Equal(dockerfile_expected))
+		})
+
+		It("should generate a service.yml", func() {
+			service_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
+			service_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
+			service_yaml_generated = convertServiceYaml(service_yaml_generated)
+			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+	})
+	
+	Context("using a Rails project running Unicorn, some workers and using a Redis and Postgresql database", func() {
+		var projectFixturePath string = "test/ruby/rails_jobs_unicorn_redis_postgresql"
+		
+		BeforeEach(func() {
+			_, err := runStarterWithProject(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+    	AfterEach(func() {
+			cleanupGeneratedFiles(projectFixturePath)
+		})
+
+		It("should generate a Dockerfile", func() {
+			dockerfile_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/Dockerfile")
+			dockerfile_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/Dockerfile")
+			Expect(dockerfile_generated).To(Equal(dockerfile_expected))
+		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
+
+		It("should generate a service.yml", func() {
 			service_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
 			service_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
