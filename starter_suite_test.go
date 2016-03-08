@@ -18,7 +18,7 @@ func TestStarter(t *testing.T) {
 var _ = BeforeSuite(func() {
 	err := exec.Command("go", "build").Run()
 	Expect(err).NotTo(HaveOccurred())
-	Expect(common.FileExists(binPath)).To(BeTrue(), "starter bin is generated")
+	Expect(common.FileExists(binPath)).To(BeTrue())
 })
 
 var _ = AfterSuite(func() {

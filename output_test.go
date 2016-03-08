@@ -32,7 +32,7 @@ func convertServiceYaml(generated []byte) ([]byte) {
 }
 
 var _ = Describe("Generating files with Starter", func() {
-	Context("Using a Rails example", func() {
+	Context("using a Rails project", func() {
 		var projectFixturePath string = "test/ruby/13592"
 		
 		BeforeEach(func() {
