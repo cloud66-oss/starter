@@ -165,14 +165,15 @@ func downloadSingleFile(tempDir string, temp downloadFile) error {
 func main() {
 	args := os.Args[1:]
 
-	if len(args) > 0 && args[0] == "help" {
-		flag.PrintDefaults()
+	if len(args) > 0 && args[0] == "help" || args[0] == "h" {
+		fmt.Printf("Cloud 66 Starter (%s) Help\n", VERSION)
+		fmt.Println("Copyright 2016 Cloud66 Inc.")
 		return
 	}
 
 	if len(args) > 0 && (args[0] == "version" || args[0] == "v") {
 		fmt.Printf("Cloud 66 Starter (%s)\n", VERSION)
-		fmt.Println("Copyright 2015 Cloud66 Inc.")
+		fmt.Println("Copyright 2016 Cloud66 Inc.")
 		return
 	}
 
