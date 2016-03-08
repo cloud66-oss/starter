@@ -1,6 +1,6 @@
 - name: test_step
   service: starter
-  command: go test
+  command: ginkgo -v
 - name: generate_artifacts
   service: starter
   command: ./compile.sh `git describe --abbrev=0 --tags`
