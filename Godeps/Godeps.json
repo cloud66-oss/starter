@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/cloud66/starter",
-	"GoVersion": "go1.5.1",
+	"GoVersion": "go1.6",
 	"Deps": [
 		{
 			"ImportPath": "github.com/bugsnag/bugsnag-go",
@@ -22,6 +22,10 @@
 		{
 			"ImportPath": "github.com/mgutz/ansi",
 			"Rev": "452f5f5396543168418a299cd963697ac742b56e"
+		}
+		{
+			"ImportPath": "github.com/mitchellh/go-homedir",
+			"Rev": "981ab348d865cf048eb7d17e78ac7192632d8415"
 		}
 	]
 }

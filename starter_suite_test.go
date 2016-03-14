@@ -3,7 +3,6 @@ package main_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"os/exec"
 	"testing"
 	"github.com/cloud66/starter/common"
 )
@@ -16,8 +15,6 @@ func TestStarter(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	err := exec.Command("go", "build").Run()
-	Expect(err).NotTo(HaveOccurred())
 	Expect(common.FileExists(binPath)).To(BeTrue())
 })
 
