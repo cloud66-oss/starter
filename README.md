@@ -6,7 +6,7 @@ To find out more about Starter, checkout the [Cloud 66 Starter website](http://w
 
 #### Building Starter using Habitus
 
-If you want to contribute to Starter. You can build Starter using Habitus, run Habitus in the root directory of this repository. The latest version is generated (after tests) inside the `./artifacts/compiled` directory.
+If you want to contribute to Starter. You can build Starter using [Habitus](http://www.habitus.io), run Habitus in the root directory of this repository. The latest version is generated (after tests) inside the `./artifacts/compiled` directory.
 
 <kbd>$ sudo habitus –host $DOCKER\_HOST –certs $DOCKER\_CERT\_PATH</kbd>
 
