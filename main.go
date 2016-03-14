@@ -34,7 +34,7 @@ var (
 	flagTemplates   string
 	flagBranch      string
 	flagOverwrite   bool
-	VERSION         string = "dev"
+	VERSION         string = "0.1"
 	BUILD_DATE      string = ""
 
 	serviceYAMLTemplateDir string
@@ -166,25 +166,18 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) > 0 && args[0] == "help" || args[0] == "h" {
-		fmt.Printf("Cloud 66 Starter (%s) Help\n", VERSION)
-		fmt.Println("Copyright 2016 Cloud66 Inc.")
+		fmt.Printf("Starter (%s) Help\n", VERSION)
 		return
 	}
 
-	if len(args) > 0 && (args[0] == "version" || args[0] == "v") {
-		fmt.Printf("Cloud 66 Starter (%s)\n", VERSION)
-		fmt.Println("Copyright 2016 Cloud66 Inc.")
-		return
-	}
-
-	if len(args) > 0 && args[0] == "version" {
-		common.PrintlnTitle("Starter version: %s (%s)", VERSION, BUILD_DATE)
+	if len(args) > 0 && args[0] == "version"  || args[0] == "v" {
+		fmt.Printf("Starter version: %s (%s)\n", VERSION, BUILD_DATE)
 		return
 	}
 
 	flag.Parse()
 
-	common.PrintlnTitle("Cloud 66 Starter ~ (c) 2016 Cloud 66")
+	common.PrintlnTitle("Starter")
 
 	if flagPath == "" {
 		pwd, err := os.Getwd()

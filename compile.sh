@@ -1,8 +1,2 @@
 #!/bin/bash 
-if [ $# -eq 0 ]
-  then
-    echo "No version supplied"
-    exit 1
-fi
-
-gox -ldflags="-X main.VERSION=$1" -osarch="darwin/386 darwin/amd64 linux/386 linux/amd64 windows/386 windows/amd64" -output="compiled/{{.Dir}}_{{.OS}}_{{.Arch}}"
+gox -ldflags "-X main.BUILD_DATE=`date -u '+%Y-%m-%d'` -X main.VERSION=`git describe --abbrev=0 --tags`" -osarch="darwin/386 darwin/amd64 linux/386 linux/amd64 windows/386 windows/amd64" -output="compiled/{{.Dir}}_{{.OS}}_{{.Arch}}"
