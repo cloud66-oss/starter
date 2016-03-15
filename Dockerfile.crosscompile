@@ -12,4 +12,4 @@ ADD . /usr/local/go/src/github.com/cloud66/starter
 #switch to our app directory
 WORKDIR /usr/local/go/src/github.com/cloud66/starter
 
-RUN ./compile.sh `git describe --abbrev=0 --tags`
+RUN ./compile.sh
