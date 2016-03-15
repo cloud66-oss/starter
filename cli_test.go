@@ -1,18 +1,31 @@
 package main_test
 
 import (
+	"fmt"
+	"bytes"
+	"time"
 	"os/exec"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 
-var helpText string = "Starter (1.0.2) Help\n"
-
-var versionText string = "Starter version: 1.0.2 (2016-03-14)\n"
-
+var helpText string
+var versionText string
 
 var _ = Describe("Running Starter", func() {
+
+	BeforeEach(func() {
+  		command := exec.Command("git", "describe", "--abbrev=0", "--tags")
+		command_out, _ := command.Output()
+		version := bytes.TrimRight(command_out, "\n")
+		current_date := time.Now().Format("2006-01-02")
+
+		helpText = fmt.Sprintf("Starter (%s) Help\n", version)
+		versionText = fmt.Sprintf("Starter version: %s (%s)\n", version, current_date)
+			
+    })
+
 	Context("using the h flag", func() {
 		It("should show the help", func() {
 			command := exec.Command(binPath, "help")
