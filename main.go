@@ -34,6 +34,7 @@ var (
 	flagTemplates   string
 	flagBranch      string
 	flagVersion		string
+	flagGenerator	string
 	flagOverwrite   bool
 	VERSION         string = ""
 	BUILD_DATE      string = ""
@@ -59,8 +60,8 @@ func init() {
 	flag.StringVar(&flagEnvironment, "e", "production", "set project environment")
 	flag.StringVar(&flagTemplates, "templates", "", "location of the templates directory")
 	flag.StringVar(&flagBranch, "branch", "master", "template branch in github")
-	flag.StringVar(&flagBranch, "version", "", "version of starter")
-
+	flag.StringVar(&flagVersion, "v", "", "version of starter")
+	flag.StringVar(&flagGenerator, "g", "", "what kind of files need to be generated (dockerfile = only dockerfiles)")
 }
 
 // downloading templates from github and putting them into homedir
