@@ -33,8 +33,9 @@ var (
 	flagEnvironment string
 	flagTemplates   string
 	flagBranch      string
+	flagVersion		string
 	flagOverwrite   bool
-	VERSION         string = "0.1"
+	VERSION         string = ""
 	BUILD_DATE      string = ""
 
 	serviceYAMLTemplateDir string
@@ -58,6 +59,8 @@ func init() {
 	flag.StringVar(&flagEnvironment, "e", "production", "set project environment")
 	flag.StringVar(&flagTemplates, "templates", "", "location of the templates directory")
 	flag.StringVar(&flagBranch, "branch", "master", "template branch in github")
+	flag.StringVar(&flagBranch, "version", "", "version of starter")
+
 }
 
 // downloading templates from github and putting them into homedir
@@ -165,12 +168,12 @@ func downloadSingleFile(tempDir string, temp downloadFile) error {
 func main() {
 	args := os.Args[1:]
 
-	if len(args) > 0 && args[0] == "help" || args[0] == "h" {
+	if len(args) > 0 && args[0] == "help" || args[0] == "-h" {
 		fmt.Printf("Starter (%s) Help\n", VERSION)
 		return
 	}
 
-	if len(args) > 0 && args[0] == "version"  || args[0] == "v" {
+	if len(args) > 0 && args[0] == "version"  || args[0] == "-v" {
 		fmt.Printf("Starter version: %s (%s)\n", VERSION, BUILD_DATE)
 		return
 	}

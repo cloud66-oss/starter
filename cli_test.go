@@ -26,7 +26,7 @@ var _ = Describe("Running Starter", func() {
 			
     })
 
-	Context("using the h flag", func() {
+	Context("using the help flag", func() {
 		It("should show the help", func() {
 			command := exec.Command(binPath, "help")
 			command_out, err := command.Output()
@@ -38,6 +38,15 @@ var _ = Describe("Running Starter", func() {
 	Context("using the version flag", func() {
 		It("should show the version", func() {
 			command := exec.Command(binPath, "version")
+			command_out, err := command.Output()
+			output_string := string(command_out)
+			Expect(string(output_string)).To(Equal(versionText))
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+	Context("using the -v flag", func() {
+		It("should show the version", func() {
+			command := exec.Command(binPath, "-v")
 			command_out, err := command.Output()
 			output_string := string(command_out)
 			Expect(string(output_string)).To(Equal(versionText))
