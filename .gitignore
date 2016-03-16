@@ -6,6 +6,8 @@
 # Folders
 _obj
 _test
+compiled
+artifacts
 
 # Architecture specific extensions/prefixes
 *.[568vq]

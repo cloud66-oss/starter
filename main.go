@@ -7,12 +7,12 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
 
 	"github.com/bugsnag/bugsnag-go"
 	"github.com/cloud66/starter/common"
+	"github.com/mitchellh/go-homedir"
 )
 
 type downloadFile struct {
@@ -33,8 +33,9 @@ var (
 	flagEnvironment string
 	flagTemplates   string
 	flagBranch      string
+	flagVersion		string
 	flagOverwrite   bool
-	VERSION         string = "dev"
+	VERSION         string = ""
 	BUILD_DATE      string = ""
 
 	serviceYAMLTemplateDir string
@@ -58,6 +59,8 @@ func init() {
 	flag.StringVar(&flagEnvironment, "e", "production", "set project environment")
 	flag.StringVar(&flagTemplates, "templates", "", "location of the templates directory")
 	flag.StringVar(&flagBranch, "branch", "master", "template branch in github")
+	flag.StringVar(&flagBranch, "version", "", "version of starter")
+
 }
 
 // downloading templates from github and putting them into homedir
@@ -165,25 +168,19 @@ func downloadSingleFile(tempDir string, temp downloadFile) error {
 func main() {
 	args := os.Args[1:]
 
-	if len(args) > 0 && args[0] == "help" {
-		flag.PrintDefaults()
+	if len(args) > 0 && args[0] == "help" || args[0] == "-h" {
+		fmt.Printf("Starter (%s) Help\n", VERSION)
 		return
 	}
 
-	if len(args) > 0 && (args[0] == "version" || args[0] == "v") {
-		fmt.Printf("Cloud 66 Starter (%s)\n", VERSION)
-		fmt.Println("Copyright 2015 Cloud66 Inc.")
-		return
-	}
-
-	if len(args) > 0 && args[0] == "version" {
-		common.PrintlnTitle("Starter version: %s (%s)", VERSION, BUILD_DATE)
+	if len(args) > 0 && args[0] == "version"  || args[0] == "-v" {
+		fmt.Printf("Starter version: %s (%s)\n", VERSION, BUILD_DATE)
 		return
 	}
 
 	flag.Parse()
 
-	common.PrintlnTitle("Cloud 66 Starter ~ (c) 2016 Cloud 66")
+	common.PrintlnTitle("Starter")
 
 	if flagPath == "" {
 		pwd, err := os.Getwd()
@@ -195,8 +192,7 @@ func main() {
 
 	// if templateFolder is specified we're going to use that otherwise download
 	if flagTemplates == "" {
-		usr, _ := user.Current()
-		homeDir := usr.HomeDir
+		homeDir,_ := homedir.Dir()
 
 		flagTemplates = filepath.Join(homeDir, ".starter")
 		err := getTempaltes(flagTemplates)
