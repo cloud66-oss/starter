@@ -2,8 +2,8 @@
 FROM golang:1.6
 MAINTAINER Daniël van Gils
 
+#get all the go crosscompile stuff
 RUN go get github.com/mitchellh/gox
-
 
 #copy the source files
 RUN mkdir -p /usr/local/go/src/github.com/cloud66/starter
