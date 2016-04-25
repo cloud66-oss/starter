@@ -11,8 +11,17 @@ import (
 	"github.com/cloud66/starter/common"
 )
 
+
+
 func runStarter() (string, error) {
 	command := exec.Command(binPath)
+	command_out, err := command.Output()
+	output := string(command_out)
+	return output, err
+}
+
+func runStarterWithProjectNoTemplates(projectFixture string) (string, error) {
+	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-g", "dockerfile, c66-service, docker-compose")
 	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err
@@ -54,7 +63,7 @@ func convertServiceYaml(generated []byte) ([]byte) {
 	return generated
 }
 var _ = Describe("Start Starter without flags", func() {
-	It("should run starter but fail becasuse no project", func() {
+	It("should run starter but fail becasse no project", func() {
 		output, err := runStarter()
 		outputLines := strings.Split(output, "\n")
 		message := outputLines[len(outputLines) - 2]
@@ -62,6 +71,41 @@ var _ = Describe("Start Starter without flags", func() {
 		Expect(err).To(HaveOccurred())	
 	})
 })
+
+/*
+var _ = Describe("Generating all files with Starter", func() {
+	Context("using a NodeJS Express project with no database but not in GIT", func() {
+		var projectFixturePath string = "/usr/local/go/src/github.com/cloud66"
+		BeforeEach(func() {
+			_, err := runStarterWithProjectNoTemplates(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+    	AfterEach(func() {
+			cleanupGeneratedFiles(projectFixturePath)
+		})
+
+		It("should generate a Dockerfile", func() {
+			dockerfile_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/Dockerfile")
+			dockerfile_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/Dockerfile")
+			Expect(dockerfile_generated).To(Equal(dockerfile_expected))
+		})
+
+		It("should generate a service.yml", func() {
+			service_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
+			service_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
+			service_yaml_generated = convertServiceYaml(service_yaml_generated)
+			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
+	})
+})
+*/
 
 var _ = Describe("Generating all files with Starter", func() {
 	Context("using a NodeJS Express project with no database", func() {
@@ -87,6 +131,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
 		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
 	})
 	Context("using a NodeJS Express project with Procfile and no database", func() {
 		var projectFixturePath string = "test/node/express_procfile"
@@ -110,6 +160,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
 	Context("using a Rails project with a Mysql database", func() {

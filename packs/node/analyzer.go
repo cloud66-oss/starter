@@ -14,7 +14,7 @@ type Analyzer struct {
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.PackageJSON = filepath.Join(a.RootDir, "package.json")
-	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
+	gitURL, gitBranch, buildRoot, _ := a.ProjectMetadata()
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +35,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			GitBranch: gitBranch,
 			GitURL:    gitURL,
 			Messages:  a.Messages},
+		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs.Items}},
 		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}},
 		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
 	return analysis, nil

@@ -13,5 +13,8 @@ RUN go get github.com/onsi/gomega
 RUN mkdir -p /usr/local/go/src/github.com/cloud66/starter
 ADD . /usr/local/go/src/github.com/cloud66/starter
 
+#testing without git
+ADD ./test/node/express_no_git /usr/local/go/src/github.com/cloud66
+
 #switch to our app directory
 WORKDIR /usr/local/go/src/github.com/cloud66/starter
