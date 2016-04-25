@@ -41,6 +41,12 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 }
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
+	var service *common.Service
+	service = &common.Service{Name: "web"}
+	service.Ports = []*common.PortMapping{common.NewPortMapping()}
+	service.Command = "node index.js"
+	service.Ports[0].Container = "3000"
+	*services = append(*services, service)
 	return nil
 }
 
