@@ -11,5 +11,4 @@
   "dependencies": {
     "express": "^4.13.4"
   }
-  "engine": "0.4.1"
 }

@@ -64,8 +64,32 @@ var _ = Describe("Start Starter without flags", func() {
 })
 
 var _ = Describe("Generating all files with Starter", func() {
-	Context("using a NodeJS Express project with no  database", func() {
+	Context("using a NodeJS Express project with no database", func() {
 		var projectFixturePath string = "test/node/express_bare"
+		BeforeEach(func() {
+			_, err := runStarterWithProject(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+    	AfterEach(func() {
+			cleanupGeneratedFiles(projectFixturePath)
+		})
+
+		It("should generate a Dockerfile", func() {
+			dockerfile_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/Dockerfile")
+			dockerfile_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/Dockerfile")
+			Expect(dockerfile_generated).To(Equal(dockerfile_expected))
+		})
+
+		It("should generate a service.yml", func() {
+			service_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
+			service_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
+			service_yaml_generated = convertServiceYaml(service_yaml_generated)
+			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+	})
+	Context("using a NodeJS Express project with Procfile and no database", func() {
+		var projectFixturePath string = "test/node/express_procfile"
 		BeforeEach(func() {
 			_, err := runStarterWithProject(projectFixturePath)
 			Expect(err).NotTo(HaveOccurred())
