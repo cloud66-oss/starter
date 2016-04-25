@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 	"os/exec"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -53,9 +54,12 @@ func convertServiceYaml(generated []byte) ([]byte) {
 	return generated
 }
 var _ = Describe("Start Starter without flags", func() {
-	It("should show the help", func() {
-		_, err := runStarter()
-		Expect(err).NotTo(HaveOccurred())	
+	It("should run starter but fail becasuse no project", func() {
+		output, err := runStarter()
+		outputLines := strings.Split(output, "\n")
+		message := outputLines[len(outputLines) - 2]
+		Expect(strings.Contains(message, "Failed to detect framework due to: Could not detect any of the supported frameworks")).To(BeTrue())
+		Expect(err).To(HaveOccurred())	
 	})
 })
 

@@ -169,12 +169,6 @@ func downloadSingleFile(tempDir string, temp downloadFile) error {
 func main() {
 	args := os.Args[1:]
 	
-	if len(args) == 0 {
-		fmt.Printf("Starter (%s) Help\n", VERSION)
-		flag.PrintDefaults()
-		return
-	}
-
 	if (len(args) > 0 && (args[0] == "help" || args[0] == "-h")) {
 		fmt.Printf("Starter (%s) Help\n", VERSION)
 		flag.PrintDefaults()
