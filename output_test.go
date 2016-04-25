@@ -10,22 +10,29 @@ import (
 	"github.com/cloud66/starter/common"
 )
 
+func runStarter() (string, error) {
+	command := exec.Command(binPath)
+	command_out, err := command.Output()
+	output := string(command_out)
+	return output, err
+}
+
 func runStarterWithProject(projectFixture string) (string, error) {
-	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-templates", "templates/")
+	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-templates", "templates/", "-g", "dockerfile, c66-service, docker-compose")
 	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err
 }
 
 func runStarterWithProjectGeneratingOnlyDockerfile(projectFixture string) (string, error) {
-	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-templates", "templates/","-g", "dockerfile")
+	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-templates", "templates/")
 	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err
 }
 
 func runStarterWithProjectGeneratingOnlyDockerCompose(projectFixture string) (string, error) {
-	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-templates", "templates/","-g", "compose")
+	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-templates", "templates/","-g", "docker-compose")
 	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err
@@ -45,6 +52,12 @@ func convertServiceYaml(generated []byte) ([]byte) {
 	generated = regexp.MustCompile(`git_url: .*`).ReplaceAll(generated, []byte("git_url: git@github.com:cloud66/starter.git"))
 	return generated
 }
+var _ = Describe("Start Starter", func() {
+	It("should show the help", func() {
+		_, err := runStarter()
+		Expect(err).NotTo(HaveOccurred())	
+	})
+})
 
 var _ = Describe("Generating all files with Starter", func() {
 	Context("using a Rails project with a Mysql database", func() {
