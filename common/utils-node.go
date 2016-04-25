@@ -20,6 +20,10 @@ func GetNodeVersion(packageJsonFile string) (bool, string) {
 		return false, err.Error()
 	}
 
+	if data["engines"] == nil {
+		return false, ""
+	}
+
 	if nodeVersion, ok := data["engines"].(map[string]interface{})["node"].(string); ok {
 		return true, nodeVersion
 	} else {
