@@ -14,7 +14,7 @@ type Analyzer struct {
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.PackageJSON = filepath.Join(a.RootDir, "package.json")
-	gitURL, gitBranch, buildRoot, _ := a.ProjectMetadata()
+	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
 	if err != nil {
 		return nil, err
 	}
