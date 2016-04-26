@@ -33,6 +33,11 @@ func GetNodeVersion(packageJsonFile string) (bool, string) {
 
 }
 
+func GetNodeDatabase(packageJsonFile string, databaseName string) (bool, string) {
+	found, name := GetDependencyVersion(packageJsonFile, databaseName)
+	return found, name
+}
+
 func GetDependencyVersion(packageJsonFile string, dependencyNames ...string) (bool, string) {
 	buf, err := ioutil.ReadFile(packageJsonFile)
 	if err != nil {

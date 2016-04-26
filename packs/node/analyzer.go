@@ -25,6 +25,12 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.CheckNotSupportedPackages(packages)
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
+
+	// inject all the services with the databases used in the infrastructure
+	for _, service := range services {
+		service.Databases = dbs.Items
+	}
+	
 	if err != nil {
 		return nil, err
 	}
@@ -89,6 +95,9 @@ func (a *Analyzer) FindVersion() string {
 
 func (a *Analyzer) FindDatabases() *common.Lister {
 	dbs := common.NewLister()
+	if hasMysql, _ := common.GetNodeDatabase(a.PackageJSON, "mysql"); hasMysql {
+		dbs.Add("mysql")
+	}
 	return dbs
 }
 
