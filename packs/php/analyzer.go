@@ -9,11 +9,11 @@ import (
 
 type Analyzer struct {
 	packs.AnalyzerBase
-	PackageJSON string
+	ComposerJSON string
 }
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
-	a.PackageJSON = filepath.Join(a.RootDir, "package.json")
+	a.ComposerJSON = filepath.Join(a.RootDir, "composer.json")
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
 	if err != nil {
 		return nil, err
@@ -71,31 +71,31 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 }
 
 func (a *Analyzer) HasPackage(pack string) bool {
-	hasFound, _ := common.GetDependencyVersion(a.PackageJSON, pack)
+	hasFound, _ := common.GetDependencyVersion(a.ComposerJSON, pack)
 	return hasFound
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
 
-	if runsExpress, _ := common.GetDependencyVersion(a.PackageJSON, "express"); runsExpress {
+	/*if runsExpress, _ := common.GetDependencyVersion(a.ComposerJSON, "express"); runsExpress {
 		common.PrintlnL2("Found Express")
 	}
-	if hasScript, script := common.GetScriptsStart(a.PackageJSON); hasScript {
+	if hasScript, script := common.GetScriptsStart(a.ComposerJSON); hasScript {
 		common.PrintlnL2("Found Script: %s", script)
-	}
+	}*/
 
 	return packages
 }
 
 func (a *Analyzer) FindVersion() string {
-	foundNode, nodeVersion := common.GetNodeVersion(a.PackageJSON)
-	return a.ConfirmVersion(foundNode, nodeVersion, "latest")
+	foundNode, phpVersion := common.GetPHPVersion(a.ComposerJSON)
+	return a.ConfirmVersion(foundNode, phpVersion, "latest")
 }
 
 func (a *Analyzer) FindDatabases() *common.Lister {
 	dbs := common.NewLister()
-	if hasMysql, _ := common.GetNodeDatabase(a.PackageJSON, "mysql"); hasMysql {
+	if hasMysql, _ := common.GetPHPDatabase(a.ComposerJSON, "mysql"); hasMysql {
 		dbs.Add("mysql")
 	}
 	return dbs
