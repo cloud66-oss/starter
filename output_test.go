@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	//"github.com/cloud66/starter/common"
+	"github.com/cloud66/starter/common"
 )
 
 
@@ -106,8 +106,7 @@ var _ = Describe("Generating all files with Starter", func() {
 			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
-})
-*/
+})*/
 
 var _ = Describe("Generating all files with Starter", func() {
 	Context("using a PHP Laravel project with a mysql database", func() {
@@ -140,7 +139,7 @@ var _ = Describe("Generating all files with Starter", func() {
 			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
-/*
+
 	Context("using a NodeJS Express project with no database", func() {
 		var projectFixturePath string = "test/node/express_bare"
 		BeforeEach(func() {
@@ -313,9 +312,8 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
 		})
-	})*/
+	})
 })
-/*
 var _ = Describe("Generating only Dockerfile with Starter", func() {
 	Context("using a Rails project with a Mysql database", func() {
 		var projectFixturePath string = "test/ruby/rails_mysql"
@@ -376,5 +374,4 @@ var _ = Describe("Generating only a docker-compose.yml with Starter", func() {
 	})
 	
 })
-*/
 
