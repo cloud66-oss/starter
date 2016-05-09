@@ -1,9 +1,9 @@
 package packs
 
 import (
-	"bufio"
+	//"bufio"
 	"fmt"
-	"os"
+	//"os"
 	"path/filepath"
 	"strings"
 
@@ -31,20 +31,20 @@ func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
 	return gitURL, gitBranch, buildRoot, nil
 }
 
-func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister {
-	var dbs common.Lister
-	for _, db := range foundDbs.Items {
+func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Database {
+	var dbs []common.Database
+	for _, db := range foundDbs {
 		if !a.ShouldPrompt {
-			common.PrintlnL2("Found %s", db)
+			common.PrintlnL2("Found %s", db.Name)
 		}
-		if common.AskYesOrNo(fmt.Sprintf("Found %s, confirm?", db), true, a.ShouldPrompt) {
-			dbs.Add(db)
+		if common.AskYesOrNo(fmt.Sprintf("Found %s, confirm?", db.Name), true, a.ShouldPrompt) {
+			dbs = append(dbs, db)
 		}
 	}
-
+	/*
 	var message string
 	var defaultValue bool
-	if len(foundDbs.Items) > 0 {
+	if len(foundDbs) > 0 {
 		message = "Add any other databases?"
 		defaultValue = false
 	} else {
@@ -52,18 +52,20 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs *common.Lister) *common.Lister 
 		defaultValue = true
 	}
 
+	
 	if common.AskYesOrNo(message, defaultValue, a.ShouldPrompt) && a.ShouldPrompt {
 		common.PrintlnL1("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values")
 		common.PrintlnL1("  Example: 'mysql elasticsearch' ")
 		common.PrintL1("> ")
 
-		reader := bufio.NewReader(os.Stdin)
-		otherDbs, err := reader.ReadString('\n')
-		if err == nil {
-			dbs.Add(strings.Fields(otherDbs)...)
-		}
-	}
-	return &dbs
+		//TODO: need work
+		//reader := bufio.NewReader(os.Stdin)
+		//otherDbs, err := reader.ReadString('\n')
+		//if err == nil {
+			//dbs.Add(strings.Fields(otherDbs)...)
+		//}
+	}*/
+	return dbs
 }
 
 func (a *AnalyzerBase) ConfirmVersion(found bool, version string, defaultVersion string) string {

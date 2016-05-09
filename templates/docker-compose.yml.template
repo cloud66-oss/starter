@@ -14,19 +14,19 @@
   {{if .Databases}}	
   links:
   	{{range .Databases}}
-  - {{.}}
-  - {{.}}:{{.}}.cloud66.local
+  - {{.Name}}
+  - {{.Name}}:{{.Name}}.cloud66.local
 	  {{end}}
   {{end}}
   {{if .EnvVars}}
   environment:{{range .EnvVars}}
     - {{.Key}}={{.Value}}
-  {{end}}{{end}}  
+  {{end}}{{end}}
 {{end}}
 
 {{if .Dbs}}	
 {{range .Dbs}}
-{{.}}:
-  image: {{.}}
+{{.Name}}:
+  image: {{.DockerImage}}
 {{end}}
 {{end}}

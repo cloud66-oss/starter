@@ -8,12 +8,12 @@ web:
   links:
   - redis
   - redis:redis.cloud66.local
-  - mongodb
-  - mongodb:mongodb.cloud66.local
+  - mongo
+  - mongo:mongodb.cloud66.local
   environment:
     - RAILS_ENV=production
     - RACK_ENV=production
 redis:
   image: redis
-mongodb:
-  image: mongodb
+mongo:
+  image: mongo

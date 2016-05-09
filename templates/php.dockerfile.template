@@ -23,5 +23,3 @@ COPY composer.json composer.lock ./
 RUN composer install --prefer-source --no-interactiom
 
 ADD . $APP_HOME
-
-CMD php artisan serve --host 0.0.0.0

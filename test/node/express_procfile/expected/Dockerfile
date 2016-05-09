@@ -9,5 +9,3 @@ ADD package.json $APP_HOME/
 RUN npm install
 
 ADD . $APP_HOME
-
-CMD node index.js

@@ -28,7 +28,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 	// inject all the services with the databases used in the infrastructure
 	for _, service := range services {
-		service.Databases = dbs.Items
+		service.Databases = dbs
 	}
 	
 	if err != nil {
@@ -41,8 +41,8 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			GitBranch: gitBranch,
 			GitURL:    gitURL,
 			Messages:  a.Messages},
-		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs.Items}},
-		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}},
+		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
+		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
 		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
 	return analysis, nil
 }
@@ -93,10 +93,10 @@ func (a *Analyzer) FindVersion() string {
 	return a.ConfirmVersion(foundNode, phpVersion, "latest")
 }
 
-func (a *Analyzer) FindDatabases() *common.Lister {
-	dbs := common.NewLister()
+func (a *Analyzer) FindDatabases() []common.Database {
+	dbs := []common.Database{}
 	if hasMysql, _ := common.GetPHPDatabase(a.ComposerJSON, "mysql"); hasMysql {
-		dbs.Add("mysql")
+		dbs = append(dbs, common.Database{Name: "mysql", DockerImage: "mysql"})
 	}
 	return dbs
 }

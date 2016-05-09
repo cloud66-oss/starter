@@ -28,7 +28,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 	// inject all the services with the databases used in the infrastructure
 	for _, service := range services {
-		service.Databases = dbs.Items
+		service.Databases = dbs
 	}
 	
 	if err != nil {
@@ -41,8 +41,8 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			GitBranch: gitBranch,
 			GitURL:    gitURL,
 			Messages:  a.Messages},
-		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs.Items}},
-		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}},
+		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
+		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
 		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
 	return analysis, nil
 }
@@ -63,6 +63,11 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 		service = &common.Service{Name: "web"}
 		service.Ports = []*common.PortMapping{common.NewPortMapping()}
 		service.Command = "node index.js"
+		if hasScript, script := common.GetScriptsStart(a.PackageJSON); hasScript {
+			common.PrintlnL2("Found Script: %s", script)
+			service.Command = script
+		}
+
 		service.Ports[0].Container = "3000"
 		*services = append(*services, service)
 	}
@@ -81,9 +86,7 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 	if runsExpress, _ := common.GetDependencyVersion(a.PackageJSON, "express"); runsExpress {
 		common.PrintlnL2("Found Express")
 	}
-	if hasScript, script := common.GetScriptsStart(a.PackageJSON); hasScript {
-		common.PrintlnL2("Found Script: %s", script)
-	}
+	
 
 	return packages
 }
@@ -93,10 +96,13 @@ func (a *Analyzer) FindVersion() string {
 	return a.ConfirmVersion(foundNode, nodeVersion, "latest")
 }
 
-func (a *Analyzer) FindDatabases() *common.Lister {
-	dbs := common.NewLister()
+func (a *Analyzer) FindDatabases() []common.Database {
+	dbs := []common.Database{}
 	if hasMysql, _ := common.GetNodeDatabase(a.PackageJSON, "mysql"); hasMysql {
-		dbs.Add("mysql")
+		dbs = append(dbs, common.Database{Name: "mysql", DockerImage: "mysql"})
+	}
+	if hasMongo, _ := common.GetNodeDatabase(a.PackageJSON, "mongoose"); hasMongo {
+		dbs = append(dbs, common.Database{Name: "mongodb", DockerImage: "mongo"})
 	}
 	return dbs
 }
