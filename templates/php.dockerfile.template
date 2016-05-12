@@ -1,25 +1,44 @@
-FROM php:{{.Version}}
+FROM php:{{.Version}}-apache
+#install all the dependencies
+RUN apt-get update && apt-get install -y \
+      libicu-dev \
+      libpq-dev \
+      libmcrypt-dev \
+      git \
+      zip \
+      unzip \
+    && rm -r /var/lib/apt/lists/* \
+    && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
+    && docker-php-ext-install \
+      intl \
+      mbstring \
+      mcrypt \
+      pcntl \
+      pdo_mysql \
+      pdo_pgsql \
+      pgsql \
+      zip \
+      opcache
 
-RUN apt-get update -qq && apt-get install -y build-essential {{.Packages.ToList " "}}
-
-# Install tools and applications through pear. Binaries will be accessible in your PATH.
-RUN pear install pear/PHP_CodeSniffer
-
-# Install extensions through pecl and enable them through ini files
-RUN pecl install hrtime
-RUN echo "extension=hrtime.so" > $PHP_INI_DIR/conf.d/hrtime.ini
-
-# Install Composer and make it available in the PATH
+#install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
 
+#create project folder
 ENV APP_HOME /app
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
-# Copy composer files into the app directory.
-COPY composer.json composer.lock ./
+#change uid and gid of apache to docker user uid/gid
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
-# Install dependencies with Composer.
-RUN composer install --prefer-source --no-interactiom
+#change apache setting
+RUN sed -i -e "s/var\/www/app/g" /etc/apache2/apache2.conf && sed -i -e "s/html/public/g" /etc/apache2/apache2.conf
+RUN a2enmod rewrite
 
-ADD . $APP_HOME
+#copy source files and run composer
+COPY . $APP_HOME
+RUN composer install --no-interaction
+
+#change ownership
+RUN chown -R www-data:www-data $APP_HOME
+

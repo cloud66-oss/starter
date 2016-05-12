@@ -2,6 +2,11 @@
 ---
 web:
   build: test/php/laravel_bare_mysql/src/
-  command: php artisan serve --host 0.0.0.0
+  command: apache2-foreground
   ports:
-  - "3000:3000"
+  - "3000:80"
+  links:
+  - mysql
+  - mysql:mysql.cloud66.local
+mysql:
+  image: mysql

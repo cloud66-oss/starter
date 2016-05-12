@@ -48,25 +48,14 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 }
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
-	//has a procfile
-	if len(*services) == 1 {
-		for _, service := range *services {
-			service.Ports = []*common.PortMapping{common.NewPortMapping()}
-			service.Ports[0].Container = "3000"
-		}
-	}
-
-
-	//no procfile
 	if len(*services) == 0 {
 		var service *common.Service
 		service = &common.Service{Name: "web"}
 		service.Ports = []*common.PortMapping{common.NewPortMapping()}
-		service.Command = "php artisan serve --host 0.0.0.0"
-		service.Ports[0].Container = "3000"
+		service.Command = "apache2-foreground"
+		service.Ports[0].Container = "80"
 		*services = append(*services, service)
 	}
-
 	return nil
 }
 
@@ -78,13 +67,9 @@ func (a *Analyzer) HasPackage(pack string) bool {
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
 
-	/*if runsExpress, _ := common.GetDependencyVersion(a.ComposerJSON, "express"); runsExpress {
-		common.PrintlnL2("Found Express")
+	if runsLaravel, _ := common.GetFramework(a.ComposerJSON, "laravel/framework"); runsLaravel {
+		common.PrintlnL2("Found Laravel")
 	}
-	if hasScript, script := common.GetScriptsStart(a.ComposerJSON); hasScript {
-		common.PrintlnL2("Found Script: %s", script)
-	}*/
-
 	return packages
 }
 
@@ -98,6 +83,9 @@ func (a *Analyzer) FindDatabases() []common.Database {
 	if hasMysql, _ := common.GetPHPDatabase(a.ComposerJSON, "mysql"); hasMysql {
 		dbs = append(dbs, common.Database{Name: "mysql", DockerImage: "mysql"})
 	}
+	//if hasPostgres, _ := common.GetPHPDatabase(a.ComposerJSON, "pgsql"); hasPostgres {
+	//	dbs = append(dbs, common.Database{Name: "postgres", DockerImage: "postgres"})
+	//}
 	return dbs
 }
 

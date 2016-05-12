@@ -5,9 +5,12 @@ services:
   web:
     git_url: git@github.com:cloud66/starter.git
     git_branch: master
-    command: php artisan serve --host 0.0.0.0
+    command: apache2-foreground
     build_root: test/php/laravel_bare_mysql/src/
     ports:
-      - container: 3000
+      - container: 80
         http: 80
         https: 443
+
+databases:
+  - mysql

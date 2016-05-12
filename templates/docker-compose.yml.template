@@ -6,9 +6,11 @@
   {{if .Ports}}
   ports:
     {{range .Ports}}
- 	   {{if .Container}}
+ 	    {{if eq .Container "80"}}
+  - "3000:{{.Container}}"
+      {{else}}
   - "{{.Container}}:{{.Container}}"
-    	{{end}}
+      {{end}}
     {{end}}
   {{end}}
   {{if .Databases}}	

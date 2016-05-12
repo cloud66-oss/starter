@@ -35,8 +35,11 @@ func GetPHPVersion(composerJSONfile string) (bool, string) {
 
 }
 
+func GetFramework(composerJSONfile string, framework string) (bool, string) {
+	return true, framework
+}
+
 func GetPHPDatabase(composerJSONfile string, databaseName string) (bool, string) {
-	//found, name := GetDependencyVersion(composerJSONfile, databaseName)
-	return false, ""
+	return true, databaseName
 }
 
