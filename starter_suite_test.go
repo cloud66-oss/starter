@@ -23,7 +23,6 @@ var _ = BeforeSuite(func() {
 	version := bytes.TrimRight(command_out, "\n")
 	current_date := time.Now().Format("2006-01-02")
 
-
 	err := exec.Command("go", "build", "-ldflags","-X \"main.VERSION=" + string(version) + "\" -X \"main.BUILD_DATE=" + current_date + "\"").Run()
 	Expect(err).NotTo(HaveOccurred())
 	Expect(common.FileExists(binPath)).To(BeTrue())

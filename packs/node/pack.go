@@ -49,6 +49,17 @@ func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldProm
 	return w.Write(p.Analysis.ServiceYAMLContext)
 }
 
+func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shouldPrompt bool) error {
+	w := DockerComposeYAMLWriter{
+		packs.DockerComposeYAMLWriterBase{
+			PackElement: packs.PackElement{Pack: p},
+			TemplateWriterBase: packs.TemplateWriterBase{
+				TemplateDir:  templateDir,
+				OutputDir:    outputDir,
+				ShouldPrompt: shouldPrompt}}}
+	return w.Write(p.Analysis.DockerComposeYAMLContext)
+}
+
 func (p *Pack) GetMessages() []string {
 	return p.Analysis.Messages.Items
 }

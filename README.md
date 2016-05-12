@@ -1,5 +1,7 @@
 # Cloud 66 Starter
 
+![Codeship Status for cloud66/starter](https://codeship.com/projects/81c5dde0-e914-0133-c219-4eaa3299b296/status)
+
 Cloud 66 starter is an open-source command line tool to generate a `Dockerfile` and a `service.yml` file from arbitrary source code. The `service.yml` file is a Cloud 66 service definition file which is used to define the service configurations on a stack.
 
 To find out more about Starter, checkout the [Cloud 66 Starter website](http://www.startwithdocker.com)

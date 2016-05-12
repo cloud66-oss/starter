@@ -5,11 +5,15 @@ import (
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
 	"github.com/cloud66/starter/packs/ruby"
+	"github.com/cloud66/starter/packs/node"
+	"github.com/cloud66/starter/packs/php"
 )
 
 func Detect(rootDir string) (packs.Pack, error) {
 	ruby := ruby.Pack{}
-	detectors := []packs.Detector{ruby.Detector()}
+	node := node.Pack{}
+	php := php.Pack{}
+	detectors := []packs.Detector{ruby.Detector(), node.Detector(), php.Detector()}
 	var packs []packs.Pack
 
 	for _, d := range detectors {

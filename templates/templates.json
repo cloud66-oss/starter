@@ -4,6 +4,7 @@
     { "name": "node.dockerfile.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/node.dockerfile.template"},
     { "name": "python.dockerfile.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/python.dockerfile.template"},
     { "name": "ruby.dockerfile.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/ruby.dockerfile.template"}
+    { "name": "php.dockerfile.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/php.dockerfile.template"}
   ],
   "service-ymls" : [
     { "name": "service.yml.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/service.yml.template"}

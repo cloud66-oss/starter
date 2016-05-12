@@ -32,7 +32,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 	// inject all the services with the databases used in the infrastructure
 	for _, service := range services {
-		service.Databases = dbs.Items
+		service.Databases = dbs
 	}
 
 	if err != nil {
@@ -45,8 +45,8 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			GitBranch: gitBranch,
 			GitURL:    gitURL,
 			Messages:  a.Messages},
-		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs.Items}},
-		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs.Items}},
+		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
+		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
 		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
 	return analysis, nil
 }
@@ -124,26 +124,27 @@ func (a *Analyzer) FindVersion() string {
 	return a.ConfirmVersion(foundRuby, rubyVersion, "latest")
 }
 
-func (a *Analyzer) FindDatabases() *common.Lister {
-	dbs := common.NewLister()
+func (a *Analyzer) FindDatabases() []common.Database  {
+	dbs := []common.Database{}
+
 	if hasMysql, _ := common.GetGemVersion(a.Gemfile, "mysql2"); hasMysql {
-		dbs.Add("mysql")
+		dbs = append(dbs, common.Database{Name: "mysql", DockerImage: "mysql"})
 	}
 
 	if hasPg, _ := common.GetGemVersion(a.Gemfile, "pg"); hasPg {
-		dbs.Add("postgresql")
+		dbs = append(dbs, common.Database{Name: "postgresql", DockerImage: "postgresql"})
 	}
 
 	if hasRedis, _ := common.GetGemVersion(a.Gemfile, "redis", "redis-rails"); hasRedis {
-		dbs.Add("redis")
+		dbs = append(dbs, common.Database{Name: "redis", DockerImage: "redis"})
 	}
 
 	if hasMongoDB, _ := common.GetGemVersion(a.Gemfile, "mongo", "mongo_mapper", "dm-mongo-adapter", "mongoid"); hasMongoDB {
-		dbs.Add("mongodb")
+		dbs = append(dbs, common.Database{Name: "mongodb", DockerImage: "mongo"})
 	}
 
 	if hasElasticsearch, _ := common.GetGemVersion(a.Gemfile, "elasticsearch", "tire", "flex", "chewy"); hasElasticsearch {
-		dbs.Add("elasticsearch")
+		dbs = append(dbs, common.Database{Name: "elasticsearch", DockerImage: "elasticsearch"})
 	}
 
 	if hasDatabaseYaml := common.FileExists("config/database.yml"); hasDatabaseYaml {

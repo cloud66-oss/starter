@@ -6,27 +6,29 @@
   {{if .Ports}}
   ports:
     {{range .Ports}}
- 	   {{if .Container}}
+ 	    {{if eq .Container "80"}}
+  - "3000:{{.Container}}"
+      {{else}}
   - "{{.Container}}:{{.Container}}"
-    	{{end}}
+      {{end}}
     {{end}}
   {{end}}
   {{if .Databases}}	
   links:
   	{{range .Databases}}
-  - {{.}}
-  - {{.}}:{{.}}.cloud66.local
+  - {{.Name}}
+  - {{.Name}}:{{.Name}}.cloud66.local
 	  {{end}}
   {{end}}
   {{if .EnvVars}}
   environment:{{range .EnvVars}}
     - {{.Key}}={{.Value}}
-  {{end}}{{end}}  
+  {{end}}{{end}}
 {{end}}
 
 {{if .Dbs}}	
 {{range .Dbs}}
-{{.}}:
-  image: {{.}}
+{{.Name}}:
+  image: {{.DockerImage}}
 {{end}}
 {{end}}

@@ -26,5 +26,5 @@ services:
 {{if .Dbs}}
 ##NEWLINE##
 databases:{{range .Dbs}}
-  - {{.}}
+  - {{.Name}}
 {{end}}{{end}}
