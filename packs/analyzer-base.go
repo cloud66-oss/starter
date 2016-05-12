@@ -1,9 +1,9 @@
 package packs
 
 import (
-	//"bufio"
+	"bufio"
 	"fmt"
-	//"os"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -41,7 +41,7 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Dat
 			dbs = append(dbs, db)
 		}
 	}
-	/*
+	
 	var message string
 	var defaultValue bool
 	if len(foundDbs) > 0 {
@@ -58,13 +58,15 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Dat
 		common.PrintlnL1("  Example: 'mysql elasticsearch' ")
 		common.PrintL1("> ")
 
-		//TODO: need work
-		//reader := bufio.NewReader(os.Stdin)
-		//otherDbs, err := reader.ReadString('\n')
-		//if err == nil {
-			//dbs.Add(strings.Fields(otherDbs)...)
-		//}
-	}*/
+		reader := bufio.NewReader(os.Stdin)
+		otherDbs, err := reader.ReadString('\n')
+		if err == nil {
+			listOtherDbs := strings.Fields(otherDbs)
+			for _,otherDb := range listOtherDbs { 
+				dbs = append(dbs, common.Database{Name: otherDb, DockerImage: otherDb})	
+			}
+		}
+	}
 	return dbs
 }
 
