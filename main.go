@@ -23,10 +23,8 @@ type downloadFile struct {
 }
 
 type analysisResult struct {
-	Dockerfile  string
-	ComposeYAML string
-	ServiceYAML string
-	Warnings    []string
+	Warnings []string
+	OK       bool
 }
 
 type templateDefinition struct {
@@ -247,7 +245,9 @@ func main() {
 		os.Exit(0)
 	}
 
-	result, err := analyze(flagPath,
+	result, err := analyze(
+		true,
+		flagPath,
 		flagTemplates,
 		flagEnvironment,
 		flagNoPrompt,
@@ -278,7 +278,9 @@ func main() {
 	common.PrintlnTitle("Done")
 }
 
-func analyze(path string,
+func analyze(
+	updateTemplates bool,
+	path string,
 	templates string,
 	environment string,
 	noPrompt bool,
@@ -293,16 +295,18 @@ func analyze(path string,
 		path = pwd
 	}
 
-	result := &analysisResult{}
+	result := &analysisResult{OK: false}
 
 	// if templateFolder is specified we're going to use that otherwise download
 	if templates == "" {
 		homeDir, _ := homedir.Dir()
 
 		templates = filepath.Join(homeDir, ".starter")
-		err := getTempaltes(templates)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to download latest templates due to %s", err.Error())
+		if updateTemplates {
+			err := getTempaltes(templates)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to download latest templates due to %s", err.Error())
+			}
 		}
 
 		dockerfileTemplateDir = templates
@@ -373,6 +377,8 @@ func analyze(path string,
 			result.Warnings = append(result.Warnings, warning)
 		}
 	}
+
+	result.OK = true
 
 	return result, nil
 }

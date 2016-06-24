@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"os"
 
+	"bitbucket.org/cloud66/iron-mountain/core"
+
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/cloud66/starter/common"
 )
@@ -62,10 +64,44 @@ func (a *API) version(w rest.ResponseWriter, r *rest.Request) {
 func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	/* payload:
 	path: path to the project to be examined
-	environment: project environment (default: production)
-	templates: path to templates (default: ~/.starter)
-	branch: template branch in github (default: production)
-	output: files to generate (default: all)
+	generate: files to generate
 	*/
-	w.WriteJson(VERSION)
+
+	type payload struct {
+		Path     string `json:"path"`
+		Generate string `json:"generate"`
+	}
+	var request payload
+	err := r.DecodeJsonPayload(&request)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	path := request.Path
+	generate := request.Generate
+
+	result, err := analyze(
+		false,
+		path,
+		"",
+		"",
+		true,
+		true,
+		generate)
+
+	if err != nil {
+		a.handleError(err, w)
+		return
+	}
+
+	w.WriteJson(result)
+}
+
+func (a *API) handleError(err error, w rest.ResponseWriter) {
+	if aerr, ok := err.(core.AppError); ok {
+		rest.Error(w, err.Error(), aerr.Code)
+	} else {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+	}
 }
