@@ -29,7 +29,6 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
 
-
 	// inject all the services with the databases used in the infrastructure
 	for _, service := range services {
 		service.Databases = dbs
@@ -46,11 +45,10 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			GitURL:    gitURL,
 			Messages:  a.Messages},
 		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
-		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
-		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
+		ServiceYAMLContext:       &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
+		DockerfileContext:        &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
 	return analysis, nil
 }
-
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	service := a.GetOrCreateWebService(services)
@@ -124,7 +122,7 @@ func (a *Analyzer) FindVersion() string {
 	return a.ConfirmVersion(foundRuby, rubyVersion, "latest")
 }
 
-func (a *Analyzer) FindDatabases() []common.Database  {
+func (a *Analyzer) FindDatabases() []common.Database {
 	dbs := []common.Database{}
 
 	if hasMysql, _ := common.GetGemVersion(a.Gemfile, "mysql2"); hasMysql {
