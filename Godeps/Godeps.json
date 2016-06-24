@@ -3,6 +3,16 @@
 	"GoVersion": "go1.6",
 	"Deps": [
 		{
+			"ImportPath": "github.com/ant0ine/go-json-rest/rest",
+			"Comment": "v3.3.0-10-g01a517a",
+			"Rev": "01a517a7065ab0030bf286c6a8e5abc9b245c776"
+		},
+		{
+			"ImportPath": "github.com/ant0ine/go-json-rest/rest/trie",
+			"Comment": "v3.3.0-10-g01a517a",
+			"Rev": "01a517a7065ab0030bf286c6a8e5abc9b245c776"
+		},
+		{
 			"ImportPath": "github.com/bugsnag/bugsnag-go",
 			"Comment": "v1.0.5-19-g02e9528",
 			"Rev": "02e952891c52fbcb15f113d90633897355783b6e"
