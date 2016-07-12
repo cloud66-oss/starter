@@ -47,4 +47,5 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(string(resp.Body())).To(Equal("\"1.0.2\""))
 		})
 	})
+	
 })
