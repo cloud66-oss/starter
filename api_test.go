@@ -14,7 +14,7 @@ import (
 var start_in_deamon_cmd *exec.Cmd
 
 func runStarterInDaemonMode() () {
-	start_in_deamon_cmd = exec.Command(binPath, "-daemon", "&")
+	start_in_deamon_cmd = exec.Command(binPath, "-daemon")
 	start_in_deamon_cmd.Start()
 }
 
