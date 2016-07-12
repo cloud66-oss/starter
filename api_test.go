@@ -1,25 +1,24 @@
-package main_test
+package main
 
 import (
 	//"fmt"
 	//	"bytes"
-	//"time"
-	"os/exec"
+	"time"
+	//"os/exec"
 	. "github.com/onsi/ginkgo"
 	"github.com/go-resty/resty"
 	. "github.com/onsi/gomega"
 )
 
 
-var start_in_deamon_cmd *exec.Cmd
 
 func runStarterInDaemonMode() () {
-	start_in_deamon_cmd = exec.Command(binPath, "-daemon")
-	start_in_deamon_cmd.Start()
+	api := NewAPI(config)
+	api.StartAPI()
 }
 
 func stopStarterInDaamonMode() {
-	start_in_deamon_cmd.Process.Kill()
+	api.StopAPI()
 }
 
 
@@ -30,7 +29,6 @@ var _ = Describe("Running Starter in damon mode", func() {
 	})
 
 	AfterEach(func() {
-		stopStarterInDaamonMode()
 	})
 	Context("ping the service", func() {
 		It("should respond with ok", func() {
