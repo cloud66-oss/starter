@@ -3,9 +3,6 @@ package main
 import (
 	"net/http"
 	"os"
-
-	"bitbucket.org/cloud66/iron-mountain/core"
-
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/cloud66/starter/common"
 )
@@ -99,9 +96,5 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (a *API) handleError(err error, w rest.ResponseWriter) {
-	if aerr, ok := err.(core.AppError); ok {
-		rest.Error(w, err.Error(), aerr.Code)
-	} else {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-	}
+	rest.Error(w, err.Error(), http.StatusBadRequest)
 }
