@@ -5,11 +5,20 @@ import (
 	"os"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/cloud66/starter/common"
+	"io/ioutil"
 )
 
 // API holds starter API
 type API struct {
 	config *Config
+}
+
+type CodebaseAnalysis struct {
+	Ok bool
+    Warnings []string
+    Dockerfile string
+    Service string
+    DockerCompose string
 }
 
 // NewAPI creates a new instance of the API
@@ -92,7 +101,23 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	w.WriteJson(result)
+	
+
+
+    analysis := CodebaseAnalysis{}
+    analysis.Ok = result.OK
+	analysis.Warnings = result.Warnings
+    
+    if result.OK {
+        file, e := ioutil.ReadFile(path + "/Dockerfile")
+	    if e != nil {
+	    	// catch error
+	    	analysis.Dockerfile = ""
+	    } else {
+    		analysis.Dockerfile = string(file)
+    	}
+    }
+    w.WriteJson(analysis)
 }
 
 func (a *API) handleError(err error, w rest.ResponseWriter) {
