@@ -11,6 +11,10 @@ func (p *Pack) Name() string {
 	return "node"
 }
 
+func (p *Pack) Framework() string {
+	return "express"
+}
+
 func (p *Pack) Detector() packs.Detector {
 	return &Detector{PackElement: packs.PackElement{Pack: p}}
 }

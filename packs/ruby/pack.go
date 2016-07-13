@@ -11,6 +11,10 @@ func (p *Pack) Name() string {
 	return "ruby"
 }
 
+func (p *Pack) Framework() string {
+	return "rails"
+}
+
 func (p *Pack) Detector() packs.Detector {
 	return &Detector{PackElement: packs.PackElement{Pack: p}}
 }

@@ -2,6 +2,7 @@ package packs
 
 type Pack interface {
 	Name() string
+	Framework() string
 	Detector() Detector
 	Analyze(rootDir string, environment string, shouldNotPrompt bool) error
 	WriteDockerfile(templateDir string, outputDir string, shouldNotPrompt bool) error
