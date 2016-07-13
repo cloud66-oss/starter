@@ -26,8 +26,8 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(string(resp.Body())).To(Equal(`"1.0.2"`))
 		})
 	})
-	FContext("analyse a ruby project and request a dockerfile and service.yml", func() {
-		FIt("should respond with a dockerfile and service.yml", func() {
+	Context("analyse a ruby project and request a dockerfile and service.yml", func() {
+		It("should respond with a dockerfile and service.yml", func() {
 			path := "test/ruby/rails_mysql/src"
 			resp, err := resty.R().SetBody(`{"path":"` + path + `", "generate":"dockerfile,service"}`).Post("http://127.0.0.1:9090/analyze")
 			Expect(err).NotTo(HaveOccurred())

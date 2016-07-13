@@ -6,6 +6,7 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/cloud66/starter/common"
 	"io/ioutil"
+	"strings"
 )
 
 // API holds starter API
@@ -109,13 +110,26 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	analysis.Warnings = result.Warnings
     
     if result.OK {
-        file, e := ioutil.ReadFile(path + "/Dockerfile")
+    	//always read the Dockerfile
+        dockerfile, e := ioutil.ReadFile(path + "/Dockerfile")
 	    if e != nil {
 	    	// catch error
 	    	analysis.Dockerfile = ""
 	    } else {
-    		analysis.Dockerfile = string(file)
+    		analysis.Dockerfile = string(dockerfile)
     	}
+
+    	if strings.Contains(generate, "service") {
+	    	serviceymlfile, e := ioutil.ReadFile(path + "/service.yml")
+		    if e != nil {
+		    	// catch error
+		    	analysis.Service = ""
+		    } else {
+	    		analysis.Service = string(serviceymlfile)
+	    	}
+    	}
+
+
     }
     w.WriteJson(analysis)
 }
