@@ -25,6 +25,8 @@ type downloadFile struct {
 type analysisResult struct {
 	Warnings []string
 	OK       bool
+	Language string
+	Framework string
 }
 
 type templateDefinition struct {
@@ -381,6 +383,7 @@ func analyze(
 	}
 
 	result.OK = true
+	result.Language = pack.Name()
 
 	return result, nil
 }

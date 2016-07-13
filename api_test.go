@@ -26,6 +26,30 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(string(resp.Body())).To(Equal(`"1.0.2"`))
 		})
 	})
+	Context("analyse a ruby project", func() {
+		It("should respond with program langange ruby", func() {
+			path := "test/ruby/rails_mysql/src"
+			resp, err := resty.R().SetBody(`{"path":"` + path + `", "generate":"dockerfile "}`).Post("http://127.0.0.1:9090/analyze")
+			Expect(err).NotTo(HaveOccurred())
+			dockerfile, err := ioutil.ReadFile(path + "/Dockerfile")
+			Expect(err).NotTo(HaveOccurred())
+
+			analysis := CodebaseAnalysis{}
+			analysis.Language = "ruby"
+    		analysis.Ok = true
+			analysis.Warnings = nil
+			analysis.Dockerfile = string(dockerfile)
+
+			b, err := json.Marshal(analysis)
+		    Expect(string(resp.Body())).To(Equal(string(b)))
+
+			os.Remove(path + "/Dockerfile")
+		})
+	})
+
+
+
+
 	Context("analyse a ruby project and request a dockerfile, docker-compose.yml and service.yml", func() {
 		It("should respond with a dockerfile, docker-compose.yml and service.yml", func() {
 			path := "test/ruby/rails_mysql/src"
@@ -41,6 +65,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis := CodebaseAnalysis{}
     		analysis.Ok = true
 			analysis.Warnings = nil
+			analysis.Language = "ruby"
 			analysis.Dockerfile = string(dockerfile)
 			analysis.Service = string(serviceyml)
 			analysis.DockerCompose = string(dockercomposeyml)
@@ -66,6 +91,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			
 			analysis := CodebaseAnalysis{}
     		analysis.Ok = true
+    		analysis.Language = "ruby"
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(dockerfile)
 			analysis.Service = string(serviceyml)
@@ -86,6 +112,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(err).NotTo(HaveOccurred())
 			analysis := CodebaseAnalysis{}
     		analysis.Ok = true
+    		analysis.Language = "ruby"
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(file)
 			b, err := json.Marshal(analysis)
@@ -102,6 +129,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(err).NotTo(HaveOccurred())
 			analysis := CodebaseAnalysis{}
     		analysis.Ok = true
+    		analysis.Language = "node"
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(file)
 			b, err := json.Marshal(analysis)
