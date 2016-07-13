@@ -70,9 +70,22 @@ func (a *API) version(w rest.ResponseWriter, r *rest.Request) {
 
 // routes parsing
 func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
-	/* payload:
-	path: path to the project to be examined
-	generate: files to generate
+	/* 
+	payload:
+		{
+			"path": "...", //path to the project to be examined
+			"generate": "dockerfile,service,docker-compose" //files to generate 
+		}
+	
+	response:
+		{
+		  "Ok": true,
+		  "Language": "ruby",
+		  "Warnings": null,
+		  "Dockerfile": "...",
+		  "Service": "...",
+		  "DockerCompose": "..."
+		}
 	*/
 
 	type payload struct {
