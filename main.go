@@ -384,6 +384,7 @@ func analyze(
 
 	result.OK = true
 	result.Language = pack.Name()
+	result.Framework = pack.Name()
 
 	return result, nil
 }

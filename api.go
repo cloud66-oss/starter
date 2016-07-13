@@ -17,6 +17,7 @@ type API struct {
 type CodebaseAnalysis struct {
 	Ok bool
 	Language string
+	Framework string
     Warnings []string
     Dockerfile string
     Service string
@@ -121,6 +122,7 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 
     analysis := CodebaseAnalysis{}
     analysis.Language = result.Language
+    analysis.Framework = result.Framework
     analysis.Ok = result.OK
 	analysis.Warnings = result.Warnings
     
