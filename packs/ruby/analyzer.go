@@ -41,7 +41,6 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	analysis := &Analysis{
 		AnalysisBase: packs.AnalysisBase{
 			PackName:  a.GetPack().Name(),
-			FrameworkName: "rails",
 			GitBranch: gitBranch,
 			GitURL:    gitURL,
 			Messages:  a.Messages},
