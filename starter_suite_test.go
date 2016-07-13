@@ -26,6 +26,9 @@ var _ = BeforeSuite(func() {
 	err := exec.Command("go", "build", "-ldflags","-X \"main.VERSION=" + string(version) + "\" -X \"main.BUILDDATE=" + current_date + "\"").Run()
 	Expect(err).NotTo(HaveOccurred())
 	Expect(common.FileExists(binPath)).To(BeTrue())
+	
+	err = exec.Command(binPath, "-daemon").Start()
+	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterSuite(func() {

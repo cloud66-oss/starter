@@ -17,10 +17,6 @@ func NewAPI(configuration *Config) API {
 	return API{config: configuration}
 }
 
-func StopAPI() {
-	
-}
-
 // StartAPI starts the API listeners
 func (a *API) StartAPI() error {
 	api := rest.NewApi()

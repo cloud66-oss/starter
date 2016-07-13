@@ -1,35 +1,14 @@
 package main
 
 import (
-	//"fmt"
-	//	"bytes"
-	"time"
-	//"os/exec"
 	. "github.com/onsi/ginkgo"
 	"github.com/go-resty/resty"
 	. "github.com/onsi/gomega"
 )
 
-
-
-func runStarterInDaemonMode() () {
-	api := NewAPI(config)
-	api.StartAPI()
-}
-
-func stopStarterInDaamonMode() {
-	api.StopAPI()
-}
-
-
 var _ = Describe("Running Starter in damon mode", func() {
 
-	BeforeEach(func() {
-		runStarterInDaemonMode()
-	})
 
-	AfterEach(func() {
-	})
 	Context("ping the service", func() {
 		It("should respond with ok", func() {
 			resp, err := resty.R().Get("http://127.0.0.1:9090/ping")
