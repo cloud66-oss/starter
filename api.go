@@ -128,6 +128,15 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	    		analysis.Service = string(serviceymlfile)
 	    	}
     	}
+    	if strings.Contains(generate, "docker-compose") {
+	    	dockercomposeymlfile, e := ioutil.ReadFile(path + "/docker-compose.yml")
+		    if e != nil {
+		    	// catch error
+		    	analysis.DockerCompose = ""
+		    } else {
+	    		analysis.DockerCompose = string(dockercomposeymlfile)
+	    	}
+    	}
 
 
     }
