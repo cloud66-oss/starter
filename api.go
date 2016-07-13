@@ -90,7 +90,7 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	result, err := analyze(
 		false,
 		path,
-		"",
+		config.template_path,
 		"",
 		true,
 		true,

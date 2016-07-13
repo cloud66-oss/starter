@@ -226,6 +226,8 @@ func main() {
 		signalChan := make(chan os.Signal, 1)
 		cleanupDone := make(chan bool)
 		signal.Notify(signalChan, os.Interrupt)
+		config.template_path = flagTemplates
+
 
 		api := NewAPI(config)
 		err := api.StartAPI()

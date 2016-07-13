@@ -8,6 +8,7 @@ import (
 // Config holds configuration for Starter
 type Config struct {
 	APIURL string
+	template_path string
 }
 
 // ReadFromFile reads config from a file

@@ -26,15 +26,52 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(string(resp.Body())).To(Equal(`"1.0.2"`))
 		})
 	})
+	FContext("analyse a ruby project and request a dockerfile and service.yml", func() {
+		FIt("should respond with a dockerfile and service.yml", func() {
+			path := "test/ruby/rails_mysql/src"
+			resp, err := resty.R().SetBody(`{"path":"` + path + `", "generate":"dockerfile,service"}`).Post("http://127.0.0.1:9090/analyze")
+			Expect(err).NotTo(HaveOccurred())
+			dockerfile, err := ioutil.ReadFile(path + "/Dockerfile")
+			Expect(err).NotTo(HaveOccurred())
+			serviceyml, err := ioutil.ReadFile(path + "/service.yml")
+			Expect(err).NotTo(HaveOccurred())
+			
+			analysis := CodebaseAnalysis{}
+    		analysis.Ok = true
+			analysis.Warnings = nil
+			analysis.Dockerfile = string(dockerfile)
+			analysis.Service = string(serviceyml)
+			b, err := json.Marshal(analysis)
+		    Expect(string(resp.Body())).To(Equal(string(b)))
+		    os.Remove(path + "/Dockerfile")
+		    os.Remove(path + "/service.yml")
+		})
+	})
 
-	FContext("analayse a ruby project", func() {
 
-		FIt("should respond with a dockerfile", func() {
+	Context("analyse a ruby project and only request a dockerfile", func() {
+		It("should respond with a dockerfile", func() {
 			path := "test/ruby/rails_mysql/src"
 			resp, err := resty.R().SetBody(`{"path":"` + path + `", "generate":"dockerfile"}`).Post("http://127.0.0.1:9090/analyze")
 			Expect(err).NotTo(HaveOccurred())
-			file, _ := ioutil.ReadFile(path + "/Dockerfile")
-			
+			file, err := ioutil.ReadFile(path + "/Dockerfile")
+			Expect(err).NotTo(HaveOccurred())
+			analysis := CodebaseAnalysis{}
+    		analysis.Ok = true
+			analysis.Warnings = nil
+			analysis.Dockerfile = string(file)
+			b, err := json.Marshal(analysis)
+		    Expect(string(resp.Body())).To(Equal(string(b)))
+		    os.Remove(path + "/Dockerfile")
+		})
+	})
+	Context("analyse a node project only request a dockerfile", func() {
+		It("should respond with a dockerfile", func() {
+			path := "test/node/express_procfile/src"
+			resp, err := resty.R().SetBody(`{"path":"` + path + `", "generate":"dockerfile"}`).Post("http://127.0.0.1:9090/analyze")
+			Expect(err).NotTo(HaveOccurred())
+			file, err := ioutil.ReadFile(path + "/Dockerfile")
+			Expect(err).NotTo(HaveOccurred())
 			analysis := CodebaseAnalysis{}
     		analysis.Ok = true
 			analysis.Warnings = nil
