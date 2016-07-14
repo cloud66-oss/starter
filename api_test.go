@@ -23,7 +23,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 		It("should respond with version number", func() {
 			resp, err := resty.R().Get("http://127.0.0.1:9090/version")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(resp.Body())).To(Equal(`"1.0.2"`))
+			Expect(string(resp.Body())).To(Equal(`"test"`))
 		})
 	})
 	Context("analyse a ruby project", func() {

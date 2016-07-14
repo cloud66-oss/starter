@@ -4,7 +4,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"testing"
-	"bytes"
 	"time"
 	"os/exec"
 	"github.com/cloud66/starter/common"
@@ -18,12 +17,9 @@ func TestStarter(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	command := exec.Command("git", "describe", "--abbrev=0", "--tags")
-	command_out, _ := command.Output()
-	version := bytes.TrimRight(command_out, "\n")
 	current_date := time.Now().Format("2006-01-02")
 
-	err := exec.Command("go", "build", "-ldflags","-X \"main.VERSION=" + string(version) + "\" -X \"main.BUILDDATE=" + current_date + "\"").Run()
+	err := exec.Command("go", "build", "-ldflags","-X \"main.VERSION=test\" -X \"main.BUILDDATE=" + current_date + "\"").Run()
 	Expect(err).NotTo(HaveOccurred())
 	Expect(common.FileExists(binPath)).To(BeTrue())
 	
