@@ -1,3 +1,7 @@
-- name: test_step
+- name: test_step1
+  service: starter
+  command: git describe --abbrev=0 --tags
+
+- name: test_step2
   service: starter
   command: go test
