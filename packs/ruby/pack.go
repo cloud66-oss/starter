@@ -12,7 +12,7 @@ func (p *Pack) Name() string {
 }
 
 func (p *Pack) Framework() string {
-	return "rails"
+	return p.Analysis.Framework
 }
 
 func (p *Pack) Detector() packs.Detector {

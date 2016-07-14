@@ -82,6 +82,7 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 		{
 		  "Ok": true,
 		  "Language": "ruby",
+		  "Framework": "rails",
 		  "Warnings": null,
 		  "Dockerfile": "...",
 		  "Service": "...",
