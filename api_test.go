@@ -92,7 +92,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 	Context("analyse a ruby project through upload files and request a dockerfile, docker-compose.yml and service.yml", func() {
 		It("should respond with a dockerfile, docker-compose.yml and service.yml", func() {
 			path := "test/ruby/rails_mysql/src"
-			expected := "test/ruby/rails_mysql/expected"
+			expected := "test/ruby/rails_mysql/expected/api"
 
 			resp, err := resty.R().SetFile("source", path + "/source.zip").Post("http://127.0.0.1:9090/analyze/upload")
 			Expect(err).NotTo(HaveOccurred())
