@@ -11,6 +11,10 @@ func (p *Pack) Name() string {
 	return "node"
 }
 
+func (p *Pack) FilesToBeAnalysed() [] string {
+	return []string{ "package.json", "Procfile" }
+}
+
 func (p *Pack) Framework() string {
 	return p.Analysis.Framework
 }

@@ -11,6 +11,11 @@ func (p *Pack) Name() string {
 	return "php"
 }
 
+func (p *Pack) FilesToBeAnalysed() []string {
+	return []string{ "composer.json" }
+}
+
+
 func (p *Pack) Framework() string {
 	return p.Analysis.Framework
 }

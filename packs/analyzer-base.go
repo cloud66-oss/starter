@@ -21,14 +21,18 @@ type AnalyzerBase struct {
 }
 
 func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
-	gitURL := common.RemoteGitUrl(a.RootDir)
-	gitBranch := common.LocalGitBranch(a.RootDir)
-	buildRoot, err := common.PathRelativeToGitRoot(a.RootDir)
-	if err != nil {
-		return "", "", "", err
-	}
-
-	return gitURL, gitBranch, buildRoot, nil
+	hasGit := common.HasGit(a.RootDir)
+	if hasGit {
+		gitURL := common.RemoteGitUrl(a.RootDir)
+		gitBranch := common.LocalGitBranch(a.RootDir)
+		buildRoot, err := common.PathRelativeToGitRoot(a.RootDir)
+		if err != nil {
+			return "", "", "", err
+		} else {
+			return gitURL, gitBranch, buildRoot, nil
+		}
+	} 
+	return "", "", ".", nil
 }
 
 func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Database {

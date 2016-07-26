@@ -26,6 +26,14 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(string(resp.Body())).To(Equal(`"test"`))
 		})
 	})
+	Context("get the list of files starter is using to analyse the codebase", func() {
+		It("should respond with all the supported files", func() {
+			resp, err := resty.R().Get("http://127.0.0.1:9090/analyze/supported")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(resp.Body())).To(Equal(`{"Languages":[{"Name":"ruby","Files":["Gemfile","Procfile","config/database.yml"]},{"Name":"node","Files":["package.json","Procfile"]},{"Name":"php","Files":["composer.json"]}]}`))
+		})
+	})
+
 	Context("analyse a ruby project", func() {
 		It("should respond with program langange ruby", func() {
 			path := "test/ruby/rails_mysql/src"
@@ -79,6 +87,34 @@ var _ = Describe("Running Starter in damon mode", func() {
 		      
 		})
 	})
+
+
+	Context("analyse a ruby project through upload files and request a dockerfile, docker-compose.yml and service.yml", func() {
+		It("should respond with a dockerfile, docker-compose.yml and service.yml", func() {
+			path := "test/ruby/rails_mysql/src"
+			expected := "test/ruby/rails_mysql/expected"
+
+			resp, err := resty.R().SetFile("source", path + "/source.zip").Post("http://127.0.0.1:9090/analyze/upload")
+			Expect(err).NotTo(HaveOccurred())
+			dockerfile, err := ioutil.ReadFile(expected + "/Dockerfile")
+			Expect(err).NotTo(HaveOccurred())
+			dockercomposeyml, err := ioutil.ReadFile(expected + "/docker-compose.yml")
+			Expect(err).NotTo(HaveOccurred())
+			
+			analysis := CodebaseAnalysis{}
+    		analysis.Ok = true
+			analysis.Warnings = nil
+			analysis.Language = "ruby"
+			analysis.Framework = "rails"
+			analysis.Dockerfile = string(dockerfile)
+			analysis.DockerCompose = string(dockercomposeyml)
+			b, err := json.Marshal(analysis)
+		    Expect(string(resp.Body())).To(Equal(string(b)))
+		      
+		})
+	})
+
+
 
 
 	Context("analyse a ruby project and request a dockerfile and service.yml", func() {

@@ -3,10 +3,18 @@ package main
 import (
 	"net/http"
 	"os"
+	"io"
+	"path/filepath"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/cloud66/starter/common"
 	"io/ioutil"
 	"strings"
+	"github.com/cloud66/starter/packs"
+	"github.com/cloud66/starter/packs/ruby"
+	"github.com/cloud66/starter/packs/node"
+	"github.com/cloud66/starter/packs/php"
+	"archive/zip"
+    "github.com/satori/go.uuid"
 )
 
 // API holds starter API
@@ -24,6 +32,15 @@ type CodebaseAnalysis struct {
     DockerCompose string
 }
 
+type Language struct {
+	Name string
+	Files []string
+}
+
+type SupportedLanguages struct {
+	Languages []Language
+}
+
 // NewAPI creates a new instance of the API
 func NewAPI(configuration *Config) API {
 	return API{config: configuration}
@@ -38,8 +55,12 @@ func (a *API) StartAPI() error {
 		&rest.Route{HttpMethod: "GET", PathExp: "/ping", Func: a.ping},
 		&rest.Route{HttpMethod: "GET", PathExp: "/version", Func: a.version},
 
+
 		// parsing
 		&rest.Route{HttpMethod: "POST", PathExp: "/analyze", Func: a.analyze},
+		&rest.Route{HttpMethod: "GET", PathExp: "/analyze/supported", Func: a.supported},
+		&rest.Route{HttpMethod: "POST", PathExp: "/analyze/upload", Func: a.upload},
+			
 	)
 	if err != nil {
 		return err
@@ -69,7 +90,95 @@ func (a *API) version(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(VERSION)
 }
 
+func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
+	 uuid := uuid.NewV4().String()
+
+	//save the file to a random location
+ 	file, handler, err := r.FormFile("source")
+    if err != nil {
+        rest.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    defer file.Close()
+
+    filename := "/tmp/" + uuid + "/" + handler.Filename
+    source_dir := "/tmp/" + uuid
+	err = os.MkdirAll(source_dir, 0777)
+    
+    if err != nil {
+        rest.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
+    if err != nil {
+        rest.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    defer f.Close()
+    io.Copy(f, file)
+
+   
+	//unzip the file
+	unzip(filename, source_dir)
+
+	//analyse
+	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose")
+
+	//cleanup
+	err = os.RemoveAll(source_dir)
+	if err != nil {
+        rest.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.WriteJson(analysis)
+}
+
 // routes parsing
+
+func (a *API) supported(w rest.ResponseWriter, r *rest.Request) {
+	/* 
+	response:
+		{
+          "languages": [
+            {
+              "name": "ruby",
+              "files": [
+                "Gemfile",
+                "Procfile",
+                "config/database.yml"
+              ]
+            },
+             {
+              "name": "php",
+              "files": [
+                "composer.json"
+              ]
+            },
+             {
+              "name": "node",
+              "files": [
+                "package§.json",
+                "Procfile"
+              ]
+            }
+          ]
+        }
+	*/
+
+
+	packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
+	languages := SupportedLanguages{}
+	for _, p := range packs {
+		 support := Language{}
+		 support.Name = p.Name()
+		 support.Files = p.FilesToBeAnalysed()
+		 languages.Languages = append(languages.Languages, support)
+	}
+	w.WriteJson(languages)
+}
+
+
 func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	/* 
 	payload:
@@ -100,29 +209,36 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	path := request.Path
 	generate := request.Generate
+	analysis := analyze_sourcecode(config, path, generate)
+    w.WriteJson(analysis)
+}
 
+
+
+
+func (a *API) handleError(err error, w rest.ResponseWriter) {
+	rest.Error(w, err.Error(), http.StatusBadRequest)
+}
+
+func analyze_sourcecode(config *Config, path string, generate string) (CodebaseAnalysis) {
+	analysis := CodebaseAnalysis{}
 	result, err := analyze(
 		false,
 		path,
 		config.template_path,
-		"",
+		"production",
 		true,
 		true,
 		generate)
 
 	if err != nil {
-		a.handleError(err, w)
-		return
+		common.PrintL0("%v", err.Error())
+		return analysis
 	}
 
-	
-
-
-    analysis := CodebaseAnalysis{}
-    analysis.Language = result.Language
+	analysis.Language = result.Language
     analysis.Framework = result.Framework
     analysis.Ok = result.OK
 	analysis.Warnings = result.Warnings
@@ -158,9 +274,42 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 
 
     }
-    w.WriteJson(analysis)
+    return analysis
 }
 
-func (a *API) handleError(err error, w rest.ResponseWriter) {
-	rest.Error(w, err.Error(), http.StatusBadRequest)
+func unzip(archive, target string) error {
+	reader, err := zip.OpenReader(archive)
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(target, 0755); err != nil {
+		return err
+	}
+
+	for _, file := range reader.File {
+		path := filepath.Join(target, file.Name)
+		if file.FileInfo().IsDir() {
+			os.MkdirAll(path, file.Mode())
+			continue
+		}
+
+		fileReader, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer fileReader.Close()
+
+		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return err
+		}
+		defer targetFile.Close()
+
+		if _, err := io.Copy(targetFile, fileReader); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -2,9 +2,6 @@
 	"ImportPath": "github.com/cloud66/starter",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v74",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/ant0ine/go-json-rest/rest",
@@ -45,20 +42,7 @@
 			"Rev": "999359b6b7a041ce16e695d51e92145b83f01087"
 		},
 		{
-			"ImportPath": "github.com/mattn/go-colorable",
-			"Comment": "v0.0.5",
-			"Rev": "9056b7a9f2d1f2d96498d6d146acd1f9d5ed3d59"
-		},
-		{
-			"ImportPath": "github.com/mattn/go-isatty",
-			"Rev": "56b76bdf51f7708750eac80fa38b952bb9f32639"
-		},
-		{
 			"ImportPath": "github.com/mgutz/ansi",
-			"Rev": "452f5f5396543168418a299cd963697ac742b56e"
-		},
-		{
-			"ImportPath": "github.com/mgutz/ansi/cmd/ansi-mgutz",
 			"Rev": "452f5f5396543168418a299cd963697ac742b56e"
 		},
 		{
@@ -201,12 +185,13 @@
 			"Rev": "7ce781ea776b2fd506491011353bded2e40c8467"
 		},
 		{
-			"ImportPath": "golang.org/x/net/publicsuffix",
-			"Rev": "f841c39de738b1d0df95b5a7187744f0e03d8112"
+			"ImportPath": "github.com/satori/go.uuid",
+			"Comment": "v1.1.0-1-g0aa62d5",
+			"Rev": "0aa62d5ddceb50dbcb909d790b5345affd3669b6"
 		},
 		{
-			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "a408501be4d17ee978c04a618e7a1b22af058c0e"
+			"ImportPath": "golang.org/x/net/publicsuffix",
+			"Rev": "f841c39de738b1d0df95b5a7187744f0e03d8112"
 		}
 	]
 }

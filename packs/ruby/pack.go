@@ -11,6 +11,10 @@ func (p *Pack) Name() string {
 	return "ruby"
 }
 
+func (p *Pack) FilesToBeAnalysed() []string {
+	return []string{ "Gemfile", "Procfile", "config/database.yml" }
+}
+
 func (p *Pack) Framework() string {
 	return p.Analysis.Framework
 }

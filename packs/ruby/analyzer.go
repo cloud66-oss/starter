@@ -17,6 +17,7 @@ type Analyzer struct {
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.Gemfile = filepath.Join(a.RootDir, "Gemfile")
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
+
 	if err != nil {
 		return nil, err
 	}
