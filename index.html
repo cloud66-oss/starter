@@ -1,124 +1,267 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Getting Started with Docker - Docker Starter</title>
+    <meta charset="UTF-8">
+    <title>Starter | An Open Source Dockerfile Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/styles.css?v=2" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new
+Date();a=s.createElement(o),
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/github-light.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a
+,m)
+
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-25691976-10', 'auto');
+ga('send', 'pageview');
+</script>
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1 class="header">Starter</h1>
-        <p class="header">Docker Starter for Cloud 66</p>
+    <section class="page-header">
+      <img src="./images/starter_logo.svg" width="100"/>
+      <h1 class="project-name">Starter</h1>
+      <h2 class="project-tagline">An Open Source Dockerfile Generator </h2>
+      <a href="https://github.com/cloud66/starter" class="btn">View on GitHub</a>
+      <p class="logo">
+        <a class="image-link" href="http://www.cloud66.com/?utm_source=starter&utm_medium=page&utm_campaign=opensource">
+          <img src="images/C66_logo_white.svg" width="40" />
+        </a> 
+      </p>
+      <p class = "logotext">Starter is maintained by Cloud 66</p>
+    </section>
 
-        <ul>
-          <li><a class="buttons github" href="https://github.com/cloud66/starter">View On GitHub</a></li>
-        </ul>
+    <section class="main-content">
+      <h3>
+<a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to Starter</h3>
 
-        <p class="header">This project is maintained by <a class="header name" href="http://www.cloud66.com">Cloud 66</a></p>
+<p>Starter is an open-source command line tool to generate a <code>Dockerfile</code> and a <code>service.yml</code> file from arbitrary source code. The service.yml file is a Cloud 66 service definition file which is used to define the service configuration on a stack.</p>
+
+<p>Starter works in the same way as <a href="https://devcenter.heroku.com/articles/buildpacks">BuildPacks</a> do, but only generates the above mentioned files; the image compile step happens on <a href="http://help.cloud66.com/building-your-stack/building-your-docker-service">BuildGrid</a>. Starter does not require any additional third party tools or frameworks to work (it's compiled as a Go executable).</p>
+
+<h3>Getting Started</h3>
+<p>If you are on OS X, the best way to install starter is using <a href="http://brew.sh/">homebrew</a></p>
+
+<pre class="yaml">
+  <code>
+    $ brew tap cloud66/tap
+
+    $ brew install c66starte
+  </code>
+</pre>
+
+<p>Alternatively you can <a href="https://github.com/cloud66/starter/releases">download the latest release executable</a> and run it on your development machine.</p>
+
+<pre class="yaml">
+  <code>
+    $ cd /my/project
+
+    $ starter -g dockerfile,service,docker-compose
+  </code>
+</pre>
+
+<p>This will analyze the project in the current folder and generate the three files: <code>Dockerfile</code>, <code>docker-compose.yml</code> and <code>service.yml</code> in the same folder, prompting for information when required.
+</p>
+
+<pre class="yaml">
+  <code>  
+    Cloud 66 Starter ~ (c) 2016 Cloud 66
+    Detecting framework for the project at /Users/awesome/work/boom
+    Found ruby application
+    Enter ruby version: [latest]
+    ----> Found config/database.yml
+    Found mysql, confirm? [Y/n]
+    Found redis, confirm? [Y/n]
+    Found elasticsearch, confirm? [Y/n]
+    Add any other databases? [y/N]
+    ----> Analyzing dependencies
+    ----> Parsing Procfile
+    ----> Found Procfile item web
+    ----> Found Procfile item worker
+    ----> Found unicorn
+    This command will be run after each build: '/bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:schema:load"', confirm? [Y/n]
+    This command will be run after each deployment: '/bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:migrate"', confirm? [Y/n]
+    ----> Writing Dockerfile...
+    ----> Writing docker-compose.yml...
+    ----> Writing service.yml
+    Donee
+  </code>
+</pre>
+
+<p>Starter supports <a href="https://devcenter.heroku.com/articles/procfile">Procfiles</a> and generates a service in <code>service.yml</code> for each item in the Procfile. It’s highly advised to use a Procfile to define your own service commands, as otherwise, Starter will only detect the web service.</p>
+
+<p>To use Starter on a different folder, you can use the <code>p</code> option:</p>
+
+<pre class="yaml">
+  <code>
+    $ starter -p /my/project
+  </code>
+</pre>
+
+<p> For more options, please see:</p>
+
+<pre class="yaml">
+  <code>
+    $ starter help
+  </code>
+</pre>
+
+<p>Starter can generate a <code>Dockerfile</code> , <code>docker-compose.yml</code> and a Cloud 66 specific <code>service.yml</code> for you:</p>
+
+<ul>
+
+<p> <li>Dockerfile: a Docker specification text document that contains all the commands a user could call on the command line to assemble an image (more compatible with development environments)</li></p>
+
+<p> <li> docker-compose.yml: a Docker specification file for making it easy to run your Dockerized application on your machine and mimic the Docker infrastructure. Ofcourse without all the extra ops stuff you need thanks to running Docker in production with Cloud 66 (more compatible with development environments) </li></p>
+
+<p><li> service.yml: a Cloud 66 service definition file, which is used to define the service configurations on a stack (more compatible with production environments). </li></p>
+
+</ul>
+
+<h3>Deploying your app to your servers</h3>
+
+<p>Once you have the <code>docker-compose.yml</code> and <code>Dockerfile</code> generated, you can open them up in your favourite text editor for inspection or modifications:</p>
+
+<pre class="yaml">
+  <code> 
+    $ atom Dockerfile
+
+    $ atom docker-compose.yml
+  </code>
+</pre>
+
+<p> The <code>docker-compose.yml</code> file is a good start to run your containerized application in production. Depending on your target platform, you need to adjust the settings or translate the <code>docker-compose.yml</code> in a specific service configuration for your target platform</p>
+
+<h3> Deploy on Cloud 66 </h3>
+
+<p>Once done, you can now use these files to build and deploy your application on Cloud 66 (you’ll need a <a href="https://app.cloud66.com/users/sign_up?utm_source=starter&utm_medium=page&utm_campaign=opensource">free Cloud 66 account</a> for this).</p>
+
+<p> Cloud 66 inspects your <code>Dockerfile</code> via your source code, so we’ll need to commit that into the code in your Git repository.</p>
+
+pre class="yaml">
+  <code>
+    $ git add Dockerfile
+
+    $ git commit -m "adding Dockerfile"
+
+    $ git push origin master
+  </code>
+</pre>
+
+<p> Now you can use the web interface <a href="http://help.cloud66.com/introduction-to-cloud-66/introduction-to-cloud-66">to create a new stack</a> for your app in Cloud 66. All you need to do is to copy and paste the generated <code>service.yml</code> to the advanced settings of the stack creation step.</p>
+
+<p> Alternatively you can use the <a href="http://help.cloud66.com/toolbelt/toolbelt-stack-management">Cloud 66 Toolbelt</a> to create your stack from the command line:</p>
+
+<pre class="yaml">
+  <code> 
+    $ cx stacks create --name "My Awesome Stack" --environment "production" --service_yaml service.yaml
+  </code>
+</pre>
+
+<p> Find more information on <a href="http://help.cloud66.com/toolbelt/toolbelt-stack-management">creating a stack with the Toolbelt</a>.</p>
+
+<h3> Contributing & adding support for new frameworks and languages </h3>
+
+<p> We’ll be adding support for new languages and frameworks over time. However, if you find yourself interested in adding one, it's fairly easy to do:</p>
+
+<ul>
+
+<li><p> Get the source code and compile it (it's written in Go!)</p></li>
+<li><p> Create a new directory under <code>packs/</code> for your language or framework, e.g <code>packs/java/</code></li>
+<li><p> You then need to implement two interfaces: <code>packs.Analyzer</code> and <code>packs.Detector</code></p></li>
+<li><p> The Detector tells starter if the project is written in the given language or framework (in this example - Java)</p></li>
+<li><p> The Analyzer analyzes the project and writes the <code>Dockerfile</code> and <code>service.yml</code></p></li>
+<li><p> A template is created with the name of the language under the <code>templates</code> folder, e.g <code>java.dockerfile.template</code></p></li>
+<li><p> Use Golang template syntax to build the template for the <code>Dockerfile</code></p></li>
+
+</ul>
+
+<h3> Contribute to Starter using Habitus </h3>
+<p> If you want to contribute to Starter. You can build Starter using <a href="http://www.habitus.io/">Habitus</a>. Habitus is an open source build flow tool for Docker. (https://github.com/cloud66/habitus)</p>
+
+<p> Run Habitus in the root directory of this repository. The latest version is generated (after tests) inside the <code>/artifacts/compiled</code> directory.
+
+<pre class="yaml">
+  <code> 
+    $ sudo habitus –host $DOCKER_HOST –certs $DOCKER_CERT_PATH
+  </code>
+</pre>
+
+<p>To make sure you a have isolated development environment for contribution. You can use the docker-compose for developing, testing and compiling.</p>
+
+<pre class="yaml">
+  <code> 
+    $ docker-compose run starter
+  </code>
+</pre>
+
+<p> Building Starter inside a docker container:</p>
+
+<pre class="yaml">
+  <code> 
+    $ root@xx:/usr/local/go/src/github.com/cloud66/starter# go build
+  </code>
+</pre>
+
+<p> Running the tests:</p>
+
+<pre class="yaml">
+  <code> 
+    $ root@xx:/usr/local/go/src/github.com/cloud66/starter# go test
+  </code>
+</pre>
+
+<p> And you are ready to start your contributions to Starter.  </p>
 
 
-      </header>
-      <section>
-        <h3>Welcome to Starter</h3>
+<!-- video and blog -->
+<h3 class="YouTube1">More about Starter</h3>
+<p class="YouTube"><iframe width="560" height="315" src="https://www.youtube.com/embed/50-0IQNGd3g" frameborder="0" allowfullscreen></iframe></p>
+<p class="articles">Read more <a href="http://blog.cloud66.com/tag/starter/">articles about Starter.</a></p>
 
-        <p>Cloud 66 Starter is an open-source command line tool to generate a <code>Dockerfile</code> and a <code>service.yml</code> file from arbitrary source code. The service.yml file is a Cloud 66 service definition file which is used to define the service configurations on a stack.</p>
-        <p>Starter works in the same way as <a href="https://devcenter.heroku.com/articles/buildpacks">BuildPacks</a> do, but only generates the above mentioned files; the image compile step happens on the <a href="http://help.cloud66.com/building-your-stack/building-your-docker-service">BuildGrid</a>. Starter does not require any additional third party tools or frameworks to work (it's compiled as a Go executable).</p>
 
-        <h3>Getting Started</h3>
-        <p>If you are on OS X, the best way to install starter is using <a href="http://brew.sh/">homebrew</a></p>
-        <pre><code>$ brew tap cloud66/tap
-$ brew install c66starter</code></pre>
-        <p>Alternatively you can <a href="https://github.com/cloud66/c66starter/releases">download the latest release executable</a> and run it on your development machine.</p>
-        <pre><code>$ cd /my/project
-$ starter</code></pre>
-        <p>This will analyze the project in the current folder and generate the two files: <code>Dockerfile</code> and <code>service.yml</code> in the same folder, prompting for information when required.</p>
+<!--Call to action button-->
+ <p class="call-to-action"><a href="https://github.com/cloud66/starter" class="btn1" >View on GitHub</a></p>
 
-        <pre><code>Cloud 66 Starter ~ (c) 2015 Cloud 66
-Detecting framework for the project at /Users/awesome/work/boom
-Found ruby application
-Enter ruby version: [latest]
-----> Found config/database.yml
-Found mysql, confirm? [Y/n]
-Found redis, confirm? [Y/n]
-Found elasticsearch, confirm? [Y/n]
-Add any other databases? [y/N]
-----> Analyzing dependencies
-----> Parsing Procfile
-----> Found Procfile item web
-----> Found Procfile item worker
-----> Found unicorn
-This command will be run after each build: '/bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:schema:load"', confirm? [Y/n]
-This command will be run after each deployment: '/bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:migrate"', confirm? [Y/n]
-----> Writing Dockerfile...
-----> Writing service.yml...
-Done</code></pre>
+</section>
 
-        <p>Starter supports <a href="https://devcenter.heroku.com/articles/procfile">Procfiles</a> and generates a service in <code>service.yml</code> for each item in the Procfile. It is highly advised to use a Procfile to define your own service commands as starter will only detect the web service otherwise.</p>
-        <p>To use starter on a different folder, you can use the <code>p</code> option:</p>
+<!-- Social Media Share buttons-->
 
-        <pre><code>$ starter -p /my/project</code></pre>
+<!-- LinkedIn -->
+<div class="socialbuttons">
+ <a class="socialbutton" href="http://www.linkedin.com/shareArticle?url=http://www.startwithdocker.com/" target="_blank">
+  <i class="fa fa-linkedin"></i>
+ </a>
 
-        <p>For more options, please see:</p>
+<!-- Reddit -->
+  <a class="socialbutton" href="http://reddit.com/submit?url=http://www.startwithdocker.com/&amp;title=Starter: An Open Source Dockerfile Generator" target="_blank">
+   <i class="fa fa-reddit-alien"></i>
+  </a>
 
-        <pre><code>$ starter help</code></pre>
-        <h3>Supported Languages / Frameworks</h3>
+<!-- Twitter -->
+  <a class="socialbutton" href="https://twitter.com/share?url=http://www.startwithdocker.com/&amp;text=Starter: An Open Source Dockerfile Generator &amp;hashtags=Starter,Dockerfile" target="_blank">
+   <i class="fa fa-twitter"></i>
+  </a>
 
-        <ul>
-          <li>Ruby, Rack (Rails, Sinatra, Padrino)</li>
-          <li>Python (django) (experimental)</li>
-        </ul>
+<!-- Hacker News -->
+  <a class="socialbutton" href="https://news.ycombinator.com/submitlink?u=http://www.startwithdocker.com/&t=Starter%20:%20an%20open%20source%20Dockerfile%20Generator%20" target="_blank">
+    <i class="fa fa-hacker-news"></i>
+  </a>
 
-        <h3>Deploying your app to your servers</h3>
-        <p>Once you have the <code>service.yml</code> and <code>Dockerfile</code> generated you can open them up in your favourite text editor for inspection or modifications.</p>
-        <pre><code>$ atom Dockerfile
-$ atom service.yml</code></pre>
-        <p>If you are happy with the contents you can use them to build and deploy your application on Cloud 66 (you need a <a href="https://app.cloud66.com/users/sign_up">free Cloud 66 account</a> for this).</p>
-        <p>Cloud 66 expects your <code>Dockerfile</code> to be with your source code, so we need to commit that with the code into your repositoty.</p>
-        <pre><code>$ git add Dockerfile
-$ git commit -m "adding Dockerfile"
-$ git push origin master</code></pre>
-        <p>Now you can use the web interface to <a href="http://help.cloud66.com/introduction-to-cloud-66/introduction-to-cloud-66">create a new stack</a> for your app in Cloud 66. All you need to do is to copy and paste the generated <code>service.yml</code> to the advanced settings of the stack creation step.</p>
-        <p>Alternatively you can use <a href="http://help.cloud66.com/toolbelt/toolbelt-introduction">Cloud 66 Toolbelt</a> to create your stack from the command line:</p>
-        <pre><code>$ cx stacks create --name "My Awesome Stack" --environment "production" --service_yaml service.yaml</code></pre>
-        <p>Find more information on <a href="http://help.cloud66.com/toolbelt/toolbelt-stack-management">creating a stack with the Toolbelt</a>.</p>
+<!--Slack C66 Community -->
+ <a class="socialbutton" href="https://app.cloud66.com/join_slack">
+  <i class="fa fa-slack"></i>
+ </a>
 
-        <h3>Contributing &amp; adding support for new frameworks and languages</h3>
+</div>
 
-        <p>We will be adding support for new languages and frameworks over the time. However, if you find yourself interested in adding one, it's fairly easy to do:</p>
-        <ul>
-          <li>Get the source code and compile it (it's written in Go!)</li>
-          <li>Create a new directory under <code>packs/</code> for you language or framework, e.g <code>packs/java/</code></li>
-          <li>You then need to implement two interfaces, <code>packs.Analyzer</code> and <code>packs.Detector</code>.</li>
-          <li>The Detector tells starter if the project is written in the given language or framework (in this example Java)</li>
-          <li>The Analyzer analyze the project and write the <code>Dockerfile</code> and <code>service.yml</code>.</li>
-          <li>Create a template with the name of the language under the <code>templates</code> folder, e.g <code>java.dockerfile.template</code></li>
-          <li>Use Golang template syntax to build the template for <code>Dockerfile</code></li>
-        </ul>
-      </section>
-      <footer>
-        <p><small><a href="http://www.cloud66.com">Cloud 66</a> is the best way to build and run Docker containers in production</small></p>
-      </footer>
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		          <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-25691976-9");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
+
 
   </body>
 </html>
