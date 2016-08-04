@@ -6,5 +6,6 @@ RUN mkdir -p /app
 WORKDIR /app
 
 # copy the binary
-ADD ./artifacts/compiled/starter /app
-CMD /app/starter
+COPY ./artifacts/compiled/starter /app
+COPY ./templates /app/templates
+CMD /app/starter -daemon -templates templates

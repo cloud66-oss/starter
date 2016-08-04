@@ -22,5 +22,4 @@ build:
       name: runtime
       depends_on:
         - crosscompile
-      dockerfile: Dockerfile.production        
-      
+      dockerfile: Dockerfile.production
