@@ -42,7 +42,7 @@ func (stack *middlewareStack) Run(event *Event, config *Configuration, next func
 func (stack *middlewareStack) runBeforeFilter(f beforeFunc, event *Event, config *Configuration) error {
 	defer func() {
 		if err := recover(); err != nil {
-			config.logf("bugsnag/middleware: unexpected panic: %v", err)
+			config.log("bugsnag/middleware: unexpected panic: %v", err)
 		}
 	}()
 

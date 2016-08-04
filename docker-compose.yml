@@ -7,5 +7,3 @@ starter:
   environment:
     - DOCKER_HOST=$DOCKER_HOST
     - DOCKER_CERT_PATH=/usr/local/docker/default
-  ports:
-    - 9090:9090

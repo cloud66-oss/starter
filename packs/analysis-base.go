@@ -4,8 +4,9 @@ import "github.com/cloud66/starter/common"
 
 type AnalysisBase struct {
 	PackName string
+
 	GitURL    string
 	GitBranch string
-	Framework string
+
 	Messages common.Lister
 }
