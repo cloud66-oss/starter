@@ -1,6 +1,6 @@
 # use the alpine base image
 FROM alpine:3.3
-MAINTAINER Daniël van Gils
+MAINTAINER Daniel van Gils
 
 RUN mkdir -p /app
 WORKDIR /app
