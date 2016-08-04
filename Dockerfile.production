@@ -1,0 +1,10 @@
+# use the alpine base image
+FROM alpine:3.3
+MAINTAINER Daniël van Gils
+
+RUN mkdir -p /app
+WORKDIR /app
+
+# copy the binary
+ADD ./artifacts/compiled/starter /app
+CMD /app/starter
