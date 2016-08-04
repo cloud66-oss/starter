@@ -25,6 +25,8 @@ type downloadFile struct {
 type analysisResult struct {
 	Warnings []string
 	OK       bool
+	Language string
+	Framework string
 }
 
 type templateDefinition struct {
@@ -226,6 +228,8 @@ func main() {
 		signalChan := make(chan os.Signal, 1)
 		cleanupDone := make(chan bool)
 		signal.Notify(signalChan, os.Interrupt)
+		config.template_path = flagTemplates
+
 
 		api := NewAPI(config)
 		err := api.StartAPI()
@@ -379,6 +383,8 @@ func analyze(
 	}
 
 	result.OK = true
+	result.Language = pack.Name()
+	result.Framework = pack.Framework()
 
 	return result, nil
 }

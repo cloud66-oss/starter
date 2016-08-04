@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/cloud66/starter",
 	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
 	"Deps": [
 		{
 			"ImportPath": "github.com/ant0ine/go-json-rest/rest",
@@ -28,7 +29,13 @@
 		},
 		{
 			"ImportPath": "github.com/bugsnag/panicwrap",
-			"Rev": "e5f9854865b9778a45169fc249e99e338d4d6f27"
+			"Comment": "1.1.0-1-gd6191e2",
+			"Rev": "d6191e27ad06236eaad65d79e49a08b03b9f8029"
+		},
+		{
+			"ImportPath": "github.com/go-resty/resty",
+			"Comment": "v0.8-3-gb353fca",
+			"Rev": "b353fcada0eb6fc32e78bb1ad88030bc0d9ad311"
 		},
 		{
 			"ImportPath": "github.com/hashicorp/go-version",
@@ -176,6 +183,15 @@
 			"ImportPath": "github.com/onsi/gomega/types",
 			"Comment": "v1.0-91-g7ce781e",
 			"Rev": "7ce781ea776b2fd506491011353bded2e40c8467"
+		},
+		{
+			"ImportPath": "github.com/satori/go.uuid",
+			"Comment": "v1.1.0-1-g0aa62d5",
+			"Rev": "0aa62d5ddceb50dbcb909d790b5345affd3669b6"
+		},
+		{
+			"ImportPath": "golang.org/x/net/publicsuffix",
+			"Rev": "f841c39de738b1d0df95b5a7187744f0e03d8112"
 		}
 	]
 }

@@ -17,6 +17,7 @@ type Analyzer struct {
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.Gemfile = filepath.Join(a.RootDir, "Gemfile")
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
+
 	if err != nil {
 		return nil, err
 	}
@@ -25,6 +26,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	dbs := a.ConfirmDatabases(a.FindDatabases())
 	envVars := a.EnvVars()
 	packages := a.GuessPackages()
+	framework := a.GuessFramework()
 	a.CheckNotSupportedPackages(packages)
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
@@ -43,6 +45,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			PackName:  a.GetPack().Name(),
 			GitBranch: gitBranch,
 			GitURL:    gitURL,
+			Framework: framework,
 			Messages:  a.Messages},
 		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
 		ServiceYAMLContext:       &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
@@ -95,6 +98,14 @@ func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.
 	thin := &webservers.Thin{}
 	servers := []packs.WebServer{unicorn, thin}
 	return a.AnalyzerBase.DetectWebServer(a, command, servers)
+}
+
+func (a *Analyzer) GuessFramework() string {
+	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
+	if isRails {
+		return "rails"
+	} 
+	return ""
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {
