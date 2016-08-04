@@ -8,13 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 )
-func HasGit(dir string) bool {
-	_, err := GitRootDir(dir)
-	if err != nil {
-		return false
-	}
-	return true
-}
 
 func LocalGitBranch(dir string) string {
 	gitRootDir, err := GitRootDir(dir)

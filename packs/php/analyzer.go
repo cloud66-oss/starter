@@ -22,7 +22,6 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	dbs := a.ConfirmDatabases(a.FindDatabases())
 	envVars := a.EnvVars()
 	packages := a.GuessPackages()
-	framework := a.GuessFramework()
 	a.CheckNotSupportedPackages(packages)
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
@@ -41,7 +40,6 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			PackName:  a.GetPack().Name(),
 			GitBranch: gitBranch,
 			GitURL:    gitURL,
-			Framework: framework,
 			Messages:  a.Messages},
 		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
 		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
@@ -66,15 +64,12 @@ func (a *Analyzer) HasPackage(pack string) bool {
 	return hasFound
 }
 
-func (a *Analyzer) GuessFramework() string {
-	if runsLaravel, _ := common.GetFramework(a.ComposerJSON, "laravel/framework"); runsLaravel {
-		return "laravel"
-	}
-	return ""
-}
-
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
+
+	if runsLaravel, _ := common.GetFramework(a.ComposerJSON, "laravel/framework"); runsLaravel {
+		common.PrintlnL2("Found Laravel")
+	}
 	return packages
 }
 
