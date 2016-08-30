@@ -15,6 +15,10 @@ import (
 	"github.com/cloud66/starter/packs/php"
 	"archive/zip"
     "github.com/satori/go.uuid"
+    "fmt"
+    "text/template"
+    "bytes"
+
 )
 
 // API holds starter API
@@ -41,6 +45,14 @@ type SupportedLanguages struct {
 	Languages []Language
 }
 
+
+type Dockerfile struct {
+	Language string
+	Base string
+}
+
+
+
 // NewAPI creates a new instance of the API
 func NewAPI(configuration *Config) API {
 	return API{config: configuration}
@@ -59,8 +71,8 @@ func (a *API) StartAPI() error {
 		// parsing
 		&rest.Route{HttpMethod: "POST", PathExp: "/analyze", Func: a.analyze},
 		&rest.Route{HttpMethod: "GET", PathExp: "/analyze/supported", Func: a.supported},
+		&rest.Route{HttpMethod: "GET", PathExp: "/analyze/dockerfiles", Func: a.dockerfiles},
 		&rest.Route{HttpMethod: "POST", PathExp: "/analyze/upload", Func: a.upload},
-			
 	)
 	if err != nil {
 		return err
@@ -88,6 +100,41 @@ func (a *API) ping(w rest.ResponseWriter, r *rest.Request) {
 
 func (a *API) version(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(VERSION)
+}
+
+func (a *API) dockerfiles(w rest.ResponseWriter, r *rest.Request) {
+	packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
+	dockerfiles := []Dockerfile{}
+	for _, p := range packs {
+		dockerfile := Dockerfile{}
+		dockerfile.Language = p.Name()
+
+		//parse base template
+		templateName := fmt.Sprintf("%s.dockerfile.template",p.Name())
+		tmpl,_ := template.ParseFiles(filepath.Join(config.template_path, templateName))
+  		
+  		var doc bytes.Buffer 
+     
+     	version := struct {
+    		Version string
+    		Packages *common.Lister
+		}{
+    		Version: "latest",
+    		Packages: common.NewLister(),
+		}
+
+		
+
+		err := tmpl.Execute(&doc, version)
+		if err != nil {
+		  rest.Error(w, err.Error(), http.StatusInternalServerError)
+		  return
+		}
+		dockerfile.Base = doc.String()
+		
+		dockerfiles = append(dockerfiles, dockerfile)
+	}
+	w.WriteJson(dockerfiles)
 }
 
 func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
@@ -158,7 +205,7 @@ func (a *API) supported(w rest.ResponseWriter, r *rest.Request) {
              {
               "name": "node",
               "files": [
-                "package§.json",
+                "package.json",
                 "Procfile"
               ]
             }

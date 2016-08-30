@@ -34,6 +34,44 @@ var _ = Describe("Running Starter in damon mode", func() {
 		})
 	})
 
+	Context("get the list of base Dockerfiles starter is supporting", func() {
+		It("should respond with all the supported Dockerfiles", func() {
+			resp, err := resty.R().Get("http://127.0.0.1:9090/analyze/dockerfiles")
+			Expect(err).NotTo(HaveOccurred())
+			dockerfiles := []Dockerfile{}
+
+			path := "test/ruby/Dockerfile.base"
+			rubyDockerFile, err := ioutil.ReadFile(path)
+			dockerfile := Dockerfile{}
+			dockerfile.Language = "ruby"
+			dockerfile.Base = string(rubyDockerFile)
+		 	dockerfiles = append(dockerfiles, dockerfile)
+
+			path = "test/node/Dockerfile.base"
+			nodeDockerFile, err := ioutil.ReadFile(path)
+			dockerfile = Dockerfile{}
+			dockerfile.Language = "node"
+			dockerfile.Base = string(nodeDockerFile)
+		 	dockerfiles = append(dockerfiles, dockerfile)
+			
+			path = "test/php/Dockerfile.base"
+			phpDockerFile, err := ioutil.ReadFile(path)
+			dockerfile = Dockerfile{}
+			dockerfile.Language = "php"
+			dockerfile.Base = string(phpDockerFile)
+		 	dockerfiles = append(dockerfiles, dockerfile)
+
+			
+			
+		
+	
+		 	b, err := json.Marshal(dockerfiles)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(resp.Body())).To(Equal(string(b)))
+		})
+	})
+
 	Context("analyse a ruby project", func() {
 		It("should respond with program langange ruby", func() {
 			path := "test/ruby/rails_mysql/src"

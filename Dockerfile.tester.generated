@@ -1,0 +1,8 @@
+from golang:1.6
+maintainer Daniel van Gils
+run go get github.com/tools/godep
+run go get github.com/onsi/ginkgo/ginkgo
+run go get github.com/onsi/gomega
+run mkdir -p /usr/local/go/src/github.com/cloud66/starter
+add . /usr/local/go/src/github.com/cloud66/starter
+workdir /usr/local/go/src/github.com/cloud66/starter
