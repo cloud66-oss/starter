@@ -4,7 +4,7 @@ import (
 	// "fmt"
 	"io/ioutil"
 	"encoding/json"
-	"strings"
+	"regexp"
 )
 
 // Looks for node version in the package.json. If found returns true, version if not false, ""
@@ -26,7 +26,12 @@ func GetNodeVersion(packageJsonFile string) (bool, string) {
 	}
 
 	if nodeVersion, ok := data["engines"].(map[string]interface{})["node"].(string); ok {
-		return true, strings.TrimSuffix(nodeVersion,".x")
+		re := regexp.MustCompile("(\\d).(\\d).*")
+		nodeVersion = re.FindStringSubmatch(nodeVersion)[1] + "." + re.FindStringSubmatch(nodeVersion)[2]
+		if re.FindStringSubmatch(nodeVersion)[2] == "0" {
+			nodeVersion = re.FindStringSubmatch(nodeVersion)[1]
+		}
+		return true, nodeVersion
 	} else {
 		return false, ""
 	}
