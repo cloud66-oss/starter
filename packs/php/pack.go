@@ -20,6 +20,10 @@ func (p *Pack) Framework() string {
 	return p.Analysis.Framework
 }
 
+func (p *Pack) FrameworkVersion() string {
+	return p.Analysis.FrameworkVersion
+}
+
 func (p *Pack) Detector() packs.Detector {
 	return &Detector{PackElement: packs.PackElement{Pack: p}}
 }

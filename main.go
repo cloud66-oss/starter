@@ -27,6 +27,7 @@ type analysisResult struct {
 	OK       bool
 	Language string
 	Framework string
+	FrameworkVersion string
 }
 
 type templateDefinition struct {
@@ -385,6 +386,7 @@ func analyze(
 	result.OK = true
 	result.Language = pack.Name()
 	result.Framework = pack.Framework()
+	result.FrameworkVersion = pack.FrameworkVersion()
 
 	return result, nil
 }

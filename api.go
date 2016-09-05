@@ -30,6 +30,7 @@ type CodebaseAnalysis struct {
 	Ok bool
 	Language string
 	Framework string
+	FrameworkVersion string
     Warnings []string
     Dockerfile string
     Service string
@@ -287,6 +288,7 @@ func analyze_sourcecode(config *Config, path string, generate string) (CodebaseA
 
 	analysis.Language = result.Language
     analysis.Framework = result.Framework
+    analysis.FrameworkVersion = result.FrameworkVersion
     analysis.Ok = result.OK
 	analysis.Warnings = result.Warnings
     

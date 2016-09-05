@@ -3,6 +3,7 @@ package packs
 type Pack interface {
 	Name() string
 	Framework() string
+	FrameworkVersion() string
 	FilesToBeAnalysed() [] string
 	Detector() Detector
 	Analyze(rootDir string, environment string, shouldNotPrompt bool) error

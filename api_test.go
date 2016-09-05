@@ -209,6 +209,7 @@ var _ = Describe("Running Starter in damon mode", func() {
     		analysis.Ok = true
     		analysis.Language = "node"
     		analysis.Framework = "express"
+			analysis.FrameworkVersion = "4.13.x"
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(file)
 			b, err := json.Marshal(analysis)

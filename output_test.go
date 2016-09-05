@@ -140,7 +140,7 @@ var _ = Describe("Generating all files with Starter", func() {
 		})
 	})
 
-	Context("using a NodeJS Express project with rethinkdb", func() {
+/*	Context("using a NodeJS Express project with rethinkdb", func() {
 		var projectFixturePath string = "test/node/express_rethinkdb"
 		BeforeEach(func() {
 			_, err := runStarterWithProject(projectFixturePath)
@@ -165,7 +165,7 @@ var _ = Describe("Generating all files with Starter", func() {
 		})
 
 	})
-
+*/
 
 	Context("using a NodeJS Express project with no database", func() {
 		var projectFixturePath string = "test/node/express_bare"

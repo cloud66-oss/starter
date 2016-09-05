@@ -7,5 +7,6 @@ type AnalysisBase struct {
 	GitURL    string
 	GitBranch string
 	Framework string
+	FrameworkVersion string
 	Messages common.Lister
 }
