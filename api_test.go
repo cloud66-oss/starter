@@ -138,6 +138,8 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(err).NotTo(HaveOccurred())
 			dockercomposeyml, err := ioutil.ReadFile(expected + "/docker-compose.yml")
 			Expect(err).NotTo(HaveOccurred())
+			serviceyml, err := ioutil.ReadFile(expected + "/service.yml")
+			Expect(err).NotTo(HaveOccurred())
 			
 			analysis := CodebaseAnalysis{}
     		analysis.Ok = true
@@ -146,6 +148,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis.Framework = "rails"
 			analysis.Dockerfile = string(dockerfile)
 			analysis.DockerCompose = string(dockercomposeyml)
+			analysis.Service = string(serviceyml)
 			b, err := json.Marshal(analysis)
 		    Expect(string(resp.Body())).To(Equal(string(b)))
 		      
