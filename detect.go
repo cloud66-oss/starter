@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/packs/ruby"
 	"github.com/cloud66/starter/packs/node"
 	"github.com/cloud66/starter/packs/php"
+	"github.com/cloud66/starter/packs/ruby"
 )
 
 func Detect(rootDir string) (packs.Pack, error) {

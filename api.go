@@ -1,24 +1,23 @@
 package main
 
 import (
-	"net/http"
-	"os"
-	"io"
-	"path/filepath"
+	"archive/zip"
+	"bytes"
+	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/cloud66/starter/common"
-	"io/ioutil"
-	"strings"
 	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/packs/ruby"
 	"github.com/cloud66/starter/packs/node"
 	"github.com/cloud66/starter/packs/php"
-	"archive/zip"
-    "github.com/satori/go.uuid"
-    "fmt"
-    "text/template"
-    "bytes"
-
+	"github.com/cloud66/starter/packs/ruby"
+	"github.com/satori/go.uuid"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"text/template"
 )
 
 // API holds starter API
@@ -27,18 +26,18 @@ type API struct {
 }
 
 type CodebaseAnalysis struct {
-	Ok bool
-	Language string
-	Framework string
+	Ok               bool
+	Language         string
+	Framework        string
 	FrameworkVersion string
-    Warnings []string
-    Dockerfile string
-    Service string
-    DockerCompose string
+	Warnings         []string
+	Dockerfile       string
+	Service          string
+	DockerCompose    string
 }
 
 type Language struct {
-	Name string
+	Name  string
 	Files []string
 }
 
@@ -46,13 +45,10 @@ type SupportedLanguages struct {
 	Languages []Language
 }
 
-
 type Dockerfile struct {
 	Language string
-	Base string
+	Base     string
 }
-
-
 
 // NewAPI creates a new instance of the API
 func NewAPI(configuration *Config) API {
@@ -67,7 +63,6 @@ func (a *API) StartAPI() error {
 		// system
 		&rest.Route{HttpMethod: "GET", PathExp: "/ping", Func: a.ping},
 		&rest.Route{HttpMethod: "GET", PathExp: "/version", Func: a.version},
-
 
 		// parsing
 		&rest.Route{HttpMethod: "POST", PathExp: "/analyze", Func: a.analyze},
@@ -111,61 +106,58 @@ func (a *API) dockerfiles(w rest.ResponseWriter, r *rest.Request) {
 		dockerfile.Language = p.Name()
 
 		//parse base template
-		templateName := fmt.Sprintf("%s.dockerfile.template",p.Name())
-		tmpl,_ := template.ParseFiles(filepath.Join(config.template_path, templateName))
-  		
-  		var doc bytes.Buffer 
-     
-     	version := struct {
-    		Version string
-    		Packages *common.Lister
-		}{
-    		Version: "latest",
-    		Packages: common.NewLister(),
-		}
+		templateName := fmt.Sprintf("%s.dockerfile.template", p.Name())
+		tmpl, _ := template.ParseFiles(filepath.Join(config.template_path, templateName))
 
-		
+		var doc bytes.Buffer
+
+		version := struct {
+			Version  string
+			Packages *common.Lister
+		}{
+			Version:  "latest",
+			Packages: common.NewLister(),
+		}
 
 		err := tmpl.Execute(&doc, version)
 		if err != nil {
-		  rest.Error(w, err.Error(), http.StatusInternalServerError)
-		  return
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		dockerfile.Base = doc.String()
-		
+
 		dockerfiles = append(dockerfiles, dockerfile)
 	}
 	w.WriteJson(dockerfiles)
 }
 
 func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
-	 uuid := uuid.NewV4().String()
+	uuid := uuid.NewV4().String()
 
 	//save the file to a random location
- 	file, handler, err := r.FormFile("source")
-    if err != nil {
-        rest.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    defer file.Close()
+	file, handler, err := r.FormFile("source")
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
 
-    filename := "/tmp/" + uuid + "/" + handler.Filename
-    source_dir := "/tmp/" + uuid
+	filename := "/tmp/" + uuid + "/" + handler.Filename
+	source_dir := "/tmp/" + uuid
 	err = os.MkdirAll(source_dir, 0777)
-    
-    if err != nil {
-        rest.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
-    if err != nil {
-        rest.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    defer f.Close()
-    io.Copy(f, file)
 
-   
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+	io.Copy(f, file)
+
 	//unzip the file
 	unzip(filename, source_dir)
 
@@ -175,76 +167,74 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	//cleanup
 	err = os.RemoveAll(source_dir)
 	if err != nil {
-        rest.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    w.WriteJson(analysis)
+	w.WriteJson(analysis)
 }
 
 // routes parsing
 
 func (a *API) supported(w rest.ResponseWriter, r *rest.Request) {
-	/* 
-	response:
-		{
-          "languages": [
-            {
-              "name": "ruby",
-              "files": [
-                "Gemfile",
-                "Procfile",
-                "config/database.yml"
-              ]
-            },
-             {
-              "name": "php",
-              "files": [
-                "composer.json"
-              ]
-            },
-             {
-              "name": "node",
-              "files": [
-                "package.json",
-                "Procfile"
-              ]
-            }
-          ]
-        }
+	/*
+		response:
+			{
+	          "languages": [
+	            {
+	              "name": "ruby",
+	              "files": [
+	                "Gemfile",
+	                "Procfile",
+	                "config/database.yml"
+	              ]
+	            },
+	             {
+	              "name": "php",
+	              "files": [
+	                "composer.json"
+	              ]
+	            },
+	             {
+	              "name": "node",
+	              "files": [
+	                "package.json",
+	                "Procfile"
+	              ]
+	            }
+	          ]
+	        }
 	*/
-
 
 	packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
 	languages := SupportedLanguages{}
 	for _, p := range packs {
-		 support := Language{}
-		 support.Name = p.Name()
-		 support.Files = p.FilesToBeAnalysed()
-		 languages.Languages = append(languages.Languages, support)
+		support := Language{}
+		support.Name = p.Name()
+		support.Files = p.FilesToBeAnalysed()
+		languages.Languages = append(languages.Languages, support)
 	}
 	w.WriteJson(languages)
 }
 
-
 func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
-	/* 
-	payload:
-		{
-			"path": "...", //path to the project to be examined
-			"generate": "dockerfile,service,docker-compose" //files to generate 
-		}
-	
-	response:
-		{
-		  "Ok": true,
-		  "Language": "ruby",
-		  "Framework": "rails",
-		  "Warnings": null,
-		  "Dockerfile": "...",
-		  "Service": "...",
-		  "DockerCompose": "..."
-		}
+	/*
+		payload:
+			{
+				"path": "...", //path to the project to be examined
+				"generate": "dockerfile,service,docker-compose" //files to generate
+			}
+
+		response:
+			{
+			  "Ok": true,
+			  "Language": "ruby",
+			  "Framework": "rails",
+			  "Warnings": null,
+			  "Dockerfile": "...",
+			  "Service": "...",
+			  "DockerCompose": "..."
+			}
 	*/
 
 	type payload struct {
@@ -260,17 +250,14 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	path := request.Path
 	generate := request.Generate
 	analysis := analyze_sourcecode(config, path, generate)
-    w.WriteJson(analysis)
+	w.WriteJson(analysis)
 }
-
-
-
 
 func (a *API) handleError(err error, w rest.ResponseWriter) {
 	rest.Error(w, err.Error(), http.StatusBadRequest)
 }
 
-func analyze_sourcecode(config *Config, path string, generate string) (CodebaseAnalysis) {
+func analyze_sourcecode(config *Config, path string, generate string) CodebaseAnalysis {
 	analysis := CodebaseAnalysis{}
 	result, err := analyze(
 		false,
@@ -287,43 +274,42 @@ func analyze_sourcecode(config *Config, path string, generate string) (CodebaseA
 	}
 
 	analysis.Language = result.Language
-    analysis.Framework = result.Framework
-    analysis.FrameworkVersion = result.FrameworkVersion
-    analysis.Ok = result.OK
+	analysis.Framework = result.Framework
+	analysis.FrameworkVersion = result.FrameworkVersion
+	analysis.Ok = result.OK
 	analysis.Warnings = result.Warnings
-    
-    if result.OK {
-    	//always read the Dockerfile
-        dockerfile, e := ioutil.ReadFile(path + "/Dockerfile")
-	    if e != nil {
-	    	// catch error
-	    	analysis.Dockerfile = ""
-	    } else {
-    		analysis.Dockerfile = string(dockerfile)
-    	}
 
-    	if strings.Contains(generate, "service") {
-	    	serviceymlfile, e := ioutil.ReadFile(path + "/service.yml")
-		    if e != nil {
-		    	// catch error
-		    	analysis.Service = ""
-		    } else {
-	    		analysis.Service = string(serviceymlfile)
-	    	}
-    	}
-    	if strings.Contains(generate, "docker-compose") {
-	    	dockercomposeymlfile, e := ioutil.ReadFile(path + "/docker-compose.yml")
-		    if e != nil {
-		    	// catch error
-		    	analysis.DockerCompose = ""
-		    } else {
-	    		analysis.DockerCompose = string(dockercomposeymlfile)
-	    	}
-    	}
+	if result.OK {
+		//always read the Dockerfile
+		dockerfile, e := ioutil.ReadFile(path + "/Dockerfile")
+		if e != nil {
+			// catch error
+			analysis.Dockerfile = ""
+		} else {
+			analysis.Dockerfile = string(dockerfile)
+		}
 
+		if strings.Contains(generate, "service") {
+			serviceymlfile, e := ioutil.ReadFile(path + "/service.yml")
+			if e != nil {
+				// catch error
+				analysis.Service = ""
+			} else {
+				analysis.Service = string(serviceymlfile)
+			}
+		}
+		if strings.Contains(generate, "docker-compose") {
+			dockercomposeymlfile, e := ioutil.ReadFile(path + "/docker-compose.yml")
+			if e != nil {
+				// catch error
+				analysis.DockerCompose = ""
+			} else {
+				analysis.DockerCompose = string(dockercomposeymlfile)
+			}
+		}
 
-    }
-    return analysis
+	}
+	return analysis
 }
 
 func unzip(archive, target string) error {

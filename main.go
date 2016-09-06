@@ -23,10 +23,10 @@ type downloadFile struct {
 }
 
 type analysisResult struct {
-	Warnings []string
-	OK       bool
-	Language string
-	Framework string
+	Warnings         []string
+	OK               bool
+	Language         string
+	Framework        string
 	FrameworkVersion string
 }
 
@@ -230,7 +230,6 @@ func main() {
 		cleanupDone := make(chan bool)
 		signal.Notify(signalChan, os.Interrupt)
 		config.template_path = flagTemplates
-
 
 		api := NewAPI(config)
 		err := api.StartAPI()

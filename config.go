@@ -7,7 +7,7 @@ import (
 
 // Config holds configuration for Starter
 type Config struct {
-	APIURL string
+	APIURL        string
 	template_path string
 }
 
