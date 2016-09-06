@@ -3,8 +3,8 @@
 services:
 
   web:
-    git_url: http://github.com/cloud66/starter.git
-    git_branch: dev
+    git_url: git@github.com:cloud66/starter.git
+    git_branch: master
     command: node app.js
     build_root: test/node/express_mongodb/src/
     ports:
