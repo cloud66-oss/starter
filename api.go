@@ -170,7 +170,7 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	unzip(filename, source_dir)
 
 	//analyse
-	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose")
+	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose,service")
 
 	//cleanup
 	err = os.RemoveAll(source_dir)
