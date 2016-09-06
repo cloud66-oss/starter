@@ -1,0 +1,46 @@
+{
+  "name": "LiveChan",
+  "version": "0.0.1",
+  "description": "A live multimedia sharing chatroom.",
+  "main": "web.js",
+  "_comment_1": "we should probably change the main script, it shouldn't start a server, says http://package.json.nodejitsu.com/ (hover over the main part on there)",
+  "scripts": {
+    "start": "node lib/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emgram769/live4chan.git"
+  },
+  "keywords": [
+    "live",
+    "ajax",
+    "imageboard",
+    "chat"
+  ],
+  "author": "emgram769",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "bcrypt": "0.8.7",
+    "captcha": "0.0.4",
+    "canvas": "1.2.11",
+    "express": "3.4.8",
+    "logfmt": "0.18.1",
+    "socket.io": "0.9.16",
+    "tripcode": "1.2.0",
+    "mongoose": "3.8.6",
+    "async": "0.2.10",
+    "socket.io-stream": "0.5.2",
+    "read": "1.0.5",
+    "geoip": "*"
+  },
+  "devDependencies": {
+    "bower": "1.2.8",
+    "uglify-js": "2.4.12"
+  },
+  "engine": "node >= 0.10.0",
+  "bugs": {
+    "url": "https://github.com/emgram769/live4chan/issues"
+  },
+  "homepage": "https://github.com/emgram769/live4chan"
+}
