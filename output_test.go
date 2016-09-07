@@ -430,7 +430,7 @@ var _ = Describe("Generating all files with Starter", func() {
 		})
 	})
 	Context("using a NodeJS Express project with a mongodb database", func() {
-		var projectFixturePath string = "test/node/express_mongodb_2"
+		var projectFixturePath string = "test/node/express_mongodb_procfile"
 		BeforeEach(func() {
 			_, err := runStarterWithProject(projectFixturePath)
 			Expect(err).NotTo(HaveOccurred())
