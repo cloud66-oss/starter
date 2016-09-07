@@ -6,7 +6,7 @@ web:
   ports:
   - "5000:5000"
   links:
-  - postgres
-  - postgres:postgresql.cloud66.local
-postgres:
+  - postgresql
+  - postgresql:postgresql.cloud66.local
+postgresql:
   image: postgres

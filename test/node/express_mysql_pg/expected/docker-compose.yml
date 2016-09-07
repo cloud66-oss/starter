@@ -8,9 +8,9 @@ web:
   links:
   - mysql
   - mysql:mysql.cloud66.local
-  - postgres
-  - postgres:postgresql.cloud66.local
+  - postgresql
+  - postgresql:postgresql.cloud66.local
 mysql:
   image: mysql
-postgres:
+postgresql:
   image: postgres
