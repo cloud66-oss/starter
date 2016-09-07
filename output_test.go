@@ -370,7 +370,7 @@ var _ = Describe("Generating all files with Starter", func() {
 		})
 	})
 	Context("using a NodeJS Express project with a pg database", func() {
-		var projectFixturePath string = "test/node/express_pg"
+		var projectFixturePath string = "test/node/express_pg_procfile"
 		BeforeEach(func() {
 			_, err := runStarterWithProject(projectFixturePath)
 			Expect(err).NotTo(HaveOccurred())

@@ -6,7 +6,7 @@ services:
     git_url: git@github.com:cloud66/starter.git
     git_branch: master
     command: _env:WEB
-    build_root: test/node/express_pg/src/
+    build_root: test/node/express_pg_procfile/src/
     ports:
       - container: 3000
         http: 80
