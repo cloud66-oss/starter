@@ -1,0 +1,48 @@
+{
+    "name"       : "leslie-eric.us",
+    "description": "The open source website for Leslie Verploegen's and Eric Ferraiuolo's wedding.",
+    "homepage"   : "http://leslie-eric.us/",
+    "version"    : "1.8.0",
+    "private"    : true,
+
+    "author": "Eric Ferraiuolo <eferraiuolo@gmail.com> (http://ericf.me/)",
+
+    "license": "MIT",
+
+    "directories": {
+        "lib"       : "./lib",
+        "middleware": "./middleware",
+        "public"    : "./public",
+        "routes"    : "./routes",
+        "scripts"   : "./scripts",
+        "views"     : "./views"
+    },
+
+    "main": "server",
+
+    "engines": {
+        "node": ">=0.8.x",
+        "npm" : ">=1.1.2"
+    },
+
+    "dependencies": {
+        "async"              : "0.2.x",
+        "bower"              : "1.2.x",
+        "combohandler"       : "0.2.x",
+        "csv"                : "0.3.x",
+        "db-migrate"         : "0.4.x",
+        "deep-freeze"        : "latest",
+        "express"            : "3.2.x",
+        "express-slash"      : "latest",
+        "express-state"      : "latest",
+        "express3-handlebars": "latest",
+        "handlebars"         : "1.0.x",
+        "pg"                 : "1.1.x",
+        "request"            : "2.25.0"
+    },
+
+    "scripts": {
+        "install": "./node_modules/bower/bin/bower install",
+        "migrate-up": "./node_modules/db-migrate/bin/db-migrate up -e default --config config/migrations.json"
+    }
+}

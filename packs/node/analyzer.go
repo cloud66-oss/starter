@@ -32,22 +32,22 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	for _, service := range services {
 		service.Databases = dbs
 	}
-	
+
 	if err != nil {
 		return nil, err
 	}
 
 	analysis := &Analysis{
 		AnalysisBase: packs.AnalysisBase{
-			PackName:  a.GetPack().Name(),
-			GitBranch: gitBranch,
-			GitURL:    gitURL,
-			Framework: framework,
+			PackName:         a.GetPack().Name(),
+			GitBranch:        gitBranch,
+			GitURL:           gitURL,
+			Framework:        framework,
 			FrameworkVersion: framework_version,
-			Messages:  a.Messages},
+			Messages:         a.Messages},
 		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
-		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
-		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
+		ServiceYAMLContext:       &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
+		DockerfileContext:        &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
 	return analysis, nil
 }
 
@@ -59,7 +59,6 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 			service.Ports[0].Container = "3000"
 		}
 	}
-
 
 	//no procfile
 	if len(*services) == 0 {
@@ -86,7 +85,7 @@ func (a *Analyzer) HasPackage(pack string) bool {
 
 func (a *Analyzer) GetPackageVersion(pack string) string {
 	hasFound, version := common.GetDependencyVersion(a.PackageJSON, pack)
-	if (hasFound) {
+	if hasFound {
 		return version
 	} else {
 		return ""
@@ -101,7 +100,7 @@ func (a *Analyzer) GuessFramework() string {
 }
 
 func (a *Analyzer) GuessFrameworkVersion() string {
-	return a.GetPackageVersion("express"); 
+	return a.GetPackageVersion("express")
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {
@@ -119,8 +118,14 @@ func (a *Analyzer) FindDatabases() []common.Database {
 	if hasMysql, _ := common.GetNodeDatabase(a.PackageJSON, "mysql"); hasMysql {
 		dbs = append(dbs, common.Database{Name: "mysql", DockerImage: "mysql"})
 	}
-	if hasMongo, _ := common.GetNodeDatabase(a.PackageJSON, "mongoose"); hasMongo {
+	if hasMongo, _ := common.GetNodeDatabase(a.PackageJSON, "mongoose", "mongodb"); hasMongo {
 		dbs = append(dbs, common.Database{Name: "mongodb", DockerImage: "mongo"})
+	}
+	if hasPostgres, _ := common.GetNodeDatabase(a.PackageJSON, "pg"); hasPostgres {
+		dbs = append(dbs, common.Database{Name: "postgresql", DockerImage: "postgres"})
+	}
+	if hasRedis, _ := common.GetNodeDatabase(a.PackageJSON, "redis"); hasRedis {
+		dbs = append(dbs, common.Database{Name: "redis", DockerImage: "redis"})
 	}
 	return dbs
 }
