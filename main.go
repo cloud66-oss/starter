@@ -352,7 +352,7 @@ func analyze(
 		}
 	}
 
-	err = pack.Analyze(path, environment, !noPrompt)
+	err = pack.Analyze(path, environment, !noPrompt, "", "")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to analyze the project due to: %s", err.Error())
 	}

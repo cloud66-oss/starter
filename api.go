@@ -134,6 +134,13 @@ func (a *API) dockerfiles(w rest.ResponseWriter, r *rest.Request) {
 func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	uuid := uuid.NewV4().String()
 
+	 git_repo := r.FormValue("git_repo")
+	 git_branch := r.FormValue("git_branch")
+
+	 common.PrintL0("Param git_repo:  %s\n", git_repo)
+	 common.PrintL0("Param git_branch: %s\n", git_branch)
+
+
 	//save the file to a random location
 	file, handler, err := r.FormFile("source")
 	if err != nil {
@@ -162,7 +169,7 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	unzip(filename, source_dir)
 
 	//analyse
-	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose,service")
+	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose,service", git_repo, git_branch)
 
 	//cleanup
 	err = os.RemoveAll(source_dir)
@@ -178,32 +185,32 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 
 func (a *API) supported(w rest.ResponseWriter, r *rest.Request) {
 	/*
-		response:
-			{
-	          "languages": [
-	            {
-	              "name": "ruby",
-	              "files": [
-	                "Gemfile",
-	                "Procfile",
-	                "config/database.yml"
-	              ]
-	            },
-	             {
-	              "name": "php",
-	              "files": [
-	                "composer.json"
-	              ]
-	            },
-	             {
-	              "name": "node",
-	              "files": [
-	                "package.json",
-	                "Procfile"
-	              ]
-	            }
-	          ]
-	        }
+			response:
+				{
+		          "languages": [
+		            {
+		              "name": "ruby",
+		              "files": [
+		                "Gemfile",
+		                "Procfile",
+		                "config/database.yml"
+		              ]
+		            },
+		             {
+		              "name": "php",
+		              "files": [
+		                "composer.json"
+		              ]
+		            },
+		             {
+		              "name": "node",
+		              "files": [
+		                "package.json",
+		                "Procfile"
+		              ]
+		            }
+		          ]
+		        }
 	*/
 
 	packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
@@ -257,7 +264,7 @@ func (a *API) handleError(err error, w rest.ResponseWriter) {
 	rest.Error(w, err.Error(), http.StatusBadRequest)
 }
 
-func analyze_sourcecode(config *Config, path string, generate string) CodebaseAnalysis {
+func analyze_sourcecode(config *Config, path string, generate string, git_repo string, git_branch string) CodebaseAnalysis {
 	analysis := CodebaseAnalysis{}
 	result, err := analyze(
 		false,

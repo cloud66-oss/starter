@@ -3,8 +3,8 @@
 services:
 
   custom_web:
-    git_url: 
-    git_branch: 
+    git_url: fake.git
+    git_branch: master
     command: bundle exec rails s -p 3000 -E _env:RAILS_ENV -D
     build_command: /bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:schema:load"
     deploy_command: /bin/sh -c "RAILS_ENV=_env:RAILS_ENV bundle exec rake db:migrate"
