@@ -2,8 +2,8 @@ package common
 
 import (
 	// "fmt"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
 	"regexp"
 )
 
@@ -38,8 +38,8 @@ func GetNodeVersion(packageJsonFile string) (bool, string) {
 
 }
 
-func GetNodeDatabase(packageJsonFile string, databaseName string) (bool, string) {
-	found, name := GetDependencyVersion(packageJsonFile, databaseName)
+func GetNodeDatabase(packageJsonFile string, databaseNames ...string) (bool, string) {
+	found, name := GetDependencyVersion(packageJsonFile, databaseNames...)
 	return found, name
 }
 
@@ -55,13 +55,13 @@ func GetDependencyVersion(packageJsonFile string, dependencyNames ...string) (bo
 	if err != nil {
 		return false, err.Error()
 	}
-	
+
 	for dependency, version := range data["dependencies"].(map[string]interface{}) {
 		for _, dependencyName := range dependencyNames {
 			found := dependencyName == dependency
 			if found {
 				return true, version.(string)
-			}		
+			}
 		}
 
 	}
@@ -70,7 +70,7 @@ func GetDependencyVersion(packageJsonFile string, dependencyNames ...string) (bo
 }
 
 func GetScriptsStart(packageJsonFile string) (bool, string) {
-		buf, err := ioutil.ReadFile(packageJsonFile)
+	buf, err := ioutil.ReadFile(packageJsonFile)
 	if err != nil {
 		return false, err.Error()
 	}
