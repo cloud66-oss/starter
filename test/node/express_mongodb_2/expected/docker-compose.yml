@@ -4,7 +4,7 @@ web:
   build: test/node/express_mongodb_2/src/
   command: node lib/index.js
   ports:
-  - "5080:5080"
+  - "3000:3000"
   links:
   - mongodb
   - mongodb:mongodb.cloud66.local

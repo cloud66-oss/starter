@@ -8,7 +8,7 @@ services:
     command: node loader.js
     build_root: test/node/express_mongodb_redis/src/
     ports:
-      - container: 4567
+      - container: 3000
         http: 80
         https: 443
 

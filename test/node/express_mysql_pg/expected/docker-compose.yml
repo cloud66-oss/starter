@@ -4,7 +4,7 @@ web:
   build: test/node/express_mysql_pg/src/
   command: node index
   ports:
-  - "2368:2368"
+  - "3000:3000"
   links:
   - mysql
   - mysql:mysql.cloud66.local

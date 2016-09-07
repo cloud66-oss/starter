@@ -8,7 +8,7 @@ services:
     command: node lib/index.js
     build_root: test/node/express_mongodb_2/src/
     ports:
-      - container: 5080
+      - container: 3000
         http: 80
         https: 443
 

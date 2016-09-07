@@ -4,7 +4,7 @@ web:
   build: test/node/express_mongodb_redis/src/
   command: node loader.js
   ports:
-  - "4567:4567"
+  - "3000:3000"
   links:
   - mongodb
   - mongodb:mongodb.cloud66.local
