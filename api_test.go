@@ -126,7 +126,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			resp, err := resty.R().
 				SetFile("source", path+"/source.zip").
 				SetFormData(map[string]string{
-					"git_rep":    "fake.git",
+					"git_repo":  "fake.git",
 					"git_branch": "master",
 				}).Post("http://127.0.0.1:9090/analyze/upload")
 			Expect(err).NotTo(HaveOccurred())
@@ -203,8 +203,9 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Language = "node"
+			analysis.LanguageVersion = "4.2.0"
 			analysis.Framework = "express"
-			analysis.FrameworkVersion = "4.13.x"
+			analysis.FrameworkVersion = "4.13.0"
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(file)
 			b, err := json.Marshal(analysis)

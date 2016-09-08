@@ -90,7 +90,7 @@ func (a *Analyzer) HasPackage(pack string) bool {
 func (a *Analyzer) GetPackageVersion(pack string) string {
 	hasFound, version := common.GetDependencyVersion(a.PackageJSON, pack)
 	if hasFound {
-		v1, err := semver.Make(strings.Trim(version, "^"))
+		v1, err := semver.Make(strings.Replace(strings.Trim(version, "^>=~"), "x", "0", -1))
 		if err != nil {
 		  return ""
 		}

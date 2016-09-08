@@ -12,7 +12,7 @@ func (p *Pack) Name() string {
 }
 
 func (p *Pack) LanguageVersion() string {
-	return "2.3.1"
+	return ""
 }
 
 func (p *Pack) FilesToBeAnalysed() []string {
@@ -38,6 +38,8 @@ func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool, gi
 			PackElement:  packs.PackElement{Pack: p},
 			RootDir:      rootDir,
 			ShouldPrompt: shouldPrompt,
+			GitURL: git_repo,
+			GitBranch: git_branch,
 			Environment:  environment}}
 	p.Analysis, err = a.Analyze()
 	return err

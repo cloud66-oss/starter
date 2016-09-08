@@ -126,9 +126,6 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	git_repo := r.FormValue("git_repo")
 	git_branch := r.FormValue("git_branch")
 
-	common.PrintL0("Param git_repo:  %s\n", git_repo)
-	common.PrintL0("Param git_branch: %s\n", git_branch)
-
 	//save the file to a random location
 	file, handler, err := r.FormFile("source")
 	if err != nil {
