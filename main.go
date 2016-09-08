@@ -23,11 +23,18 @@ type downloadFile struct {
 }
 
 type analysisResult struct {
-	Warnings         []string
-	OK               bool
+	Ok               bool
 	Language         string
+	LanguageVersion  string
 	Framework        string
 	FrameworkVersion string
+	Warnings         []string
+	Dockerfile       string
+	Service          string
+	DockerCompose    string
+	StartCommands    string
+	BuildCommands    string
+	DeployCommands   string
 }
 
 type templateDefinition struct {
@@ -256,7 +263,9 @@ func main() {
 		flagEnvironment,
 		flagNoPrompt,
 		flagOverwrite,
-		flagGenerator)
+		flagGenerator,
+		"",
+		"")
 
 	if err != nil {
 		common.PrintError(err.Error())
@@ -289,7 +298,10 @@ func analyze(
 	environment string,
 	noPrompt bool,
 	overwrite bool,
-	generator string) (*analysisResult, error) {
+	generator string,
+	git_repo string,
+	git_branch string,
+) (*analysisResult, error) {
 
 	if path == "" {
 		pwd, err := os.Getwd()
@@ -299,7 +311,7 @@ func analyze(
 		path = pwd
 	}
 
-	result := &analysisResult{OK: false}
+	result := &analysisResult{Ok: false}
 
 	// if templateFolder is specified we're going to use that otherwise download
 	if templates == "" {
@@ -352,7 +364,7 @@ func analyze(
 		}
 	}
 
-	err = pack.Analyze(path, environment, !noPrompt, "", "")
+	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to analyze the project due to: %s", err.Error())
 	}
@@ -382,8 +394,9 @@ func analyze(
 		}
 	}
 
-	result.OK = true
+	result.Ok = true
 	result.Language = pack.Name()
+	result.LanguageVersion = pack.LanguageVersion()
 	result.Framework = pack.Framework()
 	result.FrameworkVersion = pack.FrameworkVersion()
 

@@ -2,6 +2,7 @@ package packs
 
 type Pack interface {
 	Name() string
+	LanguageVersion() string
 	Framework() string
 	FrameworkVersion() string
 	FilesToBeAnalysed() [] string

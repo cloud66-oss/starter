@@ -75,7 +75,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			dockerfile, err := ioutil.ReadFile(path + "/Dockerfile")
 			Expect(err).NotTo(HaveOccurred())
 
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Language = "ruby"
 			analysis.Framework = "rails"
 			analysis.Ok = true
@@ -101,7 +101,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			dockercomposeyml, err := ioutil.ReadFile(path + "/docker-compose.yml")
 			Expect(err).NotTo(HaveOccurred())
 
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Warnings = nil
 			analysis.Language = "ruby"
@@ -118,7 +118,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 		})
 	})
 
-	Context("analyse a ruby project through upload files and request a dockerfile, docker-compose.yml and service.yml", func() {
+	Context("analyse a ruby project through upload files and request a dockerfile, docker-compose.yml and service.yml and s", func() {
 		It("should respond with a dockerfile, docker-compose.yml and service.yml", func() {
 			path := "test/ruby/rails_mysql/src"
 			expected := "test/ruby/rails_mysql/expected/api"
@@ -137,7 +137,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			serviceyml, err := ioutil.ReadFile(expected + "/service.yml")
 			Expect(err).NotTo(HaveOccurred())
 
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Warnings = nil
 			analysis.Language = "ruby"
@@ -161,7 +161,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			serviceyml, err := ioutil.ReadFile(path + "/service.yml")
 			Expect(err).NotTo(HaveOccurred())
 
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Language = "ruby"
 			analysis.Framework = "rails"
@@ -182,7 +182,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(err).NotTo(HaveOccurred())
 			file, err := ioutil.ReadFile(path + "/Dockerfile")
 			Expect(err).NotTo(HaveOccurred())
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Language = "ruby"
 			analysis.Framework = "rails"
@@ -200,7 +200,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(err).NotTo(HaveOccurred())
 			file, err := ioutil.ReadFile(path + "/Dockerfile")
 			Expect(err).NotTo(HaveOccurred())
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Language = "node"
 			analysis.Framework = "express"

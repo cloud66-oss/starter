@@ -11,6 +11,10 @@ func (p *Pack) Name() string {
 	return "ruby"
 }
 
+func (p *Pack) LanguageVersion() string {
+	return "2.3.1"
+}
+
 func (p *Pack) FilesToBeAnalysed() []string {
 	return []string{ "Gemfile", "Procfile", "config/database.yml" }
 }
@@ -27,7 +31,7 @@ func (p *Pack) Detector() packs.Detector {
 	return &Detector{PackElement: packs.PackElement{Pack: p}}
 }
 
-func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool) error {
+func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool, git_repo string, git_branch string) error {
 	var err error
 	a := Analyzer{
 		AnalyzerBase: packs.AnalyzerBase{
