@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
 	"github.com/cloud66/starter/common"
 )
 
@@ -16,6 +15,9 @@ type AnalyzerBase struct {
 	RootDir      string
 	Environment  string
 	ShouldPrompt bool
+
+	GitURL 		string
+	GitBranch 	string
 
 	Messages common.Lister
 }
@@ -32,7 +34,11 @@ func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
 			return gitURL, gitBranch, buildRoot, nil
 		}
 	} 
-	return "", "", ".", nil
+	if a.GitURL != "" && a.GitBranch != "" {
+		return a.GitURL, a.GitBranch, ".", nil
+	} else {
+		return "", "", ".", nil
+	}
 }
 
 func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Database {

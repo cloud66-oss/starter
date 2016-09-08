@@ -11,6 +11,11 @@ func (p *Pack) Name() string {
 	return "node"
 }
 
+func (p *Pack) LanguageVersion() string {
+	return p.Analysis.LanguageVersion
+}
+
+
 func (p *Pack) FilesToBeAnalysed() [] string {
 	return []string{ "package.json", "Procfile" }
 }
@@ -27,13 +32,15 @@ func (p *Pack) Detector() packs.Detector {
 	return &Detector{PackElement: packs.PackElement{Pack: p}}
 }
 
-func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool) error {
+func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool, git_repo string, git_branch string) error {
 	var err error
 	a := Analyzer{
 		AnalyzerBase: packs.AnalyzerBase{
 			PackElement:  packs.PackElement{Pack: p},
 			RootDir:      rootDir,
 			ShouldPrompt: shouldPrompt,
+			GitURL: git_repo,
+			GitBranch: git_branch,
 			Environment:  environment}}
 	p.Analysis, err = a.Analyze()
 	return err

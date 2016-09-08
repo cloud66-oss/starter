@@ -1,10 +1,12 @@
 package common
 
 import (
-	// "fmt"
+	"fmt"
+	"strings"
 	"encoding/json"
 	"io/ioutil"
-	"regexp"
+
+	"github.com/blang/semver"
 )
 
 // Looks for node version in the package.json. If found returns true, version if not false, ""
@@ -26,16 +28,15 @@ func GetNodeVersion(packageJsonFile string) (bool, string) {
 	}
 
 	if nodeVersion, ok := data["engines"].(map[string]interface{})["node"].(string); ok {
-		re := regexp.MustCompile("(\\d).(\\d).*")
-		nodeVersion = re.FindStringSubmatch(nodeVersion)[1] + "." + re.FindStringSubmatch(nodeVersion)[2]
-		if re.FindStringSubmatch(nodeVersion)[2] == "0" {
-			nodeVersion = re.FindStringSubmatch(nodeVersion)[1]
+		nodeVersion = strings.Replace(strings.Trim(nodeVersion, "^>=~"), "x", "0", -1)
+		v1, err := semver.Make(nodeVersion)
+		if err != nil {
+		  return true, nodeVersion
 		}
+		nodeVersion = fmt.Sprintf("%d.%d.%d", v1.Major, v1.Minor, v1.Patch)
 		return true, nodeVersion
-	} else {
-		return false, ""
 	}
-
+	return false, ""
 }
 
 func GetNodeDatabase(packageJsonFile string, databaseNames ...string) (bool, string) {
@@ -65,6 +66,20 @@ func GetDependencyVersion(packageJsonFile string, dependencyNames ...string) (bo
 		}
 
 	}
+
+	if data["optionalDependencies"] != nil {
+		for dependency, version := range data["optionalDependencies"].(map[string]interface{}) {
+			for _, dependencyName := range dependencyNames {
+				found := dependencyName == dependency
+				if found {
+					return true, version.(string)
+				}
+			}
+
+		}
+	}
+
+
 
 	return false, ""
 }

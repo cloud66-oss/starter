@@ -25,17 +25,6 @@ type API struct {
 	config *Config
 }
 
-type CodebaseAnalysis struct {
-	Ok               bool
-	Language         string
-	Framework        string
-	FrameworkVersion string
-	Warnings         []string
-	Dockerfile       string
-	Service          string
-	DockerCompose    string
-}
-
 type Language struct {
 	Name  string
 	Files []string
@@ -134,6 +123,9 @@ func (a *API) dockerfiles(w rest.ResponseWriter, r *rest.Request) {
 func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	uuid := uuid.NewV4().String()
 
+	git_repo := r.FormValue("git_repo")
+	git_branch := r.FormValue("git_branch")
+
 	//save the file to a random location
 	file, handler, err := r.FormFile("source")
 	if err != nil {
@@ -162,7 +154,7 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	unzip(filename, source_dir)
 
 	//analyse
-	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose,service")
+	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose,service", git_repo, git_branch)
 
 	//cleanup
 	err = os.RemoveAll(source_dir)
@@ -178,32 +170,32 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 
 func (a *API) supported(w rest.ResponseWriter, r *rest.Request) {
 	/*
-		response:
-			{
-	          "languages": [
-	            {
-	              "name": "ruby",
-	              "files": [
-	                "Gemfile",
-	                "Procfile",
-	                "config/database.yml"
-	              ]
-	            },
-	             {
-	              "name": "php",
-	              "files": [
-	                "composer.json"
-	              ]
-	            },
-	             {
-	              "name": "node",
-	              "files": [
-	                "package.json",
-	                "Procfile"
-	              ]
-	            }
-	          ]
-	        }
+			response:
+				{
+		          "languages": [
+		            {
+		              "name": "ruby",
+		              "files": [
+		                "Gemfile",
+		                "Procfile",
+		                "config/database.yml"
+		              ]
+		            },
+		             {
+		              "name": "php",
+		              "files": [
+		                "composer.json"
+		              ]
+		            },
+		             {
+		              "name": "node",
+		              "files": [
+		                "package.json",
+		                "Procfile"
+		              ]
+		            }
+		          ]
+		        }
 	*/
 
 	packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
@@ -249,7 +241,7 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	}
 	path := request.Path
 	generate := request.Generate
-	analysis := analyze_sourcecode(config, path, generate)
+	analysis := analyze_sourcecode(config, path, generate, "", "")
 	w.WriteJson(analysis)
 }
 
@@ -257,8 +249,8 @@ func (a *API) handleError(err error, w rest.ResponseWriter) {
 	rest.Error(w, err.Error(), http.StatusBadRequest)
 }
 
-func analyze_sourcecode(config *Config, path string, generate string) CodebaseAnalysis {
-	analysis := CodebaseAnalysis{}
+func analyze_sourcecode(config *Config, path string, generate string, git_repo string, git_branch string) *analysisResult {
+
 	result, err := analyze(
 		false,
 		path,
@@ -266,50 +258,46 @@ func analyze_sourcecode(config *Config, path string, generate string) CodebaseAn
 		"production",
 		true,
 		true,
-		generate)
+		generate,
+		git_repo,
+		git_branch)
 
 	if err != nil {
 		common.PrintL0("%v", err.Error())
-		return analysis
+		return result
 	}
 
-	analysis.Language = result.Language
-	analysis.Framework = result.Framework
-	analysis.FrameworkVersion = result.FrameworkVersion
-	analysis.Ok = result.OK
-	analysis.Warnings = result.Warnings
-
-	if result.OK {
+	if result.Ok {
 		//always read the Dockerfile
 		dockerfile, e := ioutil.ReadFile(path + "/Dockerfile")
 		if e != nil {
 			// catch error
-			analysis.Dockerfile = ""
+			result.Dockerfile = ""
 		} else {
-			analysis.Dockerfile = string(dockerfile)
+			result.Dockerfile = string(dockerfile)
 		}
 
 		if strings.Contains(generate, "service") {
 			serviceymlfile, e := ioutil.ReadFile(path + "/service.yml")
 			if e != nil {
 				// catch error
-				analysis.Service = ""
+				result.Service = ""
 			} else {
-				analysis.Service = string(serviceymlfile)
+				result.Service = string(serviceymlfile)
 			}
 		}
 		if strings.Contains(generate, "docker-compose") {
 			dockercomposeymlfile, e := ioutil.ReadFile(path + "/docker-compose.yml")
 			if e != nil {
 				// catch error
-				analysis.DockerCompose = ""
+				result.DockerCompose = ""
 			} else {
-				analysis.DockerCompose = string(dockercomposeymlfile)
+				result.DockerCompose = string(dockercomposeymlfile)
 			}
 		}
 
 	}
-	return analysis
+	return result
 }
 
 func unzip(archive, target string) error {

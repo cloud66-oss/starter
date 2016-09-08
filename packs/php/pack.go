@@ -15,6 +15,10 @@ func (p *Pack) FilesToBeAnalysed() []string {
 	return []string{ "composer.json" }
 }
 
+func (p *Pack) LanguageVersion() string {
+	return "x"
+}
+
 
 func (p *Pack) Framework() string {
 	return p.Analysis.Framework
@@ -28,7 +32,7 @@ func (p *Pack) Detector() packs.Detector {
 	return &Detector{PackElement: packs.PackElement{Pack: p}}
 }
 
-func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool) error {
+func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool, git_repo string, git_branch string) error {
 	var err error
 	a := Analyzer{
 		AnalyzerBase: packs.AnalyzerBase{

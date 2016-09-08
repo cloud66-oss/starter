@@ -1,10 +1,13 @@
 package node
 
 import (
+	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
+	"github.com/blang/semver"
 )
 
 type Analyzer struct {
@@ -44,6 +47,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			GitURL:           gitURL,
 			Framework:        framework,
 			FrameworkVersion: framework_version,
+			LanguageVersion:  version,
 			Messages:         a.Messages},
 		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
 		ServiceYAMLContext:       &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
@@ -86,6 +90,11 @@ func (a *Analyzer) HasPackage(pack string) bool {
 func (a *Analyzer) GetPackageVersion(pack string) string {
 	hasFound, version := common.GetDependencyVersion(a.PackageJSON, pack)
 	if hasFound {
+		v1, err := semver.Make(strings.Replace(strings.Trim(version, "^>=~"), "x", "0", -1))
+		if err != nil {
+		  return ""
+		}
+		version = fmt.Sprintf("%d.%d.%d", v1.Major, v1.Minor, v1.Patch)
 		return version
 	} else {
 		return ""

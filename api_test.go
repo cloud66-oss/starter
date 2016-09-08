@@ -75,7 +75,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			dockerfile, err := ioutil.ReadFile(path + "/Dockerfile")
 			Expect(err).NotTo(HaveOccurred())
 
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Language = "ruby"
 			analysis.Framework = "rails"
 			analysis.Ok = true
@@ -101,7 +101,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			dockercomposeyml, err := ioutil.ReadFile(path + "/docker-compose.yml")
 			Expect(err).NotTo(HaveOccurred())
 
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Warnings = nil
 			analysis.Language = "ruby"
@@ -118,12 +118,17 @@ var _ = Describe("Running Starter in damon mode", func() {
 		})
 	})
 
-	Context("analyse a ruby project through upload files and request a dockerfile, docker-compose.yml and service.yml", func() {
+	Context("analyse a ruby project through upload files and request a dockerfile, docker-compose.yml and service.yml and s", func() {
 		It("should respond with a dockerfile, docker-compose.yml and service.yml", func() {
 			path := "test/ruby/rails_mysql/src"
 			expected := "test/ruby/rails_mysql/expected/api"
 
-			resp, err := resty.R().SetFile("source", path+"/source.zip").Post("http://127.0.0.1:9090/analyze/upload")
+			resp, err := resty.R().
+				SetFile("source", path+"/source.zip").
+				SetFormData(map[string]string{
+					"git_repo":  "fake.git",
+					"git_branch": "master",
+				}).Post("http://127.0.0.1:9090/analyze/upload")
 			Expect(err).NotTo(HaveOccurred())
 			dockerfile, err := ioutil.ReadFile(expected + "/Dockerfile")
 			Expect(err).NotTo(HaveOccurred())
@@ -132,7 +137,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			serviceyml, err := ioutil.ReadFile(expected + "/service.yml")
 			Expect(err).NotTo(HaveOccurred())
 
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Warnings = nil
 			analysis.Language = "ruby"
@@ -156,7 +161,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			serviceyml, err := ioutil.ReadFile(path + "/service.yml")
 			Expect(err).NotTo(HaveOccurred())
 
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Language = "ruby"
 			analysis.Framework = "rails"
@@ -177,7 +182,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(err).NotTo(HaveOccurred())
 			file, err := ioutil.ReadFile(path + "/Dockerfile")
 			Expect(err).NotTo(HaveOccurred())
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Language = "ruby"
 			analysis.Framework = "rails"
@@ -195,11 +200,12 @@ var _ = Describe("Running Starter in damon mode", func() {
 			Expect(err).NotTo(HaveOccurred())
 			file, err := ioutil.ReadFile(path + "/Dockerfile")
 			Expect(err).NotTo(HaveOccurred())
-			analysis := CodebaseAnalysis{}
+			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Language = "node"
+			analysis.LanguageVersion = "4.2.0"
 			analysis.Framework = "express"
-			analysis.FrameworkVersion = "4.13.x"
+			analysis.FrameworkVersion = "4.13.0"
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(file)
 			b, err := json.Marshal(analysis)

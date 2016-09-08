@@ -11,6 +11,10 @@ func (p *Pack) Name() string {
 	return "python"
 }
 
+func (p *Pack) LanguageVersion() string {
+	return "x"
+}
+
 func (p *Pack) Detector() packs.Detector {
 	return &Detector{PackElement: packs.PackElement{Pack: p}}
 }

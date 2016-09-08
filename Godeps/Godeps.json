@@ -2,6 +2,9 @@
 	"ImportPath": "github.com/cloud66/starter",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v74",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/ant0ine/go-json-rest/rest",
@@ -12,6 +15,11 @@
 			"ImportPath": "github.com/ant0ine/go-json-rest/rest/trie",
 			"Comment": "v3.3.0-10-g01a517a",
 			"Rev": "01a517a7065ab0030bf286c6a8e5abc9b245c776"
+		},
+		{
+			"ImportPath": "github.com/blang/semver",
+			"Comment": "v3.3.0",
+			"Rev": "60ec3488bfea7cca02b021d106d9911120d25fe9"
 		},
 		{
 			"ImportPath": "github.com/bugsnag/bugsnag-go",
