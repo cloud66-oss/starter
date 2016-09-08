@@ -81,6 +81,11 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis.Ok = true
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(dockerfile)
+			analysis.StartCommands = nil
+			analysis.BuildCommands = []string {}
+			analysis.DeployCommands = []string {}
+			analysis.Databases = []string {}
+
 
 			b, err := json.Marshal(analysis)
 			Expect(string(resp.Body())).To(Equal(string(b)))
@@ -109,6 +114,11 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis.Dockerfile = string(dockerfile)
 			analysis.Service = string(serviceyml)
 			analysis.DockerCompose = string(dockercomposeyml)
+			analysis.BuildCommands = []string {}
+			analysis.DeployCommands = []string {}
+			analysis.Databases = []string {}
+
+
 			b, err := json.Marshal(analysis)
 			Expect(string(resp.Body())).To(Equal(string(b)))
 			os.Remove(path + "/Dockerfile")
@@ -145,6 +155,10 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis.Dockerfile = string(dockerfile)
 			analysis.DockerCompose = string(dockercomposeyml)
 			analysis.Service = string(serviceyml)
+			analysis.BuildCommands = []string {}
+			analysis.DeployCommands = []string {}
+			analysis.Databases = []string {}
+
 			b, err := json.Marshal(analysis)
 			Expect(string(resp.Body())).To(Equal(string(b)))
 
@@ -168,6 +182,10 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(dockerfile)
 			analysis.Service = string(serviceyml)
+			analysis.BuildCommands = []string {}
+			analysis.DeployCommands = []string {}
+			analysis.Databases = []string {}
+
 			b, err := json.Marshal(analysis)
 			Expect(string(resp.Body())).To(Equal(string(b)))
 			os.Remove(path + "/Dockerfile")
@@ -188,6 +206,10 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis.Framework = "rails"
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(file)
+			analysis.BuildCommands = []string {}
+			analysis.DeployCommands = []string {}
+			analysis.Databases = []string {}
+
 			b, err := json.Marshal(analysis)
 			Expect(string(resp.Body())).To(Equal(string(b)))
 			os.Remove(path + "/Dockerfile")
@@ -208,6 +230,38 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis.FrameworkVersion = "4.13.0"
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(file)
+			analysis.StartCommands = []string {"node server.js"}
+			analysis.BuildCommands = []string {}
+			analysis.DeployCommands = []string {}
+			analysis.Databases = []string {}
+
+
+			b, err := json.Marshal(analysis)
+			Expect(string(resp.Body())).To(Equal(string(b)))
+			os.Remove(path + "/Dockerfile")
+		})
+	})
+	Context("analyse a node project with databaze only request a dockerfile", func() {
+		It("should respond with a dockerfile", func() {
+			path := "test/node/express_mysql_pg/src"
+			resp, err := resty.R().SetBody(`{"path":"` + path + `", "generate":"dockerfile"}`).Post("http://127.0.0.1:9090/analyze")
+			Expect(err).NotTo(HaveOccurred())
+			file, err := ioutil.ReadFile(path + "/Dockerfile")
+			Expect(err).NotTo(HaveOccurred())
+			analysis := analysisResult{}
+			analysis.Ok = true
+			analysis.Language = "node"
+			analysis.LanguageVersion = "0.10.0"
+			analysis.Framework = "express"
+			analysis.FrameworkVersion = "4.14.0"
+			analysis.Warnings = []string {"No Procfile was detected. It is strongly advised to add one in order to specify the commands to run your services."}
+			analysis.Dockerfile = string(file)
+			analysis.StartCommands = []string {"node index"}
+			analysis.BuildCommands = []string {}
+			analysis.DeployCommands = []string {}
+			analysis.Databases = []string {"mysql", "postgresql"}
+
+
 			b, err := json.Marshal(analysis)
 			Expect(string(resp.Body())).To(Equal(string(b)))
 			os.Remove(path + "/Dockerfile")

@@ -32,12 +32,22 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
 
 	// inject all the services with the databases used in the infrastructure
+	listOfStartCommands := []string {}
+
 	for _, service := range services {
+		listOfStartCommands = append(listOfStartCommands, service.Command)
 		service.Databases = dbs
 	}
 
 	if err != nil {
 		return nil, err
+	}
+
+
+	listOfDatabases := []string {}
+
+	for _, database := range dbs {
+		listOfDatabases = append(listOfDatabases, database.Name)
 	}
 
 	analysis := &Analysis{
@@ -48,6 +58,8 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			Framework:        framework,
 			FrameworkVersion: framework_version,
 			LanguageVersion:  version,
+			Databases:			listOfDatabases,
+			ListOfStartCommands:	listOfStartCommands,
 			Messages:         a.Messages},
 		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
 		ServiceYAMLContext:       &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
@@ -69,7 +81,7 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 		var service *common.Service
 		service = &common.Service{Name: "web"}
 		service.Ports = []*common.PortMapping{common.NewPortMapping()}
-		service.Command = "node index.js"
+		service.Command = "npm start"
 		if hasScript, script := common.GetScriptsStart(a.PackageJSON); hasScript {
 			common.PrintlnL2("Found Script: %s", script)
 			service.Command = script

@@ -81,3 +81,11 @@ func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shou
 func (p *Pack) GetMessages() []string {
 	return p.Analysis.Messages.Items
 }
+
+func (p *Pack) GetDatabases() []string {
+	return []string {}
+}
+
+func (p *Pack) GetStartCommands() []string {
+	return  p.Analysis.ListOfStartCommands
+}

@@ -10,4 +10,6 @@ type AnalysisBase struct {
 	Framework string
 	FrameworkVersion string
 	Messages common.Lister
+	Databases []string
+	ListOfStartCommands []string
 }

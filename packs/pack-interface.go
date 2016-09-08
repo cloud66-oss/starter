@@ -12,4 +12,6 @@ type Pack interface {
 	WriteServiceYAML(templateDir string, outputDir string, shouldNotPrompt bool) error
 	WriteDockerComposeYAML(templateDir string, outputDir string, shouldNotPrompt bool) error
 	GetMessages() []string
+	GetDatabases() []string
+	GetStartCommands() []string
 }

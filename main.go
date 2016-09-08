@@ -28,13 +28,14 @@ type analysisResult struct {
 	LanguageVersion  string
 	Framework        string
 	FrameworkVersion string
+	Databases		 []string
 	Warnings         []string
 	Dockerfile       string
 	Service          string
 	DockerCompose    string
-	StartCommands    string
-	BuildCommands    string
-	DeployCommands   string
+	StartCommands    []string
+	BuildCommands    []string
+	DeployCommands   []string
 }
 
 type templateDefinition struct {
@@ -399,6 +400,10 @@ func analyze(
 	result.LanguageVersion = pack.LanguageVersion()
 	result.Framework = pack.Framework()
 	result.FrameworkVersion = pack.FrameworkVersion()
-
+	result.Databases = pack.GetDatabases()
+	result.StartCommands = pack.GetStartCommands()
+	result.BuildCommands = []string {}
+	result.DeployCommands = []string {}
+	
 	return result, nil
 }
