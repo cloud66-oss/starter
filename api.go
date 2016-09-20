@@ -11,6 +11,7 @@ import (
 	"github.com/cloud66/starter/packs/php"
 	"github.com/cloud66/starter/packs/ruby"
 	"github.com/satori/go.uuid"
+	"github.com/heroku/docker-registry-client/registry"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -28,6 +29,7 @@ type API struct {
 type Language struct {
 	Name  string
 	Files []string
+	SupportedVersion []string
 }
 
 type SupportedLanguages struct {
@@ -43,6 +45,8 @@ type Dockerfile struct {
 func NewAPI(configuration *Config) API {
 	return API{config: configuration}
 }
+
+var languages = SupportedLanguages{}
 
 // StartAPI starts the API listeners
 func (a *API) StartAPI() error {
@@ -69,6 +73,35 @@ func (a *API) StartAPI() error {
 		common.PrintL0("Starting API on %s\n", a.config.APIURL)
 		common.PrintL1("API is now running...\n")
 
+
+
+		packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
+
+		//get all the support language versions
+		url      := "https://registry-1.docker.io/"
+		username := "" // anonymous
+		password := "" // anonymous
+		hub, err := registry.New(url, username, password)
+		if err != nil {
+			common.PrintError("Failed to start API %s", err.Error())
+			os.Exit(2)
+		}
+
+		for _, p := range packs {
+			support := Language{}
+			support.Name = p.Name()
+			support.Files = p.FilesToBeAnalysed()
+			tags, err := hub.Tags("library/" + p.Name())
+			if err != nil {
+				common.PrintError("Failed to start API %s", err.Error())
+				os.Exit(2)
+			}
+			tags = Filter(tags, func(v string) bool {
+        		return !strings.Contains(v, "-")
+    		})
+			support.SupportedVersion = tags
+			languages.Languages = append(languages.Languages, support)
+		}
 		if err := http.ListenAndServe(a.config.APIURL, api.MakeHandler()); err != nil {
 			common.PrintError("Failed to start API %s", err.Error())
 			os.Exit(2)
@@ -197,15 +230,6 @@ func (a *API) supported(w rest.ResponseWriter, r *rest.Request) {
 		          ]
 		        }
 	*/
-
-	packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
-	languages := SupportedLanguages{}
-	for _, p := range packs {
-		support := Language{}
-		support.Name = p.Name()
-		support.Files = p.FilesToBeAnalysed()
-		languages.Languages = append(languages.Languages, support)
-	}
 	w.WriteJson(languages)
 }
 
@@ -266,6 +290,7 @@ func analyze_sourcecode(config *Config, path string, generate string, git_repo s
 		common.PrintL0("%v", err.Error())
 		return result
 	}
+
 
 	if result.Ok {
 		//always read the Dockerfile
@@ -335,4 +360,14 @@ func unzip(archive, target string) error {
 	}
 
 	return nil
+}
+
+func Filter(vs []string, f func(string) bool) []string {
+    vsf := make([]string, 0)
+    for _, v := range vs {
+        if f(v) {
+            vsf = append(vsf, v)
+        }
+    }
+    return vsf
 }
