@@ -14,4 +14,6 @@ type Pack interface {
 	GetMessages() []string
 	GetDatabases() []string
 	GetStartCommands() []string
+	GetSupportedLanguageVersions() []string
+	SetSupportedLanguageVersions(versions []string)
 }

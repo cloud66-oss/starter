@@ -1,6 +1,7 @@
 package node
 
 import "github.com/cloud66/starter/packs"
+import "github.com/cloud66/starter/common"
 
 type Pack struct {
 	packs.PackBase
@@ -26,6 +27,14 @@ func (p *Pack) Framework() string {
 
 func (p *Pack) FrameworkVersion() string {
 	return p.Analysis.FrameworkVersion
+}
+
+func (p *Pack) GetSupportedLanguageVersions() []string {
+	return common.GetAllowedNodeVersions()
+}
+
+func (p *Pack) SetSupportedLanguageVersions(versions []string) {
+	common.SetAllowedNodeVersions(versions)
 }
 
 func (p *Pack) Detector() packs.Detector {

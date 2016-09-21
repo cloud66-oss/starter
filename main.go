@@ -15,6 +15,7 @@ import (
 	"github.com/bugsnag/bugsnag-go"
 	"github.com/cloud66/starter/common"
 	"github.com/mitchellh/go-homedir"
+	"github.com/heroku/docker-registry-client/registry"
 )
 
 type downloadFile struct {
@@ -26,8 +27,11 @@ type analysisResult struct {
 	Ok               bool
 	Language         string
 	LanguageVersion  string
+	SupportedLanguageVersions []string
+
 	Framework        string
 	FrameworkVersion string
+
 	Databases		 []string
 	Warnings         []string
 	Dockerfile       string
@@ -365,6 +369,26 @@ func analyze(
 		}
 	}
 
+	//get all the support language versions
+	url      := "https://registry-1.docker.io/"
+	username := "" // anonymous
+	password := "" // anonymous
+	hub, err := registry.New(url, username, password)
+	if err != nil {
+		return nil, errors.New("can't connect to docker registry to check for allowed base images")
+	}
+
+	tags, err := hub.Tags("library/" + pack.Name())
+	if err != nil {
+		return nil, errors.New("can't find the tags for this pack")
+	}
+	tags = Filter(tags, func(v string) bool {
+		return !strings.Contains(v, "-")
+	})
+
+	pack.SetSupportedLanguageVersions(tags)	
+
+
 	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to analyze the project due to: %s", err.Error())
@@ -402,6 +426,7 @@ func analyze(
 	result.FrameworkVersion = pack.FrameworkVersion()
 	result.Databases = pack.GetDatabases()
 	result.StartCommands = pack.GetStartCommands()
+	result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
 	result.BuildCommands = []string {}
 	result.DeployCommands = []string {}
 	

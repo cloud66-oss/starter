@@ -120,7 +120,11 @@ func GetScriptsStart(packageJsonFile string) (bool, string) {
 }
 
 func SetAllowedNodeVersions(versions []string) {
-	allowedNodeVersions = versions;
+	allowedNodeVersions = versions
+}
+
+func GetAllowedNodeVersions() []string {
+	return allowedNodeVersions
 }
 
 var allowedNodeVersions = []string { 

@@ -27,6 +27,14 @@ func (p *Pack) FrameworkVersion() string {
 	return p.Analysis.FrameworkVersion
 }
 
+func (p *Pack) GetSupportedLanguageVersions() []string {
+	return []string{ "0.x.x" }
+}
+
+func (p *Pack) SetSupportedLanguageVersions(version []string) {
+
+}
+
 func (p *Pack) Detector() packs.Detector {
 	return &Detector{PackElement: packs.PackElement{Pack: p}}
 }

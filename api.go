@@ -76,9 +76,7 @@ func (a *API) StartAPI() error {
 
 
 		packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
-
 	
-		//TODO: move to generic place and also make non API starter stuff make use of it
 		//get all the support language versions
 		url      := "https://registry-1.docker.io/"
 		username := "" // anonymous
@@ -102,10 +100,7 @@ func (a *API) StartAPI() error {
         		return !strings.Contains(v, "-")
     		})
 
-			//TODO: make generic for all buildpacks
-    		if p.Name() == "node" {
-    			common.SetAllowedNodeVersions(tags)
-    		}	
+			p.SetSupportedLanguageVersions(tags)	
 			support.SupportedVersion = tags
 			languages.Languages = append(languages.Languages, support)
 		}
