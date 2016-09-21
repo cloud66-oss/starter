@@ -389,7 +389,7 @@ func analyze(
 			return nil, errors.New("can't find the tags for this pack")
 		}
 		tags = Filter(tags, func(v string) bool {
-			return !strings.Contains(v, "-")
+	    	return !strings.Contains(v, "-") && strings.ContainsAny(v, "0123456789")
 		})
 
 		pack.SetSupportedLanguageVersions(tags)	
