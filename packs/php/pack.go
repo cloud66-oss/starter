@@ -29,7 +29,7 @@ func (p *Pack) FrameworkVersion() string {
 }
 
 func (p *Pack) GetSupportedLanguageVersions() []string {
-	return []string{ "0.x.x" }
+	return nil
 }
 
 func (p *Pack) SetSupportedLanguageVersions(version []string) {

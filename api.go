@@ -295,7 +295,8 @@ func analyze_sourcecode(config *Config, path string, generate string, git_repo s
 		true,
 		generate,
 		git_repo,
-		git_branch)
+		git_branch,
+		false)
 
 	if err != nil {
 		common.PrintL0("%v", err.Error())
