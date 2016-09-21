@@ -97,7 +97,7 @@ func (a *API) StartAPI() error {
 				os.Exit(2)
 			}
 			tags = Filter(tags, func(v string) bool {
-        		return !strings.Contains(v, "-")
+	    		return !strings.Contains(v, "-") && strings.ContainsAny(v, "0123456789")
     		})
 
 			p.SetSupportedLanguageVersions(tags)	
