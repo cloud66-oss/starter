@@ -2,6 +2,6 @@
 ---
 web:
   build: test/node/express_bare/src/
-  command: node server.js
+  command: npm start
   ports:
   - "3000:3000"

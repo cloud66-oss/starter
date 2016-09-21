@@ -5,7 +5,7 @@ services:
   web:
     git_url: git@github.com:cloud66/starter.git
     git_branch: master
-    command: node index
+    command: npm start
     build_root: test/node/express_mysql_pg/src/
     ports:
       - container: 3000

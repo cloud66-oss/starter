@@ -2,7 +2,7 @@
 ---
 web:
   build: test/node/express_mongodb/src/
-  command: node app.js
+  command: npm start
   ports:
   - "3000:3000"
   links:

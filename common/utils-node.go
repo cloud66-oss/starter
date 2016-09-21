@@ -126,8 +126,8 @@ func GetScriptsStart(packageJsonFile string) (bool, string) {
 		return false, ""
 	}
 
-	if start, ok := data["scripts"].(map[string]interface{})["start"].(string); ok {
-		return true, start
+	if _, ok := data["scripts"].(map[string]interface{})["start"].(string); ok {
+		return true, "npm start"
 	} else {
 		return false, ""
 	}

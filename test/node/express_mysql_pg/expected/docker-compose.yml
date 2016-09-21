@@ -2,7 +2,7 @@
 ---
 web:
   build: test/node/express_mysql_pg/src/
-  command: node index
+  command: npm start
   ports:
   - "3000:3000"
   links:

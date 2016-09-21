@@ -2,7 +2,7 @@
 ---
 web:
   build: test/node/express_bare_mongo/src/
-  command: node server.js
+  command: npm start
   ports:
   - "3000:3000"
   links:
