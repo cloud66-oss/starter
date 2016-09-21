@@ -2,6 +2,8 @@
 FROM alpine:3.3
 MAINTAINER Daniel van Gils
 
+RUN apk --update upgrade && apk add curl ca-certificates && rm -rf /var/cache/apk/*
+
 RUN mkdir -p /app
 WORKDIR /app
 
