@@ -28,6 +28,7 @@ func GetNodeVersion(packageJsonFile string) (bool, string) {
 	}
 
 	if nodeVersion, ok := data["engines"].(map[string]interface{})["node"].(string); ok {
+		nodeVersion = strings.Split(nodeVersion, " ||")[0]
 		nodeVersion = strings.Replace(strings.Trim(nodeVersion, "^>=~"), "x", "0", -1)
 		v1, err := semver.Make(nodeVersion)
 		if err != nil {
