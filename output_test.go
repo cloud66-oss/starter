@@ -369,7 +369,7 @@ var _ = Describe("Generating all files with Starter", func() {
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
 		})
 	})
-	FContext("using a NodeJS Express project with a pg database", func() {
+	Context("using a NodeJS Express project with a pg database", func() {
 		var projectFixturePath string = "test/node/express_pg_procfile"
 		BeforeEach(func() {
 			_, err := runStarterWithProject(projectFixturePath)
