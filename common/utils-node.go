@@ -143,7 +143,6 @@ func GetAllowedNodeVersions() []string {
 
 var allowedNodeVersions = []string { 
 	    "0.10.46",
-        "0.11.16",
         "0.12.15",
         "4.5.0",
         "5.12.0",
