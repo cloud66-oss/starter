@@ -245,6 +245,7 @@ func main() {
 		cleanupDone := make(chan bool)
 		signal.Notify(signalChan, os.Interrupt)
 		config.template_path = flagTemplates
+		config.use_registry = flagRegistry
 
 		api := NewAPI(config)
 		err := api.StartAPI()

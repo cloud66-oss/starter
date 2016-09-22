@@ -74,35 +74,36 @@ func (a *API) StartAPI() error {
 		common.PrintL1("API is now running...\n")
 
 
-
-		packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
-	
-		//get all the support language versions
-		url      := "https://registry-1.docker.io/"
-		username := "" // anonymous
-		password := "" // anonymous
-		hub, err := registry.New(url, username, password)
-		if err != nil {
-			common.PrintError("Failed to start API %s", err.Error())
-			os.Exit(2)
-		}
-
-		for _, p := range packs {
-			support := Language{}
-			support.Name = p.Name()
-			support.Files = p.FilesToBeAnalysed()
-			tags, err := hub.Tags("library/" + p.Name())
+		if a.config.use_registry {
+			packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
+		
+			//get all the support language versions
+			url      := "https://registry-1.docker.io/"
+			username := "" // anonymous
+			password := "" // anonymous
+			hub, err := registry.New(url, username, password)
 			if err != nil {
 				common.PrintError("Failed to start API %s", err.Error())
 				os.Exit(2)
 			}
-			tags = Filter(tags, func(v string) bool {
-	    		return !strings.Contains(v, "-") && strings.ContainsAny(v, "0123456789")
-    		})
 
-			p.SetSupportedLanguageVersions(tags)	
-			support.SupportedVersion = tags
-			languages.Languages = append(languages.Languages, support)
+			for _, p := range packs {
+				support := Language{}
+				support.Name = p.Name()
+				support.Files = p.FilesToBeAnalysed()
+				tags, err := hub.Tags("library/" + p.Name())
+				if err != nil {
+					common.PrintError("Failed to start API %s", err.Error())
+					os.Exit(2)
+				}
+				tags = Filter(tags, func(v string) bool {
+		    		return !strings.Contains(v, "-") && strings.ContainsAny(v, "0123456789")
+	    		})
+
+				p.SetSupportedLanguageVersions(tags)	
+				support.SupportedVersion = tags
+				languages.Languages = append(languages.Languages, support)
+			}
 		}
 		if err := http.ListenAndServe(a.config.APIURL, api.MakeHandler()); err != nil {
 			common.PrintError("Failed to start API %s", err.Error())

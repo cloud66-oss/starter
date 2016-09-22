@@ -9,6 +9,7 @@ import (
 type Config struct {
 	APIURL        string
 	template_path string
+	use_registry	bool
 }
 
 // ReadFromFile reads config from a file
@@ -33,6 +34,6 @@ func (c *Config) SetDefaults() error {
 	if c.APIURL == "" {
 		c.APIURL = "0.0.0.0:9090"
 	}
-
+	c.use_registry = false
 	return nil
 }
