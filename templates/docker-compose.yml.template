@@ -22,7 +22,7 @@
   {{end}}
   {{if .EnvVars}}
   environment:{{range .EnvVars}}
-    - {{.Key}}={{.Value}}
+  - {{.Key}}={{.Value}}
   {{end}}{{end}}
 {{end}}
 

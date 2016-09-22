@@ -5,3 +5,5 @@ web:
   command: npm start
   ports:
   - "3000:3000"
+  environment:
+  - PORT=3000

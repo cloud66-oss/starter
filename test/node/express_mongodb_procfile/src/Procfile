@@ -1,1 +1,2 @@
 web: node lib/index.js
+background: node lib/background.js

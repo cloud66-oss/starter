@@ -11,6 +11,18 @@ services:
       - container: 3000
         http: 80
         https: 443
+    env_vars:
+      PORT: 3000
+
+  background:
+    git_url: git@github.com:cloud66/starter.git
+    git_branch: master
+    command: node lib/background.js
+    build_root: test/node/express_mongodb_procfile/src/
+    ports:
+      - container: 3001
+    env_vars:
+      PORT: 3001
 
 databases:
   - mongodb

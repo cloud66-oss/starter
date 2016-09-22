@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"strconv"
 
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
@@ -69,10 +70,19 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	//has a procfile
-	if len(*services) == 1 {
+	if len(*services) > 0 {
+
 		for _, service := range *services {
-			service.Ports = []*common.PortMapping{common.NewPortMapping()}
-			service.Ports[0].Container = "3000"
+			port := 3001
+			if service.Name == "web" || service.Name == "custom_web" {
+				service.Ports = []*common.PortMapping{common.NewPortMapping()}
+				service.Ports[0].Container = "3000"
+				service.EnvVars = []*common.EnvVar{common.NewEnvMapping("PORT", "3000")}
+			} else {
+				service.Ports = []*common.PortMapping{common.NewInternalPortMapping(strconv.Itoa(port))}
+				service.EnvVars = []*common.EnvVar{common.NewEnvMapping("PORT", strconv.Itoa(port))}
+				port = port +1
+			}
 		}
 	}
 
@@ -88,6 +98,7 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 		}
 
 		service.Ports[0].Container = "3000"
+		service.EnvVars = []*common.EnvVar{common.NewEnvMapping("PORT", "3000")}
 		*services = append(*services, service)
 	}
 

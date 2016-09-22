@@ -8,5 +8,17 @@ web:
   links:
   - mongodb
   - mongodb:mongodb.cloud66.local
+  environment:
+  - PORT=3000
+background:
+  build: test/node/express_mongodb_procfile/src/
+  command: node lib/background.js
+  ports:
+  - "3001:3001"
+  links:
+  - mongodb
+  - mongodb:mongodb.cloud66.local  
+  environment:
+  - PORT=3001
 mongodb:
   image: mongo
