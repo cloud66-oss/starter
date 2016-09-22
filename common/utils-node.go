@@ -141,6 +141,11 @@ func GetAllowedNodeVersions() []string {
 	return allowedNodeVersions
 }
 
+func GetDefaultNodeVersion() string {
+	return defaultNodeVersion
+}
+
+var defaultNodeVersion = "4.5.0"
 var allowedNodeVersions = []string { 
 	    "0.10.46",
         "0.12.15",

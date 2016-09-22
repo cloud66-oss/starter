@@ -142,7 +142,7 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 
 func (a *Analyzer) FindVersion() string {
 	foundNode, nodeVersion := common.GetNodeVersion(a.PackageJSON)
-	return a.ConfirmVersion(foundNode, nodeVersion, "latest")
+	return a.ConfirmVersion(foundNode, nodeVersion, common.GetDefaultNodeVersion())
 }
 
 func (a *Analyzer) FindDatabases() []common.Database {
