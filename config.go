@@ -9,7 +9,7 @@ import (
 type Config struct {
 	APIURL        string
 	template_path string
-	use_registry	bool
+	use_registry  bool
 }
 
 // ReadFromFile reads config from a file
