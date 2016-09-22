@@ -17,7 +17,7 @@ background:
   - "3001:3001"
   links:
   - mongodb
-  - mongodb:mongodb.cloud66.local  
+  - mongodb:mongodb.cloud66.local
   environment:
   - PORT=3001
 mongodb:
