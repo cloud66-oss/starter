@@ -429,7 +429,7 @@ var _ = Describe("Generating all files with Starter", func() {
 			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
-	FContext("using a NodeJS Express project with a mongodb database", func() {
+	Context("using a NodeJS Express project with a mongodb database", func() {
 		var projectFixturePath string = "test/node/express_mongodb_procfile"
 		BeforeEach(func() {
 			_, err := runStarterWithProject(projectFixturePath)
