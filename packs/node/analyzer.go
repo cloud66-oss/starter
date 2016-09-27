@@ -28,7 +28,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	framework := a.GuessFramework()
 	framework_version := a.GuessFrameworkVersion()
 	supported_versions := a.FindVersion()
-	version := supported_versions[0]
+	version := supported_versions[len(supported_versions)-1]
 	//a.CheckNotSupportedPackages(packages)
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)

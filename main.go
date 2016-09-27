@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"regexp"
 
 	"github.com/bugsnag/bugsnag-go"
 	"github.com/cloud66/starter/common"
@@ -390,7 +391,8 @@ func analyze(
 			return nil, errors.New("can't find the tags for this pack")
 		}
 		tags = Filter(tags, func(v string) bool {
-			return !strings.Contains(v, "-") && strings.ContainsAny(v, "0123456789")
+			ok, _ := regexp.MatchString(`^\d+.\d+.\d+$`, v)
+			return ok
 		})
 
 		pack.SetSupportedLanguageVersions(tags)

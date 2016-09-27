@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"regexp"
 )
 
 // API holds starter API
@@ -94,7 +95,8 @@ func (a *API) StartAPI() error {
 					os.Exit(2)
 				}
 				tags = Filter(tags, func(v string) bool {
-					return !strings.Contains(v, "-") && strings.ContainsAny(v, "0123456789")
+					ok, _ := regexp.MatchString(`^\d+.\d+.\d+$`, v)
+					return ok
 				})
 				p.SetSupportedLanguageVersions(tags)
 				support.SupportedVersion = tags
