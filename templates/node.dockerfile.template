@@ -4,7 +4,11 @@ ENV APP_HOME /app
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
-ADD package.json $APP_HOME/
-RUN npm install
-
 ADD . $APP_HOME
+
+# ADD CUSTOM REGISTRY HERE IF REQUIRED
+# ENV CUSTOM_REGISTRY https://registry.npmjs.org/ 
+# RUN npm config set strict-ssl false
+# RUN npm config set registry $CUSTOM_REGISTRY
+
+RUN npm install

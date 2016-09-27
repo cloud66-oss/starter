@@ -22,12 +22,13 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	if err != nil {
 		return nil, err
 	}
-	version := a.FindVersion()
 	dbs := a.ConfirmDatabases(a.FindDatabases())
 	envVars := a.EnvVars()
 	packages := a.GuessPackages()
 	framework := a.GuessFramework()
 	framework_version := a.GuessFrameworkVersion()
+	supported_versions := a.FindVersion()
+	version := supported_versions[0]
 	//a.CheckNotSupportedPackages(packages)
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
@@ -59,6 +60,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			Framework:        framework,
 			FrameworkVersion: framework_version,
 			LanguageVersion:  version,
+			SupportedLanguageVersions: supported_versions,
 			Databases:			listOfDatabases,
 			ListOfStartCommands:	listOfStartCommands,
 			Messages:         a.Messages},
@@ -140,9 +142,10 @@ func (a *Analyzer) GuessPackages() *common.Lister {
 	return packages
 }
 
-func (a *Analyzer) FindVersion() string {
-	foundNode, nodeVersion := common.GetNodeVersion(a.PackageJSON)
-	return a.ConfirmVersion(foundNode, nodeVersion, common.GetDefaultNodeVersion())
+func (a *Analyzer) FindVersion() []string {
+	_, nodeVersions := common.GetNodeVersion(a.PackageJSON)
+	//return a.ConfirmVersion(foundNode, nodeVersions[0], common.GetDefaultNodeVersion())
+	return nodeVersions
 }
 
 func (a *Analyzer) FindDatabases() []common.Database {

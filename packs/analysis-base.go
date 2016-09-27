@@ -9,6 +9,7 @@ type AnalysisBase struct {
 	GitBranch string
 	Framework string
 	FrameworkVersion string
+	SupportedLanguageVersions []string
 	Messages common.Lister
 	Databases []string
 	ListOfStartCommands []string

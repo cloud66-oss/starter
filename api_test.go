@@ -9,8 +9,6 @@ import (
 	"os"
 )
 
-
-
 var _ = Describe("Running Starter in damon mode", func() {
 
 	Context("ping the service", func() {
@@ -228,7 +226,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis.LanguageVersion = "4.5.0"
 			analysis.Framework = "express"
 			analysis.FrameworkVersion = "4.13.0"
-			analysis.SupportedLanguageVersions = []string{"0.10.46","0.12.15","4.5.0","5.12.0","6.6.0"}
+			analysis.SupportedLanguageVersions = []string{"0.10.46", "0.12.15", "4.5.0", "5.12.0", "6.6.0"}
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(file)
 			analysis.StartCommands = []string{"node server.js"}
@@ -254,7 +252,7 @@ var _ = Describe("Running Starter in damon mode", func() {
 			analysis.LanguageVersion = "0.10.46"
 			analysis.Framework = "express"
 			analysis.FrameworkVersion = "4.14.0"
-			analysis.SupportedLanguageVersions = []string{"0.10.46","0.12.15","4.5.0","5.12.0","6.6.0"}
+			analysis.SupportedLanguageVersions = []string{"0.10.46", "0.12.15", "4.5.0", "5.12.0", "6.6.0"}
 			analysis.Warnings = []string{"No Procfile was detected. It is strongly advised to add one in order to specify the commands to run your services."}
 			analysis.Dockerfile = string(file)
 			analysis.StartCommands = []string{"npm start"}

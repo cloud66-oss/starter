@@ -69,13 +69,9 @@ func (a *API) StartAPI() error {
 
 	api.SetApp(router)
 
-	
-
 	go func() {
 		common.PrintL0("Starting API on %s\n", a.config.APIURL)
 		common.PrintL1("API is now running...\n")
-		
-
 
 		packs := []packs.Pack{new(ruby.Pack), new(node.Pack), new(php.Pack)}
 		for _, p := range packs {

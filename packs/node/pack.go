@@ -30,7 +30,7 @@ func (p *Pack) FrameworkVersion() string {
 }
 
 func (p *Pack) GetSupportedLanguageVersions() []string {
-	return common.GetAllowedNodeVersions()
+	return p.Analysis.SupportedLanguageVersions
 }
 
 func (p *Pack) SetSupportedLanguageVersions(versions []string) {

@@ -3,50 +3,84 @@ package common
 import (
 	"fmt"
 	"strings"
-	"strconv"
+	//"strconv"
 	"encoding/json"
 	"io/ioutil"
-
+	"regexp"
 	"github.com/blang/semver"
+	"strconv"
 )
 
 // Looks for node version in the package.json. If found returns true, version if not false, ""
-func GetNodeVersion(packageJsonFile string) (bool, string) {
+func GetNodeVersion(packageJsonFile string) (bool, []string) {
 	buf, err := ioutil.ReadFile(packageJsonFile)
 	if err != nil {
-		return false, err.Error()
+		return false, []string {GetDefaultNodeVersion()}
 	}
 
 	var data map[string](interface{})
 	err = json.Unmarshal(buf, &data)
 
 	if err != nil {
-		return false, err.Error()
+		return false, []string {GetDefaultNodeVersion()}
 	}
 
 	if data["engines"] == nil {
-		return false, ""
+		return false, []string {GetDefaultNodeVersion()}
 	}
 
-	if nodeVersion, ok := data["engines"].(map[string]interface{})["node"].(string); ok {
-		nodeVersion = strings.Split(nodeVersion, " ||")[0]
-		nodeVersion = strings.Replace(strings.Trim(nodeVersion, "^>=~"), "x", "0", -1)
-		v1, err := semver.Make(nodeVersion)
+	if nodeVersionRanges, ok := data["engines"].(map[string]interface{})["node"].(string); ok {
+		versions := []string {}
+		version_ranges := strings.Split(nodeVersionRanges, "||")
+		for _, version_range := range version_ranges {
+			//remove spaces
+			version_range = strings.Trim(version_range, " ")
 
-		if err != nil {
-			//no semver 
-			i, err := strconv.Atoi(nodeVersion)
-			if err != nil {
-				return false, ""	
+			//pad version number 
+			version_range = PadVersionNumber(version_range)
+
+			//tilda support		
+			if strings.Index(version_range, "~") == 0 {
+				tilda_start_version, err := semver.Parse(strings.TrimLeft(version_range, "~")) 
+				if err == nil {
+					version_range = ">=" + tilda_start_version.String() + " <" + strconv.FormatUint(tilda_start_version.Major, 10) + "." + strconv.FormatUint(tilda_start_version.Minor + 1, 10) + ".0"
+				}
 			}
-			nodeVersion = GetClosedAllowedNodeVersion(uint64(i), 0, 0)
-			return true, nodeVersion
 
+			//caret support
+			if strings.Index(version_range, "^") == 0 {
+				caret_start_version, err := semver.Parse(strings.TrimLeft(version_range, "^")) 
+				if err == nil {
+					version_range = ">=" + caret_start_version.String() + " <" + strconv.FormatUint(caret_start_version.Major + 1, 10) + ".0.0"
+				}
+			}
+
+			allowed_versions := GetAllowedNodeVersions()
+
+			for _, allowed_version := range allowed_versions {
+				//pad version number 
+				allowed_version_padded := PadVersionNumber(allowed_version)
+
+				version_semver, err := semver.Parse(allowed_version_padded) 
+				if err == nil {
+
+
+					range_semver, err := semver.ParseRange(version_range)
+					if err == nil {
+						if range_semver(version_semver) {
+				    		versions = append(versions, allowed_version)
+				    	}
+					}
+				}
+			}
 		}
-		nodeVersion = GetClosedAllowedNodeVersion(v1.Major, v1.Minor, v1.Patch)
-		return true, nodeVersion
+		if len(versions) == 0 {
+			return false, []string {GetDefaultNodeVersion()}
+		} else {
+			return true, versions
+		}
 	}
-	return false, ""
+	return false, []string {GetDefaultNodeVersion()}
 }
 
 func GetClosedAllowedNodeVersion(major uint64, minor uint64, patch uint64) (string) {
@@ -133,6 +167,15 @@ func GetScriptsStart(packageJsonFile string) (bool, string) {
 	}
 }
 
+func PadVersionNumber(version string) string {
+	if ok, _ := regexp.MatchString(`^\D{0,2}\d$`, version); ok {
+		version = version + ".0.0"
+	} else if ok, _ := regexp.MatchString(`^\D{0,2}\d+\.\d+$`, version); ok {
+		version = version + ".0"
+	}
+	return version		
+}
+
 func SetAllowedNodeVersions(versions []string) {
 	allowedNodeVersions = versions
 }
@@ -146,10 +189,4 @@ func GetDefaultNodeVersion() string {
 }
 
 var defaultNodeVersion = "4.5.0"
-var allowedNodeVersions = []string { 
-	    "0.10.46",
-        "0.12.15",
-        "4.5.0",
-        "5.12.0",
-        "6.6.0",
-    }
+var allowedNodeVersions = []string {}
