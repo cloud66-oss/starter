@@ -10,4 +10,4 @@ WORKDIR /app
 # copy the binary
 COPY ./artifacts/compiled/starter /app
 COPY ./templates /app/templates
-CMD /app/starter -daemon -templates templates
+CMD /app/starter -daemon -templates templates -registry true
