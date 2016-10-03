@@ -11,4 +11,6 @@ ADD . $APP_HOME
 # RUN npm config set strict-ssl false
 # RUN npm config set registry $CUSTOM_REGISTRY
 
+ENV NODE_ENV production
+ENV NPM_CONFIG_LOGLEVEL warn
 RUN npm install
