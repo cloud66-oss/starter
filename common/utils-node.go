@@ -36,6 +36,9 @@ func GetNodeVersion(packageJsonFile string) (bool, []string) {
 			//remove spaces
 			version_range = strings.Trim(version_range, " ")
 
+			//change x to 0 
+			version_range = strings.Replace(version_range, "x", "0", 2)
+
 			//pad version number 
 			version_range = PadVersionNumber(version_range)
 
