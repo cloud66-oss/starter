@@ -131,14 +131,22 @@ func (a *Analyzer) GuessFramework() string {
 		a.Messages.Add("Meteor is not supported yet.")
 	}
 	
-	if a.HasPackage("express") {
-		return "express"
+	for _, framework := range common.GetSupportedNodeFrameworks() {
+		if a.HasPackage(framework) {
+			return framework
+		}
 	}
+
 	return ""
 }
 
 func (a *Analyzer) GuessFrameworkVersion() string {
-	return a.GetPackageVersion("express")
+	for _, framework := range common.GetSupportedNodeFrameworks() {
+		if a.HasPackage(framework) {
+			return a.GetPackageVersion(framework)
+		}
+	}
+	return ""
 }
 
 func (a *Analyzer) GuessPackages() *common.Lister {

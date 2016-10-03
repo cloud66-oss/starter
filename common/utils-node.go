@@ -191,5 +191,9 @@ func GetDefaultNodeVersion() string {
 	return defaultNodeVersion
 }
 
+func GetSupportedNodeFrameworks() []string {
+	return []string {"express", "loopback"}
+}
+
 var defaultNodeVersion = "4.5.0"
 var allowedNodeVersions = []string {}
