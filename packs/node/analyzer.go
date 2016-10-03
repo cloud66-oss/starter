@@ -127,6 +127,10 @@ func (a *Analyzer) GetPackageVersion(pack string) string {
 }
 
 func (a *Analyzer) GuessFramework() string {
+	if a.HasPackage("meteor-node-stubs") {
+		a.Messages.Add("Meteor is not supported yet.")
+	}
+	
 	if a.HasPackage("express") {
 		return "express"
 	}
