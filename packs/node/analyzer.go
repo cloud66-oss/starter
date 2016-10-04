@@ -26,6 +26,13 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	envVars := a.EnvVars()
 	packages := a.GuessPackages()
 	framework := a.GuessFramework()
+
+	//TODO make this more generic
+	if framework == "keystone" {
+		dbs = append(dbs, common.Database{Name: "mongodb", DockerImage: "mongo"})
+	}
+
+
 	framework_version := a.GuessFrameworkVersion()
 	supported_versions := a.FindVersion()
 	version := supported_versions[len(supported_versions)-1]
