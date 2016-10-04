@@ -192,7 +192,7 @@ func GetDefaultNodeVersion() string {
 }
 
 func GetSupportedNodeFrameworks() []string {
-	return []string {"express", "loopback", "restify"}
+	return []string {"express", "loopback", "restify", "actionhero"}
 }
 
 var defaultNodeVersion = "4.5.0"

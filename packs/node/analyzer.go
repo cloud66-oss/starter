@@ -171,7 +171,7 @@ func (a *Analyzer) FindDatabases() []common.Database {
 	if hasPostgres, _ := common.GetNodeDatabase(a.PackageJSON, "pg"); hasPostgres {
 		dbs = append(dbs, common.Database{Name: "postgresql", DockerImage: "postgres"})
 	}
-	if hasRedis, _ := common.GetNodeDatabase(a.PackageJSON, "redis"); hasRedis {
+	if hasRedis, _ := common.GetNodeDatabase(a.PackageJSON, "redis", "ioredis"); hasRedis {
 		dbs = append(dbs, common.Database{Name: "redis", DockerImage: "redis"})
 	}
 	return dbs
