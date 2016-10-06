@@ -20,6 +20,7 @@ import (
 	"strings"
 	"text/template"
 	"regexp"
+	"strconv"
 )
 
 // API holds starter API
@@ -48,6 +49,15 @@ func NewAPI(configuration *Config) API {
 }
 
 var languages = SupportedLanguages{}
+
+func (a *API) Error(w rest.ResponseWriter, error string, error_code int, http_code int) {
+	w.WriteHeader(http_code)
+	err := w.WriteJson(map[string]string{"Error": error, "ErrorCode": strconv.Itoa(error_code)})
+	if err != nil {
+		panic(err)
+	}
+}
+
 
 // StartAPI starts the API listeners
 func (a *API) StartAPI() error {
@@ -148,7 +158,7 @@ func (a *API) dockerfiles(w rest.ResponseWriter, r *rest.Request) {
 
 		err := tmpl.Execute(&doc, version)
 		if err != nil {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			a.Error(w, err.Error(), 1, http.StatusInternalServerError)
 			return
 		}
 		dockerfile.Base = doc.String()
@@ -167,7 +177,7 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	//save the file to a random location
 	file, handler, err := r.FormFile("source")
 	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		a.Error(w, err.Error(), 2, http.StatusInternalServerError)
 		return
 	}
 	defer file.Close()
@@ -177,12 +187,12 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	err = os.MkdirAll(source_dir, 0777)
 
 	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		a.Error(w, err.Error(), 3, http.StatusInternalServerError)
 		return
 	}
 	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		a.Error(w, err.Error(), 4, http.StatusInternalServerError)
 		return
 	}
 	defer f.Close()
@@ -197,14 +207,14 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	//cleanup
 	err = os.RemoveAll(source_dir)
 	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		a.Error(w, err.Error(), 5, http.StatusInternalServerError)
 		return
 	}
 
 	if analysis != nil {
 		w.WriteJson(analysis)
 	} else {
-		rest.Error(w, "no supported language and/or framework detected", http.StatusOK)
+		a.Error(w, "no supported language and/or framework detected", 6, http.StatusOK)
 	}
 }
 
@@ -269,7 +279,7 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	var request payload
 	err := r.DecodeJsonPayload(&request)
 	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		a.Error(w, err.Error(), 7, http.StatusInternalServerError)
 		return
 	}
 	path := request.Path
@@ -278,13 +288,9 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	if analysis != nil {
 		w.WriteJson(analysis)
 	} else {
-		rest.Error(w, "no supported language and/or framework detected", http.StatusOK)
+		a.Error(w, "no supported language and/or framework detected", 6, http.StatusOK)
 	}
 
-}
-
-func (a *API) handleError(err error, w rest.ResponseWriter) {
-	rest.Error(w, err.Error(), http.StatusBadRequest)
 }
 
 func analyze_sourcecode(config *Config, path string, generate string, git_repo string, git_branch string) *analysisResult {
