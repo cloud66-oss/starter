@@ -214,7 +214,7 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	if analysis != nil {
 		w.WriteJson(analysis)
 	} else {
-		a.Error(w, "no supported language and/or framework detected", 6, http.StatusOK)
+		a.Error(w, "No supported language and/or framework detected", 6, http.StatusOK)
 	}
 }
 
@@ -288,7 +288,7 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 	if analysis != nil {
 		w.WriteJson(analysis)
 	} else {
-		a.Error(w, "no supported language and/or framework detected", 6, http.StatusOK)
+		a.Error(w, "No supported language and/or framework detected", 6, http.StatusOK)
 	}
 
 }
