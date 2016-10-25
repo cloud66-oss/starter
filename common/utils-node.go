@@ -119,14 +119,16 @@ func GetDependencyVersion(packageJsonFile string, dependencyNames ...string) (bo
 		return false, err.Error()
 	}
 
-	for dependency, version := range data["dependencies"].(map[string]interface{}) {
-		for _, dependencyName := range dependencyNames {
-			found := dependencyName == dependency
-			if found {
-				return true, version.(string)
+	if data["dependencies"] != nil {
+		for dependency, version := range data["dependencies"].(map[string]interface{}) {
+			for _, dependencyName := range dependencyNames {
+				found := dependencyName == dependency
+				if found {
+					return true, version.(string)
+				}
 			}
-		}
 
+		}
 	}
 
 	if data["optionalDependencies"] != nil {
