@@ -172,7 +172,7 @@ func (a *Analyzer) FindDatabases() []common.Database {
 	if hasMysql, _ := common.GetNodeDatabase(a.PackageJSON, "mysql"); hasMysql {
 		dbs = append(dbs, common.Database{Name: "mysql", DockerImage: "mysql"})
 	}
-	if hasMongo, _ := common.GetNodeDatabase(a.PackageJSON, "mongoose", "mongodb"); hasMongo {
+	if hasMongo, _ := common.GetNodeDatabase(a.PackageJSON, "mongoose", "mongodb", "loopback-connector-mongodb"); hasMongo {
 		dbs = append(dbs, common.Database{Name: "mongodb", DockerImage: "mongo"})
 	}
 	if hasPostgres, _ := common.GetNodeDatabase(a.PackageJSON, "pg"); hasPostgres {
