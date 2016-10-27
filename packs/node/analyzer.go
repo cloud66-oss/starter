@@ -169,16 +169,16 @@ func (a *Analyzer) FindVersion() []string {
 
 func (a *Analyzer) FindDatabases() []common.Database {
 	dbs := []common.Database{}
-	if hasMysql, _ := common.GetNodeDatabase(a.PackageJSON, "mysql"); hasMysql {
+	if hasMysql, _ := common.GetNodeDatabase(a.PackageJSON, "mysql", "loopback-connector-mysql"); hasMysql {
 		dbs = append(dbs, common.Database{Name: "mysql", DockerImage: "mysql"})
 	}
 	if hasMongo, _ := common.GetNodeDatabase(a.PackageJSON, "mongoose", "mongodb", "loopback-connector-mongodb"); hasMongo {
 		dbs = append(dbs, common.Database{Name: "mongodb", DockerImage: "mongo"})
 	}
-	if hasPostgres, _ := common.GetNodeDatabase(a.PackageJSON, "pg"); hasPostgres {
+	if hasPostgres, _ := common.GetNodeDatabase(a.PackageJSON, "pg", "loopback-connector-postgresql"); hasPostgres {
 		dbs = append(dbs, common.Database{Name: "postgresql", DockerImage: "postgres"})
 	}
-	if hasRedis, _ := common.GetNodeDatabase(a.PackageJSON, "redis", "ioredis"); hasRedis {
+	if hasRedis, _ := common.GetNodeDatabase(a.PackageJSON, "redis", "ioredis", "loopback-connector-redis"); hasRedis {
 		dbs = append(dbs, common.Database{Name: "redis", DockerImage: "redis"})
 	}
 	return dbs
