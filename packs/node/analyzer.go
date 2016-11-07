@@ -106,8 +106,13 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 		service.Ports = []*common.PortMapping{common.NewPortMapping()}
 		service.Command = "npm start"
 		if hasScript, script := common.GetScriptsStart(a.PackageJSON); hasScript {
+
 			common.PrintlnL2("Found Script: %s", script)
 			service.Command = script
+		}
+		if a.GuessFramework() == "meteor" {
+			service.Command = "node main.js"
+			common.PrintlnL2("Change Script for Meteor: %s", service.Command)
 		}
 
 		service.Ports[0].Container = "3000"
