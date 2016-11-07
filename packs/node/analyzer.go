@@ -32,6 +32,10 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 		dbs = append(dbs, common.Database{Name: "mongodb", DockerImage: "mongo"})
 	}
 
+	if framework == "meteor" {
+		dbs = append(dbs, common.Database{Name: "mongodb", DockerImage: "mongo"})
+	}
+
 
 	framework_version := a.GuessFrameworkVersion()
 	supported_versions := a.FindVersion()
@@ -73,7 +77,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			Messages:         a.Messages},
 		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
 		ServiceYAMLContext:       &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
-		DockerfileContext:        &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
+		DockerfileContext:        &DockerfileContext{packs.DockerfileContextBase{Version: version, Framework: framework, Packages: packages}}}
 	return analysis, nil
 }
 
@@ -134,12 +138,11 @@ func (a *Analyzer) GetPackageVersion(pack string) string {
 }
 
 func (a *Analyzer) GuessFramework() string {
-	if a.HasPackage("meteor-node-stubs") {
-		a.Messages.Add("Meteor is not supported yet.")
-	}
-	
 	for _, framework := range common.GetSupportedNodeFrameworks() {
 		if a.HasPackage(framework) {
+			if framework == "meteor-node-stubs" {
+				return "meteor"		
+			}
 			return framework
 		}
 	}
@@ -150,6 +153,9 @@ func (a *Analyzer) GuessFramework() string {
 func (a *Analyzer) GuessFrameworkVersion() string {
 	for _, framework := range common.GetSupportedNodeFrameworks() {
 		if a.HasPackage(framework) {
+			if framework == "meteor-node-stubs" {
+				return ""		
+			}
 			return a.GetPackageVersion(framework)
 		}
 	}

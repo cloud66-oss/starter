@@ -197,7 +197,7 @@ func GetDefaultNodeVersion() string {
 }
 
 func GetSupportedNodeFrameworks() []string {
-	return []string {"keystone", "express", "loopback", "restify", "actionhero", "hapi", "socket.io", "koa"}
+	return []string {"meteor-node-stubs", "keystone", "express", "loopback", "restify", "actionhero", "hapi", "socket.io", "koa"}
 }
 
 var defaultNodeVersion = "4.5.0"
