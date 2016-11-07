@@ -36,6 +36,9 @@ func GetNodeVersion(packageJsonFile string) (bool, []string) {
 			//remove spaces
 			version_range = strings.Trim(version_range, " ")
 
+			//remove v character
+			version_range = strings.Replace(version_range, "v", "", 2)
+
 			//change x to 0 
 			version_range = strings.Replace(version_range, "x", "0", 2)
 
