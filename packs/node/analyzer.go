@@ -14,10 +14,14 @@ import (
 type Analyzer struct {
 	packs.AnalyzerBase
 	PackageJSON string
+	MeteorRelease string
 }
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.PackageJSON = filepath.Join(a.RootDir, "package.json")
+	a.MeteorRelease = filepath.Join(a.RootDir, ".meteor/release")
+
+
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
 	if err != nil {
 		return nil, err
@@ -155,11 +159,18 @@ func (a *Analyzer) GuessFramework() string {
 	return ""
 }
 
+func (a *Analyzer) GetMeteorVersion() string {
+	_, meteorVersion := common.GetMeteorVersion(a.MeteorRelease)
+	return meteorVersion
+}
+
+
+
 func (a *Analyzer) GuessFrameworkVersion() string {
 	for _, framework := range common.GetSupportedNodeFrameworks() {
 		if a.HasPackage(framework) {
 			if framework == "meteor-node-stubs" {
-				return ""		
+				return a.GetMeteorVersion()		
 			}
 			return a.GetPackageVersion(framework)
 		}

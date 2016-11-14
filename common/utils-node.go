@@ -3,6 +3,8 @@ package common
 import (
 	"fmt"
 	"strings"
+	"bufio"
+	"os"
 	//"strconv"
 	"encoding/json"
 	"io/ioutil"
@@ -87,6 +89,29 @@ func GetNodeVersion(packageJsonFile string) (bool, []string) {
 		}
 	}
 	return false, []string {GetDefaultNodeVersion()}
+}
+
+func GetMeteorVersion(meteorReleaseFile string) (bool, string) {
+    file, err := os.Open(meteorReleaseFile)
+    if err != nil {
+        return false, "not detected"
+    }
+    defer file.Close()
+
+    scanner := bufio.NewScanner(file)
+    var re = regexp.MustCompile(`METEOR@(.*)`)
+    for scanner.Scan() {
+        var version = scanner.Text()
+        if (re.MatchString(version)) {
+        	return true, re.FindStringSubmatch(version)[1]
+    	}
+    }
+
+    if err := scanner.Err(); err != nil {
+        return false, "not detected"
+    }
+
+	return false, "not detected"
 }
 
 func GetClosedAllowedNodeVersion(major uint64, minor uint64, patch uint64) (string) {
@@ -201,4 +226,4 @@ func GetSupportedNodeFrameworks() []string {
 }
 
 var defaultNodeVersion = "4.5.0"
-var allowedNodeVersions = []string {}
+var allowedNodeVersions = []string {"4.5.0"}

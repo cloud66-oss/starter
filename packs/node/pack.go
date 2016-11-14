@@ -18,7 +18,7 @@ func (p *Pack) LanguageVersion() string {
 
 
 func (p *Pack) FilesToBeAnalysed() [] string {
-	return []string{ "package.json", "Procfile" }
+	return []string{ "package.json", "Procfile", ".meteor/release"}
 }
 
 func (p *Pack) Framework() string {
@@ -30,7 +30,12 @@ func (p *Pack) FrameworkVersion() string {
 }
 
 func (p *Pack) GetSupportedLanguageVersions() []string {
-	return p.Analysis.SupportedLanguageVersions
+	if p.Analysis != nil {	
+		return p.Analysis.SupportedLanguageVersions
+	} else {
+		return common.GetAllowedNodeVersions()
+	}
+
 }
 
 func (p *Pack) SetSupportedLanguageVersions(versions []string) {
