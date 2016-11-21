@@ -150,9 +150,11 @@ func (a *API) dockerfiles(w rest.ResponseWriter, r *rest.Request) {
 
 		version := struct {
 			Version  string
+			Framework string
 			Packages *common.Lister
 		}{
 			Version:  "latest",
+			Framework: "express",
 			Packages: common.NewLister(),
 		}
 
