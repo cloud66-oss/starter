@@ -3,5 +3,7 @@ starter:
   build: .
   volumes:
     - ${PWD}:/usr/local/go/src/github.com/cloud66/starter
-  ports:
-    - 9091:9090
+    - ${HOME}/.docker/machine/machines/default:/usr/local/docker/default
+  environment:
+    - DOCKER_HOST=$DOCKER_HOST
+    - DOCKER_CERT_PATH=/usr/local/docker/default

@@ -17,7 +17,6 @@ type Analyzer struct {
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.Gemfile = filepath.Join(a.RootDir, "Gemfile")
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
-
 	if err != nil {
 		return nil, err
 	}
@@ -26,10 +25,10 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	dbs := a.ConfirmDatabases(a.FindDatabases())
 	envVars := a.EnvVars()
 	packages := a.GuessPackages()
-	framework := a.GuessFramework()
 	a.CheckNotSupportedPackages(packages)
 
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
+
 
 	// inject all the services with the databases used in the infrastructure
 	for _, service := range services {
@@ -45,13 +44,13 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 			PackName:  a.GetPack().Name(),
 			GitBranch: gitBranch,
 			GitURL:    gitURL,
-			Framework: framework,
 			Messages:  a.Messages},
 		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
-		ServiceYAMLContext:       &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
-		DockerfileContext:        &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
+		ServiceYAMLContext: &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
+		DockerfileContext:  &DockerfileContext{packs.DockerfileContextBase{Version: version, Packages: packages}}}
 	return analysis, nil
 }
+
 
 func (a *Analyzer) FillServices(services *[]*common.Service) error {
 	service := a.GetOrCreateWebService(services)
@@ -100,14 +99,6 @@ func (a *Analyzer) detectWebServer(command string) (hasFound bool, server packs.
 	return a.AnalyzerBase.DetectWebServer(a, command, servers)
 }
 
-func (a *Analyzer) GuessFramework() string {
-	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
-	if isRails {
-		return "rails"
-	} 
-	return ""
-}
-
 func (a *Analyzer) GuessPackages() *common.Lister {
 	packages := common.NewLister()
 	common.PrintlnL2("Analyzing dependencies")
@@ -133,7 +124,7 @@ func (a *Analyzer) FindVersion() string {
 	return a.ConfirmVersion(foundRuby, rubyVersion, "latest")
 }
 
-func (a *Analyzer) FindDatabases() []common.Database {
+func (a *Analyzer) FindDatabases() []common.Database  {
 	dbs := []common.Database{}
 
 	if hasMysql, _ := common.GetGemVersion(a.Gemfile, "mysql2"); hasMysql {

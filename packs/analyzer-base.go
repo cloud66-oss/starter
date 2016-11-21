@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
 	"github.com/cloud66/starter/common"
 )
 
@@ -16,29 +17,18 @@ type AnalyzerBase struct {
 	Environment  string
 	ShouldPrompt bool
 
-	GitURL 		string
-	GitBranch 	string
-
 	Messages common.Lister
 }
 
 func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
-	hasGit := common.HasGit(a.RootDir)
-	if hasGit {
-		gitURL := common.RemoteGitUrl(a.RootDir)
-		gitBranch := common.LocalGitBranch(a.RootDir)
-		buildRoot, err := common.PathRelativeToGitRoot(a.RootDir)
-		if err != nil {
-			return "", "", "", err
-		} else {
-			return gitURL, gitBranch, buildRoot, nil
-		}
-	} 
-	if a.GitURL != "" && a.GitBranch != "" {
-		return a.GitURL, a.GitBranch, ".", nil
-	} else {
-		return "", "", ".", nil
+	gitURL := common.RemoteGitUrl(a.RootDir)
+	gitBranch := common.LocalGitBranch(a.RootDir)
+	buildRoot, err := common.PathRelativeToGitRoot(a.RootDir)
+	if err != nil {
+		return "", "", "", err
 	}
+
+	return gitURL, gitBranch, buildRoot, nil
 }
 
 func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Database {
@@ -203,7 +193,7 @@ func (a *AnalyzerBase) refineServices(services *[]*common.Service) {
 
 func (a *AnalyzerBase) inheritProjectContext(services *[]*common.Service, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) {
 	for _, service := range *services {
-		//service.EnvVars = envVars
+		service.EnvVars = envVars
 		service.GitBranch = gitBranch
 		service.GitRepo = gitURL
 		service.BuildRoot = buildRoot

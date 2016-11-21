@@ -6,7 +6,6 @@ MAINTAINER Daniel van Gils
 RUN go get github.com/mitchellh/gox
 
 #gat all the go testing stuff
-RUN go get github.com/tools/godep
 RUN go get github.com/onsi/ginkgo/ginkgo
 RUN go get github.com/onsi/gomega
 
