@@ -11,8 +11,8 @@ custom_web:
   - redis
   - redis:redis.cloud66.local
   environment:
-    - RAILS_ENV=production
-    - RACK_ENV=production
+  - RAILS_ENV=production
+  - RACK_ENV=production
 worker:
   build: test/ruby/rails_jobs_unicorn_redis_postgresql/src/
   command: bundle exec sidekiq
@@ -22,8 +22,8 @@ worker:
   - redis
   - redis:redis.cloud66.local
   environment:
-    - RAILS_ENV=production
-    - RACK_ENV=production
+  - RAILS_ENV=production
+  - RACK_ENV=production
 postgresql:
   image: postgresql
 redis:

@@ -11,8 +11,8 @@ web:
   - mongo
   - mongo:mongodb.cloud66.local
   environment:
-    - RAILS_ENV=production
-    - RACK_ENV=production
+  - RAILS_ENV=production
+  - RACK_ENV=production
 redis:
   image: redis
 mongo:

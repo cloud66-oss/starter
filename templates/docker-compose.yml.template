@@ -6,7 +6,7 @@
   {{if .Ports}}
   ports:
     {{range .Ports}}
- 	    {{if eq .Container "80"}}
+      {{if eq .Container "80"}}
   - "3000:{{.Container}}"
       {{else}}
   - "{{.Container}}:{{.Container}}"
@@ -15,10 +15,10 @@
   {{end}}
   {{if .Databases}}	
   links:
-  	{{range .Databases}}
+    {{range .Databases}}
   - {{.Name}}
   - {{.Name}}:{{.Name}}.cloud66.local
-	  {{end}}
+    {{end}}
   {{end}}
   {{if .EnvVars}}
   environment:{{range .EnvVars}}

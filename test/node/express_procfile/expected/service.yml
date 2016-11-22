@@ -8,6 +8,6 @@ services:
     command: node server.js
     build_root: test/node/express_procfile/src/
     ports:
-      - container: 3000
-        http: 80
-        https: 443
+      - container: 3001
+    env_vars:
+      PORT: 3001

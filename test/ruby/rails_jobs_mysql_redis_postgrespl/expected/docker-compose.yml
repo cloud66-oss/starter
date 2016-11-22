@@ -11,8 +11,8 @@ worker:
   - redis
   - redis:redis.cloud66.local
   environment:
-    - RAILS_ENV=production
-    - RACK_ENV=production
+  - RAILS_ENV=production
+  - RACK_ENV=production
 web:
   build: test/ruby/15333/src/
   command: bundle exec rails server -e _env:RAILS_ENV
@@ -26,8 +26,8 @@ web:
   - redis
   - redis:redis.cloud66.local
   environment:
-    - RAILS_ENV=production
-    - RACK_ENV=production
+  - RAILS_ENV=production
+  - RACK_ENV=production
 mysql:
   image: mysql
 postgresql:

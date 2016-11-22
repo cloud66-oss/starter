@@ -10,8 +10,3 @@ ADD Gemfile* $APP_HOME/
 RUN bundle install
 
 ADD . $APP_HOME
-
-{{if .Command}
-#run the command for this service
-CMD {{.Command}}
-{{end}}

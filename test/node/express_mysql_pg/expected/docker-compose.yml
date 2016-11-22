@@ -10,6 +10,8 @@ web:
   - mysql:mysql.cloud66.local
   - postgresql
   - postgresql:postgresql.cloud66.local
+  environment:
+  - PORT=3000
 mysql:
   image: mysql
 postgresql:
