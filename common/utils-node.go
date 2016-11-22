@@ -94,7 +94,7 @@ func GetNodeVersion(packageJsonFile string) (bool, []string) {
 func GetMeteorVersion(meteorReleaseFile string) (bool, string) {
     file, err := os.Open(meteorReleaseFile)
     if err != nil {
-        return false, "not detected"
+        return false, "version not detected"
     }
     defer file.Close()
 
@@ -108,10 +108,10 @@ func GetMeteorVersion(meteorReleaseFile string) (bool, string) {
     }
 
     if err := scanner.Err(); err != nil {
-        return false, "not detected"
+        return false, "version not detected"
     }
 
-	return false, "not detected"
+	return false, "version not detected"
 }
 
 func GetClosedAllowedNodeVersion(major uint64, minor uint64, patch uint64) (string) {
@@ -225,5 +225,5 @@ func GetSupportedNodeFrameworks() []string {
 	return []string {"meteor-node-stubs", "keystone", "express", "loopback", "restify", "actionhero", "hapi", "socket.io", "koa"}
 }
 
-var defaultNodeVersion = "4.5.0"
-var allowedNodeVersions = []string {"4.5.0"}
+var defaultNodeVersion = "4.6"
+var allowedNodeVersions = []string {"4.6"}

@@ -1,17 +1,32 @@
 {{if eq .Framework "meteor"}}
 FROM node:{{.Version}}
 
-RUN curl -sL https://install.meteor.com | sed s/--progress-bar/-sL/g | /bin/sh
+# setup user home dir
+ENV USER node
+ENV HOME_DIR /home/$USER
+RUN mkdir /home/$USER & chown $USER:$USER /home/$USER
 
+# setup application dir
 ENV APP_HOME /app
-RUN mkdir $APP_HOME
+RUN mkdir $APP_HOME & chown $USER:$USER $APP_HOME
 
+# run next commands as user deamon
+USER $USER
+ENV HOME /home/$USER
+ENV PATH $PATH:$HOME/.meteor
+
+# install meteor (for building distribution)
+RUN curl -sL https://install.meteor.com | /bin/sh
+
+# setup temp dir for building meteor distribution
+USER root
 ENV APP_TMP /tmp
-
 WORKDIR $APP_TMP
+COPY . $APP_TMP
+RUN chown -R $USER:$USER $APP_TMP
+USER $USER
 
-ADD . $APP_TMP
-
+# set NPM stuff
 ENV NODE_ENV production
 ENV NPM_CONFIG_LOGLEVEL warn
 ENV ROOT_URL http://www.example.com
@@ -21,9 +36,11 @@ ENV ROOT_URL http://www.example.com
 # RUN npm config set strict-ssl false
 # RUN npm config set registry $CUSTOM_REGISTRY
 
-RUN meteor build --unsafe-perm --allow-superuser --architecture=os.linux.x86_64 build
+# build the distribution and deploy in app dir
+RUN meteor build --architecture=os.linux.x86_64 build
 RUN tar -xf build/tmp.tar.gz --strip-components=1 -C $APP_HOME
 
+# install NPM packages
 WORKDIR $APP_HOME
 RUN cd programs/server && npm install
 {{else}}
