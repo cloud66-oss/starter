@@ -225,5 +225,5 @@ func GetSupportedNodeFrameworks() []string {
 	return []string {"meteor-node-stubs", "keystone", "express", "loopback", "restify", "actionhero", "hapi", "socket.io", "koa"}
 }
 
-var defaultNodeVersion = "4.5.0"
-var allowedNodeVersions = []string {"4.5.0"}
+var defaultNodeVersion = "4.6"
+var allowedNodeVersions = []string {"4.6"}

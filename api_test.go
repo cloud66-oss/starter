@@ -29,7 +29,7 @@ var _ = Describe("Running Starter in daemon mode", func() {
 		It("should respond with all the supported files", func() {
 			resp, err := resty.R().Get("http://127.0.0.1:9090/analyze/supported")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(resp.Body())).To(Equal(`{"Languages":[{"Name":"ruby","Files":["Gemfile","Procfile","config/database.yml"],"SupportedVersion":null},{"Name":"node","Files":["package.json","Procfile",".meteor/release"],"SupportedVersion":["4.5.0"]},{"Name":"php","Files":["composer.json"],"SupportedVersion":null}]}`))
+			Expect(string(resp.Body())).To(Equal(`{"Languages":[{"Name":"ruby","Files":["Gemfile","Procfile","config/database.yml"],"SupportedVersion":null},{"Name":"node","Files":["package.json","Procfile",".meteor/release"],"SupportedVersion":["4.6"]},{"Name":"php","Files":["composer.json"],"SupportedVersion":null}]}`))
 		})
 	})
 
@@ -223,10 +223,10 @@ var _ = Describe("Running Starter in daemon mode", func() {
 			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Language = "node"
-			analysis.LanguageVersion = "4.5.0"
+			analysis.LanguageVersion = "4.6"
 			analysis.Framework = "express"
 			analysis.FrameworkVersion = "4.13.0"
-			analysis.SupportedLanguageVersions = []string{"4.5.0"}
+			analysis.SupportedLanguageVersions = []string{"4.6"}
 			analysis.Warnings = nil
 			analysis.Dockerfile = string(file)
 			analysis.StartCommands = []string{"node server.js"}
@@ -249,10 +249,10 @@ var _ = Describe("Running Starter in daemon mode", func() {
 			analysis := analysisResult{}
 			analysis.Ok = true
 			analysis.Language = "node"
-			analysis.LanguageVersion = "4.5.0"
+			analysis.LanguageVersion = "4.6"
 			analysis.Framework = "express"
 			analysis.FrameworkVersion = "4.14.0"
-			analysis.SupportedLanguageVersions = []string{"4.5.0"}
+			analysis.SupportedLanguageVersions = []string{"4.6"}
 			analysis.Warnings = []string{"No Procfile was detected. It is strongly advised to add one in order to specify the commands to run your services."}
 			analysis.Dockerfile = string(file)
 			analysis.StartCommands = []string{"npm start"}
