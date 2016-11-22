@@ -94,7 +94,7 @@ func GetNodeVersion(packageJsonFile string) (bool, []string) {
 func GetMeteorVersion(meteorReleaseFile string) (bool, string) {
     file, err := os.Open(meteorReleaseFile)
     if err != nil {
-        return false, "not detected"
+        return false, "version not detected"
     }
     defer file.Close()
 
@@ -108,10 +108,10 @@ func GetMeteorVersion(meteorReleaseFile string) (bool, string) {
     }
 
     if err := scanner.Err(); err != nil {
-        return false, "not detected"
+        return false, "version not detected"
     }
 
-	return false, "not detected"
+	return false, "version not detected"
 }
 
 func GetClosedAllowedNodeVersion(major uint64, minor uint64, patch uint64) (string) {
