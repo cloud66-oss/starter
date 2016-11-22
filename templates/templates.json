@@ -13,3 +13,4 @@
     { "name": "docker-compose.yml.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/docker-compose.yml.template"}
   ]
 }
+
