@@ -9,7 +9,7 @@ custom_web:
   - mysql
   - mysql:mysql.cloud66.local
   environment:
-    - RAILS_ENV=production
-    - RACK_ENV=production
+  - RAILS_ENV=production
+  - RACK_ENV=production
 mysql:
   image: mysql

@@ -203,7 +203,9 @@ func (a *AnalyzerBase) refineServices(services *[]*common.Service) {
 
 func (a *AnalyzerBase) inheritProjectContext(services *[]*common.Service, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) {
 	for _, service := range *services {
-		//service.EnvVars = envVars
+		if service.EnvVars == nil {
+			service.EnvVars = envVars
+		}
 		service.GitBranch = gitBranch
 		service.GitRepo = gitURL
 		service.BuildRoot = buildRoot

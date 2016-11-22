@@ -8,5 +8,7 @@ web:
   links:
   - mysql
   - mysql:mysql.cloud66.local
+  environment:
+  - PORT=3000
 mysql:
   image: mysql
