@@ -1,6 +1,7 @@
 package node
 
 import "github.com/cloud66/starter/packs"
+import "github.com/cloud66/starter/common"
 
 type Pack struct {
 	packs.PackBase
@@ -11,17 +12,49 @@ func (p *Pack) Name() string {
 	return "node"
 }
 
+func (p *Pack) LanguageVersion() string {
+	return p.Analysis.LanguageVersion
+}
+
+
+func (p *Pack) FilesToBeAnalysed() [] string {
+	return []string{ "package.json", "Procfile", ".meteor/release"}
+}
+
+func (p *Pack) Framework() string {
+	return p.Analysis.Framework
+}
+
+func (p *Pack) FrameworkVersion() string {
+	return p.Analysis.FrameworkVersion
+}
+
+func (p *Pack) GetSupportedLanguageVersions() []string {
+	if p.Analysis != nil {	
+		return p.Analysis.SupportedLanguageVersions
+	} else {
+		return common.GetAllowedNodeVersions()
+	}
+
+}
+
+func (p *Pack) SetSupportedLanguageVersions(versions []string) {
+	common.SetAllowedNodeVersions(versions)
+}
+
 func (p *Pack) Detector() packs.Detector {
 	return &Detector{PackElement: packs.PackElement{Pack: p}}
 }
 
-func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool) error {
+func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool, git_repo string, git_branch string) error {
 	var err error
 	a := Analyzer{
 		AnalyzerBase: packs.AnalyzerBase{
 			PackElement:  packs.PackElement{Pack: p},
 			RootDir:      rootDir,
 			ShouldPrompt: shouldPrompt,
+			GitURL: git_repo,
+			GitBranch: git_branch,
 			Environment:  environment}}
 	p.Analysis, err = a.Analyze()
 	return err
@@ -62,4 +95,12 @@ func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shou
 
 func (p *Pack) GetMessages() []string {
 	return p.Analysis.Messages.Items
+}
+
+func (p *Pack) GetDatabases() []string {
+	return  p.Analysis.Databases
+}
+
+func (p *Pack) GetStartCommands() []string {
+	return  p.Analysis.ListOfStartCommands
 }
