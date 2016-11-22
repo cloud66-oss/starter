@@ -2,7 +2,7 @@
 FROM node:{{.Version}}
 
 #setup user home dir
-ENV USER daemon
+ENV USER node
 ENV HOME_DIR /home/$USER
 RUN mkdir /home/$USER & chown $USER:$USER /home/$USER
 
