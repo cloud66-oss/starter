@@ -11,6 +11,8 @@ services:
       - container: 3000
         http: 80
         https: 443
+     env_vars:
+        PORT: 3000
 
 databases:
   - mysql
