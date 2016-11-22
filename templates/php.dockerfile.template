@@ -42,3 +42,7 @@ RUN composer install --no-interaction
 #change ownership
 RUN chown -R www-data:www-data $APP_HOME
 
+{{if .Command}
+#run the command for this service
+CMD {{.Command}}
+{{end}}

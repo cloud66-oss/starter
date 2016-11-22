@@ -26,6 +26,11 @@ RUN tar -xf build/tmp.tar.gz --strip-components=1 -C $APP_HOME
 
 WORKDIR $APP_HOME
 RUN cd programs/server && npm install
+
+{{if .Command}
+#run the command for this service
+CMD {{.Command}}
+{{end}}
 {{else}}
 FROM node:{{.Version}}
 
@@ -44,4 +49,9 @@ ENV NPM_CONFIG_LOGLEVEL warn
 # RUN npm config set registry $CUSTOM_REGISTRY
 
 RUN npm install
+
+{{if .Command}
+#run the command for this service
+CMD {{.Command}}
+{{end}}
 {{end}}
