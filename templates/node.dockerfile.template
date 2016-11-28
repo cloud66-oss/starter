@@ -20,6 +20,13 @@ RUN curl -sL https://install.meteor.com | /bin/sh
 
 # setup temp dir for building meteor distribution
 USER root
+
+#install required packages (magick)
+RUN apt-get update 
+RUN apt-get install apt-utils -y
+RUN apt-get install imagemagick libmagick++-dev  libmagick++-6.q16-dev -y
+ENV PATH /usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16:$PATH
+
 ENV APP_TMP /tmp
 WORKDIR $APP_TMP
 COPY . $APP_TMP
@@ -36,7 +43,7 @@ ENV ROOT_URL http://www.example.com
 # RUN npm config set strict-ssl false
 # RUN npm config set registry $CUSTOM_REGISTRY
 
-#install npm packages dirst
+#install npm packages first
 RUN meteor npm install
 
 # build the distribution and deploy in app dir
