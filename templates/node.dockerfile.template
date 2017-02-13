@@ -4,11 +4,13 @@ FROM node:{{.Version}}
 # setup user home dir
 ENV USER node
 ENV HOME_DIR /home/$USER
-RUN mkdir /home/$USER & chown $USER:$USER /home/$USER
+RUN mkdir -pv /home/$USER 
+RUN chown $USER:$USER /home/$USER
 
 # setup application dir
 ENV APP_HOME /app
-RUN mkdir $APP_HOME & chown $USER:$USER $APP_HOME
+RUN mkdir -pv $APP_HOME
+RUN chown $USER:$USER $APP_HOME
 
 # run next commands as user deamon
 USER $USER
@@ -52,12 +54,13 @@ RUN tar -xf build/tmp.tar.gz --strip-components=1 -C $APP_HOME
 
 # install NPM packages
 WORKDIR $APP_HOME
-RUN cd programs/server && npm install
+RUN cd programs/server
+RUN npm install
 {{else}}
 FROM node:{{.Version}}
 
 ENV APP_HOME /app
-RUN mkdir $APP_HOME
+RUN mkdir -pv $APP_HOME
 WORKDIR $APP_HOME
 
 ADD . $APP_HOME
