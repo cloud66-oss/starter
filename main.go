@@ -83,6 +83,7 @@ var (
 	serviceYAMLTemplateDir       string
 	dockerfileTemplateDir        string
 	dockerComposeYAMLTemplateDir string
+	directlyTransformed          bool
 )
 
 const (
@@ -316,10 +317,12 @@ func main() {
 		common.PrintError(err.Error())
 		os.Exit(1)
 	}
-	if len(result.Warnings) > 0 {
-		common.PrintlnWarning("Warnings:")
-		for _, warning := range result.Warnings {
-			common.PrintlnWarning(" * " + warning)
+	if !directlyTransformed {
+		if len(result.Warnings) > 0 {
+			common.PrintlnWarning("Warnings:")
+			for _, warning := range result.Warnings {
+				common.PrintlnWarning(" * " + warning)
+			}
 		}
 	}
 
@@ -388,24 +391,6 @@ type Port struct {
 	Mode      string `yaml:"mode,omitempty"`
 }
 
-//handle dynamic keys and other edge cases
-/*
-func (e *Docker_compose) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
-       var services map[string]Service
-
-       if err := unmarshal(&services); err != nil {
-	       // Here we expect an error because a boolean cannot be converted to a
-	       // a MajorVersion
-	       if _, ok := err.(*yaml.TypeError); !ok {
-		       return err
-	       }
-       }
-
-       e.Services = services
-       return nil
-}
-*/
 func (e *Build_Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	var build Build
@@ -573,8 +558,7 @@ func transform(filename string, formatTarget string) (bool, error) {
 		checkError(err)
 		defer file.Close()
 	} else {
-		common.PrintError("File %s already exists!\n", formatTarget)
-		return false, err
+		common.PrintError("File %s already exists. Will be overwritten.\n", formatTarget)
 	}
 
 	//HANDLE ENV_VARS
@@ -662,16 +646,6 @@ func transform(filename string, formatTarget string) (bool, error) {
 
 	yamlFile, err := ioutil.ReadFile(auxFile)
 
-	//d := make(map[string]Docker_compose)
-	//s := make(map[string]map[string]common.Service)
-	dbs := []string{}
-	isDB := false
-	//var serviceyml Serviceyml
-	/*
-		if err := yaml.Unmarshal([]byte(yamlFile), &d); err != nil {
-			fmt.Println(err.Error())
-		}
-	*/
 	dockerCompose := Docker_compose{
 		Services: make(map[string]Service),
 		Version:  "",
@@ -682,240 +656,26 @@ func transform(filename string, formatTarget string) (bool, error) {
 		Dbs:      make([]string, 0),
 	}
 
-
 	if err := yaml.Unmarshal([]byte(yamlFile), &dockerCompose); err != nil {
 		fmt.Println(err.Error())
 	}
 
-
 	if len(dockerCompose.Services) == 0 {
-		d:= make(map[string]Service)
+		d := make(map[string]Service)
 		err = yaml.Unmarshal([]byte(yamlFile), &d)
 		checkError(err)
 
+		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(d)
 
+	} else {
 
-
-		for k, v := range d {
-			var current_db string
-			isDB = false
-
-			if v.Image != "" {
-				current_db, isDB = checkDB(v.Image)
-			}
-			if isDB {
-				dbs = append(dbs, current_db)
-			}
-			if !isDB {
-				var longSyntaxPorts []string
-				longSyntaxPorts = v.Expose //expose and long syntax for ports dont work together..i think?
-				if len(v.Ports.ShortSyntax) > 0 {
-					for i := 0; i < len(v.Ports.ShortSyntax); i++ {
-						longSyntaxPorts = append(longSyntaxPorts, v.Ports.ShortSyntax[i])
-					}
-				} else {
-					longSyntaxPorts = []string{}
-					for i := 0; i < len(v.Ports.Port); i++ {
-
-						longSyntax := ""
-						longSyntax = "target: " + v.Ports.Port[i].Target + "\n"
-
-						if v.Ports.Port[i].Protocol == "udp" {
-							longSyntax += "udp: " + v.Ports.Port[i].Published
-							longSyntaxPorts = append(longSyntaxPorts, longSyntax)
-						} else if v.Ports.Port[i].Protocol == "tcp" {
-							reader := bufio.NewReader(os.Stdin)
-							fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", v.Ports.Port[i].Published)
-							var answer string
-							answer, _ = reader.ReadString('\n')
-							answer = strings.ToUpper(answer)
-							if answer == "TCP\n" {
-								longSyntax += "tcp: " + v.Ports.Port[i].Published
-							} else if answer == "HTTP\n" {
-								longSyntax += "http: " + v.Ports.Port[i].Published
-							} else if answer == "HTTPS\n" {
-								longSyntax += "http: " + v.Ports.Port[i].Published
-							}
-							longSyntaxPorts = append(longSyntaxPorts, longSyntax)
-						}
-
-					}
-				}
-
-				var gitPath string
-				gitPath, err = common.GitRootDir("/")
-
-				hasGit := common.HasGit(gitPath)
-
-				var gitURL, gitBranch, buildRoot string
-				if hasGit {
-					//common.PrintlnWarning("HAS GIT here!")
-					gitURL = common.RemoteGitUrl(gitPath)
-					gitBranch = common.LocalGitBranch(gitPath)
-					buildRoot, err = common.PathRelativeToGitRoot(gitPath)
-				}
-
-				var serviceYamlService common.Service
-				serviceYamlService.GitRepo = gitURL
-				serviceYamlService.GitBranch = gitBranch
-				serviceYamlService.BuildRoot = buildRoot
-				serviceYamlService.BuildCommand = v.Build_Command.Build_Command
-				serviceYamlService.CommandSlice = v.Command.Command
-				serviceYamlService.Image = v.Image
-				serviceYamlService.Requires = v.Depends_on
-				serviceYamlService.Volumes = v.Volumes.Volumes
-				serviceYamlService.Stop_grace = v.Stop_grace_period
-				serviceYamlService.Work_dir = v.Working_dir
-				serviceYamlService.EnvVarsSlice = v.EnvVars
-				serviceYamlService.Tags = v.Labels
-				serviceYamlService.Dockerfile_path = v.Build_Command.Build.Dockerfile
-				serviceYamlService.Privileged = v.Privileged
-				serviceYamlService.Constraints = common.Constraints{
-					Resources: common.Resources{
-						Memory: v.Deploy.Resources.Limits.Memory,
-						Cpu:    v.Deploy.Resources.Limits.Cpus,
-					},
-				}
-				serviceYamlService.PortsShort = longSyntaxPorts
-
-				if v.Env_file.Env_file != nil {
-					var lines []string
-					for i := 0; i < len(v.Env_file.Env_file); i++ {
-						lines = readEnv_file(v.Env_file.Env_file[i])
-						for j := 0; j < len(lines); j++ {
-							serviceYamlService.EnvVarsSlice = append(serviceYamlService.EnvVarsSlice, lines[j])
-						}
-					}
-				}
-
-				//serviceYamlService.EnvVarsSlice = formatEnv_Vars(serviceYamlService.EnvVarsSlice)
-
-				if serviceYamlService.Image != "" {
-					serviceYamlService.GitRepo = ""
-					serviceYamlService.GitBranch = ""
-					serviceYamlService.BuildRoot = ""
-				}
-				// assign stuff via v, k is the service name
-				serviceYaml.Services[k] = serviceYamlService
-
-			}
-
-		}
-		
+		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(dockerCompose.Services)
 	}
-
-
-	for k, v := range dockerCompose.Services {
-		var current_db string
-		isDB = false
-
-		if v.Image != "" {
-			current_db, isDB = checkDB(v.Image)
-		}
-		if isDB {
-			dbs = append(dbs, current_db)
-		}
-		if !isDB {
-			var longSyntaxPorts []string
-			longSyntaxPorts = v.Expose //expose and long syntax for ports dont work together..i think?
-			if len(v.Ports.ShortSyntax) > 0 {
-				for i := 0; i < len(v.Ports.ShortSyntax); i++ {
-					longSyntaxPorts = append(longSyntaxPorts, v.Ports.ShortSyntax[i])
-				}
-			} else {
-				longSyntaxPorts = []string{}
-				for i := 0; i < len(v.Ports.Port); i++ {
-
-					longSyntax := ""
-					longSyntax = "target: " + v.Ports.Port[i].Target + "\n"
-
-					if v.Ports.Port[i].Protocol == "udp" {
-						longSyntax += "udp: " + v.Ports.Port[i].Published
-						longSyntaxPorts = append(longSyntaxPorts, longSyntax)
-					} else if v.Ports.Port[i].Protocol == "tcp" {
-						reader := bufio.NewReader(os.Stdin)
-						fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", v.Ports.Port[i].Published)
-						var answer string
-						answer, _ = reader.ReadString('\n')
-						answer = strings.ToUpper(answer)
-						if answer == "TCP\n" {
-							longSyntax += "tcp: " + v.Ports.Port[i].Published
-						} else if answer == "HTTP\n" {
-							longSyntax += "http: " + v.Ports.Port[i].Published
-						} else if answer == "HTTPS\n" {
-							longSyntax += "http: " + v.Ports.Port[i].Published
-						}
-						longSyntaxPorts = append(longSyntaxPorts, longSyntax)
-					}
-
-				}
-			}
-
-			var gitPath string
-			gitPath, err = common.GitRootDir("/")
-
-			hasGit := common.HasGit(gitPath)
-
-			var gitURL, gitBranch, buildRoot string
-			if hasGit {
-				//common.PrintlnWarning("HAS GIT here!")
-				gitURL = common.RemoteGitUrl(gitPath)
-				gitBranch = common.LocalGitBranch(gitPath)
-				buildRoot, err = common.PathRelativeToGitRoot(gitPath)
-			}
-
-			var serviceYamlService common.Service
-			serviceYamlService.GitRepo = gitURL
-			serviceYamlService.GitBranch = gitBranch
-			serviceYamlService.BuildRoot = buildRoot
-			serviceYamlService.BuildCommand = v.Build_Command.Build_Command
-			serviceYamlService.CommandSlice = v.Command.Command
-			serviceYamlService.Image = v.Image
-			serviceYamlService.Requires = v.Depends_on
-			serviceYamlService.Volumes = v.Volumes.Volumes
-			serviceYamlService.Stop_grace = v.Stop_grace_period
-			serviceYamlService.Work_dir = v.Working_dir
-			serviceYamlService.EnvVarsSlice = v.EnvVars
-			serviceYamlService.Tags = v.Labels
-			serviceYamlService.Dockerfile_path = v.Build_Command.Build.Dockerfile
-			serviceYamlService.Privileged = v.Privileged
-			serviceYamlService.Constraints = common.Constraints{
-				Resources: common.Resources{
-					Memory: v.Deploy.Resources.Limits.Memory,
-					Cpu:    v.Deploy.Resources.Limits.Cpus,
-				},
-			}
-			serviceYamlService.PortsShort = longSyntaxPorts
-
-			if v.Env_file.Env_file != nil {
-				var lines []string
-				for i := 0; i < len(v.Env_file.Env_file); i++ {
-					lines = readEnv_file(v.Env_file.Env_file[i])
-					for j := 0; j < len(lines); j++ {
-						serviceYamlService.EnvVarsSlice = append(serviceYamlService.EnvVarsSlice, lines[j])
-					}
-				}
-			}
-
-			//serviceYamlService.EnvVarsSlice = formatEnv_Vars(serviceYamlService.EnvVarsSlice)
-
-			if serviceYamlService.Image != "" {
-				serviceYamlService.GitRepo = ""
-				serviceYamlService.GitBranch = ""
-				serviceYamlService.BuildRoot = ""
-			}
-			// assign stuff via v, k is the service name
-			serviceYaml.Services[k] = serviceYamlService
-
-		}
-
-	}
-	if len(dbs) != 0 {
-		if dbs[len(dbs)-1] == "" {
-			dbs = dbs[:len(dbs)-1]
+	if len(serviceYaml.Dbs) != 0 {
+		if serviceYaml.Dbs[len(serviceYaml.Dbs)-1] == "" {
+			serviceYaml.Dbs = serviceYaml.Dbs[:len(serviceYaml.Dbs)-1]
 		}
 	}
-	serviceYaml.Dbs = dbs
 
 	file, err := yaml.Marshal(serviceYaml)
 
@@ -994,6 +754,128 @@ func transform(filename string, formatTarget string) (bool, error) {
 
 }
 
+func copyToServiceYML(d map[string]Service) (map[string]common.Service, []string) {
+
+	serviceYaml := Serviceyml{
+		Services: make(map[string]common.Service),
+		Dbs:      make([]string, 0),
+	}
+	var isDB bool
+	var err error
+	var dbs []string
+
+	directlyTransformed = true
+	for k, v := range d {
+		var current_db string
+		isDB = false
+
+		if v.Image != "" {
+			current_db, isDB = checkDB(v.Image)
+		}
+		if isDB {
+			dbs = append(dbs, current_db)
+		}
+		if !isDB {
+			var longSyntaxPorts []string
+			longSyntaxPorts = v.Expose //expose and long syntax for ports dont work together..i think?
+			if len(v.Ports.ShortSyntax) > 0 {
+				for i := 0; i < len(v.Ports.ShortSyntax); i++ {
+					longSyntaxPorts = append(longSyntaxPorts, v.Ports.ShortSyntax[i])
+				}
+			} else {
+				longSyntaxPorts = []string{}
+				for i := 0; i < len(v.Ports.Port); i++ {
+
+					longSyntax := ""
+					longSyntax = "target: " + v.Ports.Port[i].Target + "\n"
+
+					if v.Ports.Port[i].Protocol == "udp" {
+						longSyntax += "udp: " + v.Ports.Port[i].Published
+						longSyntaxPorts = append(longSyntaxPorts, longSyntax)
+					} else if v.Ports.Port[i].Protocol == "tcp" {
+						reader := bufio.NewReader(os.Stdin)
+						fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", v.Ports.Port[i].Published)
+						var answer string
+						answer, _ = reader.ReadString('\n')
+						answer = strings.ToUpper(answer)
+						if answer == "TCP\n" {
+							longSyntax += "tcp: " + v.Ports.Port[i].Published
+						} else if answer == "HTTP\n" {
+							longSyntax += "http: " + v.Ports.Port[i].Published
+						} else if answer == "HTTPS\n" {
+							longSyntax += "http: " + v.Ports.Port[i].Published
+						}
+						longSyntaxPorts = append(longSyntaxPorts, longSyntax)
+					}
+
+				}
+			}
+
+			var gitPath string
+			gitPath, err = common.GitRootDir("/")
+			//checkError(err)
+			if err != nil {
+
+			}
+			hasGit := common.HasGit(gitPath)
+
+			var gitURL, gitBranch, buildRoot string
+			if hasGit {
+				//common.PrintlnWarning("HAS GIT here!")
+				gitURL = common.RemoteGitUrl(gitPath)
+				gitBranch = common.LocalGitBranch(gitPath)
+				buildRoot, err = common.PathRelativeToGitRoot(gitPath)
+			}
+
+			var serviceYamlService common.Service
+			serviceYamlService.GitRepo = gitURL
+			serviceYamlService.GitBranch = gitBranch
+			serviceYamlService.BuildRoot = buildRoot
+			serviceYamlService.BuildCommand = v.Build_Command.Build_Command
+			serviceYamlService.CommandSlice = v.Command.Command
+			serviceYamlService.Image = v.Image
+			serviceYamlService.Requires = v.Depends_on
+			serviceYamlService.Volumes = v.Volumes.Volumes
+			serviceYamlService.Stop_grace = v.Stop_grace_period
+			serviceYamlService.Work_dir = v.Working_dir
+			serviceYamlService.EnvVarsSlice = v.EnvVars
+			serviceYamlService.Tags = v.Labels
+			serviceYamlService.Dockerfile_path = v.Build_Command.Build.Dockerfile
+			serviceYamlService.Privileged = v.Privileged
+			serviceYamlService.Constraints = common.Constraints{
+				Resources: common.Resources{
+					Memory: v.Deploy.Resources.Limits.Memory,
+					Cpu:    v.Deploy.Resources.Limits.Cpus,
+				},
+			}
+			serviceYamlService.PortsShort = longSyntaxPorts
+
+			if v.Env_file.Env_file != nil {
+				var lines []string
+				for i := 0; i < len(v.Env_file.Env_file); i++ {
+					lines = readEnv_file(v.Env_file.Env_file[i])
+					for j := 0; j < len(lines); j++ {
+						serviceYamlService.EnvVarsSlice = append(serviceYamlService.EnvVarsSlice, lines[j])
+					}
+				}
+			}
+
+			//serviceYamlService.EnvVarsSlice = formatEnv_Vars(serviceYamlService.EnvVarsSlice)
+
+			if serviceYamlService.Image != "" {
+				serviceYamlService.GitRepo = ""
+				serviceYamlService.GitBranch = ""
+				serviceYamlService.BuildRoot = ""
+			}
+			// assign stuff via v, k is the service name
+			serviceYaml.Services[k] = serviceYamlService
+
+		}
+
+	}
+	return serviceYaml.Services, dbs
+}
+
 func formatCpu(cpuString string) string {
 	var i, auxInt, p int
 	var auxString string
@@ -1070,10 +952,6 @@ func formatEnv_Vars(env string) string {
 			env = env[:j] + " " + env[j+1:]
 		}
 	}
-	/*
-	if env[i] == "" {
-		env = append(env[:i], env[i+1:]...)
-	}*/
 
 	return env
 }
@@ -1190,6 +1068,29 @@ func analyze(
 		dockerComposeYAMLTemplateDir = templates
 	}
 
+	dockercomposePath := filepath.Join(path, "docker-compose.yml")
+	serviceYAMLPath := filepath.Join(path, "service.yml")
+	if _, err := os.Stat(serviceYAMLPath); err == nil {
+		// file exists. should we overwrite?
+		if !overwrite {
+			return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
+		} else {
+			if _, err := os.Stat(dockercomposePath); err == nil {
+				// docker-compose.yml exists
+				_, err = transform(dockercomposePath, "service.yml")
+				return nil, err
+			}
+		}
+
+	} else {
+
+		if _, err := os.Stat(dockercomposePath); err == nil {
+			// docker-compose.yml exists
+			_, err = transform(dockercomposePath, "service.yml")
+			return nil, err
+		}
+	}
+
 	common.PrintlnTitle("Detecting framework for the project at %s", path)
 
 	pack, err := Detect(path)
@@ -1203,14 +1104,6 @@ func analyze(
 		// file exists. should we overwrite?
 		if !overwrite {
 			return nil, errors.New("Dockerfile already exists. Use overwrite flag to overwrite it")
-		}
-	}
-
-	serviceYAMLPath := filepath.Join(path, "service.yml")
-	if _, err := os.Stat(serviceYAMLPath); err == nil {
-		// file exists. should we overwrite?
-		if !overwrite {
-			return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
 		}
 	}
 
