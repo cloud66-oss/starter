@@ -10,9 +10,7 @@ import (
 	"log"
 
 	"github.com/cloud66/starter/common"
-
 )
-
 
 //main transformation format function
 func Transformer(filename string, formatTarget string, directlyTransformed bool) (bool, error) {
@@ -149,8 +147,6 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 
 }
 
-
-
 func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (map[string]common.Service, []string) {
 
 	serviceYaml := Serviceyml{
@@ -252,7 +248,9 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 				for i := 0; i < len(v.Env_file.Env_file); i++ {
 					lines = readEnv_file(v.Env_file.Env_file[i])
 					for j := 0; j < len(lines); j++ {
-						serviceYamlService.EnvVarsSlice = append(serviceYamlService.EnvVarsSlice, lines[j])
+						if lines[j]!= "" {
+							serviceYamlService.EnvVarsSlice = append(serviceYamlService.EnvVarsSlice, lines[j])
+						}
 					}
 				}
 			}

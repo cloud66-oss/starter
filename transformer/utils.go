@@ -86,7 +86,9 @@ func formatEnv_Vars(env string) string {
 			env = env[:j] + " " + env[j+1:]
 		}
 	}
-
+	if strings.Contains(env, "\"\"") {
+		return ""
+	}
 	return env
 }
 
@@ -152,7 +154,7 @@ func checkError(err error) {
 	}
 }
 
-func accomodateEnvVars(filename string) (string, string, string){
+func accomodateEnvVars(filename string) (string, string, string) {
 
 	dockerComp, _ := os.Open(filename)
 
