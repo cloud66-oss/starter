@@ -17,24 +17,7 @@ func finalFormat(lines []string) string {
 		if strings.Contains(lines[i], "cpu:") {
 			lines[i] = formatCpu(lines[i])
 		}
-		if strings.Contains(lines[i], "env_vars:") {
-			text += lines[i] + "\n"
-			for i = i + 1; i < len(lines); i++ {
-				if isEnv(lines[i]) {
-					lines[i] = formatEnv_Vars(lines[i])
-					text += lines[i] + "\n"
-				} else {
-					text += lines[i] + "\n"
-					break
-				}
-			}
-		} else {
-			if lines[i] == "    - |-" {
-				lines[i] = "    -"
-			}
-			text += lines[i] + "\n"
-		}
-
+		text += lines[i] + "\n"
 	}
 	return text
 }

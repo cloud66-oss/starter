@@ -147,7 +147,7 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 					} else if v.Ports.Port[i].Protocol == "tcp" {
 						reader := bufio.NewReader(os.Stdin)
 						fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", v.Ports.Port[i].Published)
-						var answer string
+						var answer string //tvbot
 						answer, _ = reader.ReadString('\n')
 						answer = strings.ToUpper(answer)
 						if answer == "TCP\n" {
