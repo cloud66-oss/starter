@@ -1,4 +1,4 @@
-package main
+package transformer
 
 import "github.com/cloud66/starter/common"
 

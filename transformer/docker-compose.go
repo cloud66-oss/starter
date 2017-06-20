@@ -1,9 +1,9 @@
-package main
+package transformer
 
 import "github.com/cloud66/starter/common"
 
 type Docker_compose struct {
-	Services map[string]Service
+	Services map[string]docker_Service
 	Version string
 }
 
