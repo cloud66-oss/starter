@@ -28,7 +28,8 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 	}
 
 	//HANDLE ENV_VARS
-	auxFile, dockerText, initialDockerText := accomodateEnvVars(filename)
+	auxFile, dockerText := accomodateEnvVars(filename)
+
 	dockerComp, _ := os.Create(auxFile)
 	_, err = dockerComp.WriteString(dockerText)
 
@@ -99,46 +100,15 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
-	text := ""
-	for i := 0; i < len(lines); i++ {
-		if strings.Contains(lines[i], "cpu:") {
-			lines[i] = formatCpu(lines[i])
-		}
-		if strings.Contains(lines[i], "env_vars:") {
-			text += lines[i] + "\n"
-			for i = i + 1; i < len(lines); i++ {
-				if isEnv(lines[i]) {
-					lines[i] = formatEnv_Vars(lines[i])
-					text += lines[i] + "\n"
-				} else {
-					text += lines[i] + "\n"
-					break
-				}
-			}
-		} else {
-			if lines[i] == "    - |-" {
-				lines[i] = "    -"
-			}
-			text += lines[i] + "\n"
-		}
 
-	}
+	//final format for ENV_VARS, CPU and PORTS
+	text := finalFormat(lines)
 
 	//write the final service.yml
 	service_yml, _ = os.Create(formatTarget)
 	service_yml, er = os.OpenFile(formatTarget, os.O_RDWR, 0644)
 
 	_, err = service_yml.WriteString(text)
-
-	//rewrite the original docker-compose
-	docker, _ := os.Create(filename)
-	docker, er = os.OpenFile(filename, os.O_RDWR, 0644)
-
-	err = docker.Sync()
-	checkError(err)
-
-	_, er = docker.WriteString(initialDockerText)
-	docker.Close()
 
 	err = os.Remove(auxFile)
 	checkError(err)
@@ -248,7 +218,7 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 				for i := 0; i < len(v.Env_file.Env_file); i++ {
 					lines = readEnv_file(v.Env_file.Env_file[i])
 					for j := 0; j < len(lines); j++ {
-						if lines[j]!= "" {
+						if lines[j] != "" {
 							serviceYamlService.EnvVarsSlice = append(serviceYamlService.EnvVarsSlice, lines[j])
 						}
 					}

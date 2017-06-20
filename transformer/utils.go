@@ -10,6 +10,35 @@ import (
 	"math"
 )
 
+func finalFormat(lines []string) string {
+
+	text := ""
+	for i := 0; i < len(lines); i++ {
+		if strings.Contains(lines[i], "cpu:") {
+			lines[i] = formatCpu(lines[i])
+		}
+		if strings.Contains(lines[i], "env_vars:") {
+			text += lines[i] + "\n"
+			for i = i + 1; i < len(lines); i++ {
+				if isEnv(lines[i]) {
+					lines[i] = formatEnv_Vars(lines[i])
+					text += lines[i] + "\n"
+				} else {
+					text += lines[i] + "\n"
+					break
+				}
+			}
+		} else {
+			if lines[i] == "    - |-" {
+				lines[i] = "    -"
+			}
+			text += lines[i] + "\n"
+		}
+
+	}
+	return text
+}
+
 func formatCpu(cpuString string) string {
 	var i, auxInt, p int
 	var auxString string
@@ -154,7 +183,7 @@ func checkError(err error) {
 	}
 }
 
-func accomodateEnvVars(filename string) (string, string, string) {
+func accomodateEnvVars(filename string) (string, string) {
 
 	dockerComp, _ := os.Open(filename)
 
@@ -169,12 +198,7 @@ func accomodateEnvVars(filename string) (string, string, string) {
 	var hasCol bool
 	var dockerText string
 
-	initialDocker := dockerLines
-	initialDockerText := ""
-
 	for i := 0; i < len(dockerLines); i++ {
-
-		initialDockerText += initialDocker[i] + "\n"
 
 		countUpper = 0
 		countLower = 0
@@ -230,6 +254,6 @@ func accomodateEnvVars(filename string) (string, string, string) {
 	}
 	auxFile := filename + "aux"
 
-	return auxFile, dockerText, initialDockerText
+	return auxFile, dockerText
 
 }
