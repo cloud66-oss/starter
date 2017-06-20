@@ -12,6 +12,7 @@ type Build struct {
 
 type Deploy struct {
 	Resources Resources `yaml:"resources,omitempty"`
+	Labels map[string]string `yaml:"labels,omitempty"`
 }
 
 type Resources struct {

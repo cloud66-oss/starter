@@ -13,7 +13,7 @@ type docker_Service struct {
 	Stop_grace_period string `yaml:"stop_grace_period,omitempty"`
 	Working_dir       string `yaml:"working_dir,omitempty"`
 	Privileged        bool `yaml:"privileged,omitempty"`
-	Labels            []string `yaml:"labels,omitempty"`
+	Labels            map[string]string `yaml:"labels,omitempty"`
 	Expose            []string `yaml:"expose,omitempty"`
 	Env_file          Env_file `yaml:"env_file,omitempty"`
 

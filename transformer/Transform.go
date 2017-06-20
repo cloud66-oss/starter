@@ -212,6 +212,9 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 				},
 			}
 			serviceYamlService.PortsShort = longSyntaxPorts
+			for key,w := range v.Deploy.Labels{
+				serviceYamlService.Tags[key]=w
+			}
 
 			if v.Env_file.Env_file != nil {
 				var lines []string

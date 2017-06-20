@@ -248,7 +248,11 @@ func accomodateEnvVars(filename string) (string, string) {
 					}
 					dockerLines[i] = "     - " + environmentVar
 				}
-			}
+			}/*else if strings.Contains(dockerLines[i], "  labels:"){
+				for ;i<len(dockerLines);i++{
+
+				}
+			}*/
 		}
 		dockerText += dockerLines[i] + "\n"
 	}
