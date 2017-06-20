@@ -21,9 +21,9 @@ type Service struct {
 	Work_dir        string `yaml:"work_dir,omitempty"`
 	Privileged      bool `yaml:"privileged,omitempty"`
 	Dockerfile_path string `yaml:"dockerfile_path,omitempty"`
-	Tags            []string `yaml:"tags,omitempty"`
+	Tags            map[string]string `yaml:"tags,omitempty"`
 	CommandSlice    []string `yaml:"command,omitempty"`
-	EnvVarsSlice    []string `yaml:"env_vars,omitempty"`
+	EnvVarsSlice    map[string]string `yaml:"env_vars,omitempty"`
 	PortsShort      []string `yaml:"ports,omitempty"`
 }
 

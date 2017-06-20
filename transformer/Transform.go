@@ -27,18 +27,8 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 		common.PrintError("File %s already exists. Will be overwritten.\n", formatTarget)
 	}
 
-	//HANDLE ENV_VARS
-	auxFile, dockerText := accomodateEnvVars(filename)
 
-	dockerComp, _ := os.Create(auxFile)
-	_, err = dockerComp.WriteString(dockerText)
-
-	err = dockerComp.Sync()
-	checkError(err)
-
-	dockerComp.Close()
-
-	yamlFile, err := ioutil.ReadFile(auxFile)
+	yamlFile, err := ioutil.ReadFile(filename)
 
 	dockerCompose := Docker_compose{
 		Services: make(map[string]docker_Service),
@@ -110,7 +100,6 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 
 	_, err = service_yml.WriteString(text)
 
-	err = os.Remove(auxFile)
 	checkError(err)
 
 	return true, err
@@ -176,7 +165,6 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 
 			var gitPath string
 			gitPath, err = common.GitRootDir("/")
-			//checkError(err)
 			if err != nil {
 
 			}
@@ -184,7 +172,6 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 
 			var gitURL, gitBranch, buildRoot string
 			if hasGit {
-				//common.PrintlnWarning("HAS GIT here!")
 				gitURL = common.RemoteGitUrl(gitPath)
 				gitBranch = common.LocalGitBranch(gitPath)
 				buildRoot, err = common.PathRelativeToGitRoot(gitPath)
@@ -217,29 +204,25 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 			}
 
 			if v.Env_file.Env_file != nil {
-				var lines []string
+				var lines map[string]string
 				for i := 0; i < len(v.Env_file.Env_file); i++ {
 					lines = readEnv_file(v.Env_file.Env_file[i])
-					for j := 0; j < len(lines); j++ {
-						if lines[j] != "" {
-							serviceYamlService.EnvVarsSlice = append(serviceYamlService.EnvVarsSlice, lines[j])
+					for j,w := range lines{
+						if j!=""{
+							serviceYamlService.EnvVarsSlice[j]=w
 						}
 					}
 				}
 			}
 
-			//serviceYamlService.EnvVarsSlice = formatEnv_Vars(serviceYamlService.EnvVarsSlice)
 
 			if serviceYamlService.Image != "" {
 				serviceYamlService.GitRepo = ""
 				serviceYamlService.GitBranch = ""
 				serviceYamlService.BuildRoot = ""
 			}
-			// assign stuff via v, k is the service name
 			serviceYaml.Services[k] = serviceYamlService
-
 		}
-
 	}
 	return serviceYaml.Services, dbs
 }

@@ -7,7 +7,7 @@ type docker_Service struct {
 	Build_Command     Build_Command `yaml:"build,omitempty"`
 	Image             string `yaml:"image,omitempty"`
 	Depends_on        []string `yaml:"depends_on,omitempty"`
-	EnvVars           []string `yaml:"environment,omitempty"`
+	EnvVars           map[string]string `yaml:"environment,omitempty"`
 	Deploy            Deploy `yaml:"deploy,omitempty"`
 	Volumes           Volumes `yaml:"volumes,omitempty"`
 	Stop_grace_period string `yaml:"stop_grace_period,omitempty"`

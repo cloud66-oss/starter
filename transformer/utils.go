@@ -121,13 +121,13 @@ func formatEnv_Vars(env string) string {
 	return env
 }
 
-func readEnv_file(path string) []string {
+func readEnv_file(path string) map[string]string {
 	var lines []string
-	var env_vars []string
-
+	var env_vars map[string]string
+	var key, value string
 	envFile, err := os.Open(path)
 	checkError(err)
-
+	env_vars = make(map[string]string, 1)
 	scanner := bufio.NewScanner(envFile)
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
@@ -136,13 +136,40 @@ func readEnv_file(path string) []string {
 	for i := 0; i < len(lines); i++ {
 
 		if !isCommentLine(lines[i]) {
-			env_vars = append(env_vars, lines[i])
+
+			key, value = getKeyValue(lines[i])
+			env_vars[key] = value
 		}
 	}
 	envFile.Close()
 	return env_vars
 }
 
+func getKeyValue(line string) (string, string) {
+	var key, value string
+	var k int
+	for k = 0; k < len(line); k++ {
+		if !unicode.IsSpace(rune(line[k])) {
+			break
+		}
+	}
+	for ; k < len(line); k++ {
+		if line[k] == '=' {
+			break
+		} else {
+			key = string(append([]byte(key), line[k]))
+		}
+	}
+	for k = k + 1; k < len(line); k++ {
+		if line[k] == '\n' {
+			break
+		} else {
+			value = string(append([]byte(value), line[k]))
+		}
+	}
+
+	return key, value
+}
 func isCommentLine(line string) bool {
 	var i int
 	for i = 0; i < len(line); i++ {
@@ -181,83 +208,4 @@ func checkError(err error) {
 		fmt.Println(err.Error())
 		os.Exit(0)
 	}
-}
-
-func accomodateEnvVars(filename string) (string, string) {
-
-	dockerComp, _ := os.Open(filename)
-
-	var dockerLines []string
-
-	scanner := bufio.NewScanner(dockerComp)
-	for scanner.Scan() {
-		dockerLines = append(dockerLines, scanner.Text())
-	}
-
-	var countUpper, countLower, firstNonSpace int
-	var hasCol bool
-	var dockerText string
-
-	for i := 0; i < len(dockerLines); i++ {
-
-		countUpper = 0
-		countLower = 0
-		firstNonSpace = -1
-		var j int
-		for j = 0; j < len(dockerLines[i]); j++ {
-			if !unicode.IsSpace(rune(dockerLines[i][j])) {
-				firstNonSpace = j
-				break
-			}
-		}
-		if firstNonSpace > 0 {
-			if dockerLines[i][firstNonSpace] != '-' && !unicode.IsLower(rune(dockerLines[i][firstNonSpace])) {
-
-				for ; j < len(dockerLines[i]); j++ {
-					if unicode.IsUpper(rune(dockerLines[i][j])) {
-						countUpper++
-					}
-					if unicode.IsLower(rune(dockerLines[i][j])) {
-						countLower++
-					}
-					if (dockerLines[i][j] == ':' || dockerLines[i][j] == '=') && countUpper > 1 {
-						if j+1 < len(dockerLines[i]) {
-							if dockerLines[i][j+1] == ' ' {
-								var envKey, envValue string
-								var k int
-								for k = 0; k <= j; k++ {
-									envKey += string(dockerLines[i][k])
-								}
-								for k = k + 1; k < len(dockerLines[i]); k++ {
-									envValue += string(dockerLines[i][k])
-								}
-								dockerLines[i] = envKey + envValue
-							}
-							hasCol = true
-							break
-						}
-					}
-				}
-				if countUpper > 1 && countLower == 0 {
-					hasCol = true
-				}
-				if countUpper > 1 && hasCol && dockerLines[i][firstNonSpace] != '-' {
-					environmentVar := ""
-					for j = firstNonSpace; j < len(dockerLines[i]); j++ {
-						environmentVar += string(dockerLines[i][j])
-					}
-					dockerLines[i] = "     - " + environmentVar
-				}
-			}/*else if strings.Contains(dockerLines[i], "  labels:"){
-				for ;i<len(dockerLines);i++{
-
-				}
-			}*/
-		}
-		dockerText += dockerLines[i] + "\n"
-	}
-	auxFile := filename + "aux"
-
-	return auxFile, dockerText
-
 }
