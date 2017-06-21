@@ -142,7 +142,7 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 
 				}
 			}
-			
+
 			var serviceYamlService ServiceYMLService
 			serviceYamlService.GitRepo = gitURL
 			serviceYamlService.GitBranch = gitBranch

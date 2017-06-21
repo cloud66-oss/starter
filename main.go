@@ -379,20 +379,23 @@ func analyze(
 	}
 
 	//look for docker-compose file in order to transform directly to service.yml
-	dockercomposePath := filepath.Join(path, "docker-compose.yml")
-	serviceYAMLPath := filepath.Join(path, "service.yml")
-	if _, err := os.Stat(serviceYAMLPath); err == nil {
-		// file exists. should we overwrite?
-		if !overwrite {
-			return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
+	if strings.Contains(generator, "service") {
+		dockercomposePath := filepath.Join(path, "docker-compose.yml")
+		serviceYAMLPath := filepath.Join(path, "service.yml")
+		if _, err := os.Stat(serviceYAMLPath); err == nil {
+			// file exists. should we overwrite?
+			if !overwrite {
+				return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
+			}
+		}
+
+		if _, err := os.Stat(dockercomposePath); err == nil {
+			// docker-compose.yml exists
+			err = transformer.Transformer(dockercomposePath, "service.yml")
+			return result, err
 		}
 	}
-
-	if _, err := os.Stat(dockercomposePath); err == nil {
-		// docker-compose.yml exists
-		err = transformer.Transformer(dockercomposePath, "service.yml")
-		return result, err
-	}
+		
 
 	common.PrintlnTitle("Detecting framework for the project at %s", path)
 
@@ -407,6 +410,14 @@ func analyze(
 		// file exists. should we overwrite?
 		if !overwrite {
 			return nil, errors.New("Dockerfile already exists. Use overwrite flag to overwrite it")
+		}
+	}
+
+	serviceYAMLPath := filepath.Join(path, "service.yml")
+	if _, err := os.Stat(serviceYAMLPath); err == nil {
+		// file exists. should we overwrite?
+		if !overwrite {
+			return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
 		}
 	}
 
