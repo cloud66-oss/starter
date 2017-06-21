@@ -16,6 +16,8 @@ type docker_Service struct {
 	Labels            map[string]string `yaml:"labels,omitempty"`
 	Expose            []string `yaml:"expose,omitempty"`
 	Env_file          Env_file `yaml:"env_file,omitempty"`
+	CpuShares	  int `yaml:"cpu_shares,omitempty"`
+	MemLimit	  int `yaml:"mem_limit,omitempty"`
 
 	//unsupported docker-compose specifications
 	Links          Links

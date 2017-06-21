@@ -40,7 +40,7 @@ func formatCpu(cpuString string) string {
 		}
 	}
 	auxFloat, err := strconv.ParseFloat(auxString, 64)
-	checkError(err)
+	CheckError(err)
 	fract := auxFloat - math.Floor(auxFloat)
 	if auxFloat < 1 {
 		auxInt = 1
@@ -53,63 +53,13 @@ func formatCpu(cpuString string) string {
 	return cpuString
 }
 
-func isEnv(line string) bool {
-	for i := 0; i < len(line); i++ {
-		if !unicode.IsSpace(rune(line[i])) {
-			if line[i] == '-' {
-				return true
-			}
-			break
-		}
-	}
-	return false
-}
-
-func formatEnv_Vars(env string) string {
-	var j int
-	for j = 0; j < len(env); j++ {
-		if env[j] == '-' {
-			env = env[:j] + " " + env[j+1:]
-		}
-	}
-	for ; j < len(env); j++ {
-		if env[j] == '\'' {
-			env = env[:j] + " " + env[j+1:]
-		}
-		if !unicode.IsSpace(rune(env[j])) {
-			break
-		}
-	}
-	for j = 0; j < len(env); j++ {
-		if j+1 < len(env) {
-			if env[j] == ':' {
-				env = env[:j+1] + " " + env[j+1:]
-				break
-			}
-			if env[j] == '=' {
-				env = env[:j] + ": " + env[j+1:]
-				break
-			}
-		}
-
-	}
-	for j = len(env) - 1; j >= 0; j-- {
-		if env[j] == '-' {
-			env = env[:j] + " " + env[j+1:]
-		}
-	}
-	if strings.Contains(env, "\"\"") {
-		return ""
-	}
-	return env
-}
 
 func readEnv_file(path string) map[string]string {
 	var lines []string
 	var env_vars map[string]string
 	var key, value string
 	envFile, err := os.Open(path)
-	checkError(err)
+	CheckError(err)
 	env_vars = make(map[string]string, 1)
 	scanner := bufio.NewScanner(envFile)
 	for scanner.Scan() {
@@ -169,7 +119,7 @@ func isCommentLine(line string) bool {
 }
 
 func checkDB(image string) (string, bool) {
-	db_check := []string{"mysql", "postgresql", "redis", "mongodb", "elasticsearch", "glusterfs", "influxdb", "rabbitmq", "sqlite"}
+	db_check := []string{"mysql", "postgresql", "redis", "mongodb", "elasticsearch", "glusterfs", "influxdb", "rabbitmq", "sqlite", "postgres", "mongo", "influx"}
 	var prefix string
 	if len(image) < 5 {
 		prefix = image
@@ -186,7 +136,7 @@ func checkDB(image string) (string, bool) {
 	return "", false
 }
 
-func checkError(err error) {
+func CheckError(err error) {
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(0)

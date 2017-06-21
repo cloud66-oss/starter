@@ -13,7 +13,7 @@ import (
 )
 
 //main transformation format function
-func Transformer(filename string, formatTarget string, directlyTransformed bool) (bool, error) {
+func Transformer(filename string, formatTarget string) error {
 
 	var err error
 	_, err = os.Stat(formatTarget)
@@ -21,7 +21,7 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 	// create file if not exists
 	if os.IsNotExist(err) {
 		var file, err = os.Create(formatTarget)
-		checkError(err)
+		CheckError(err)
 		defer file.Close()
 	} else {
 		common.PrintError("File %s already exists. Will be overwritten.\n", formatTarget)
@@ -36,7 +36,7 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 	}
 
 	serviceYaml := Serviceyml{
-		Services: make(map[string]common.Service),
+		Services: make(map[string]ServiceYMLService),
 		Dbs:      make([]string, 0),
 	}
 
@@ -47,13 +47,13 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 	if len(dockerCompose.Services) == 0 {
 		d := make(map[string]docker_Service)
 		err = yaml.Unmarshal([]byte(yamlFile), &d)
-		checkError(err)
+		CheckError(err)
 
-		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(d, directlyTransformed)
+		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(d)
 
 	} else {
 
-		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(dockerCompose.Services, directlyTransformed)
+		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(dockerCompose.Services)
 	}
 	if len(serviceYaml.Dbs) != 0 {
 		if serviceYaml.Dbs[len(serviceYaml.Dbs)-1] == "" {
@@ -69,15 +69,15 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 	}
 
 	service_yml, er := os.OpenFile(formatTarget, os.O_RDWR, 0644)
-	checkError(er)
+	CheckError(er)
 
 	// write some text to file
 	_, err = service_yml.WriteString(string(file))
-	checkError(err)
+	CheckError(err)
 
 	// save changes
 	err = service_yml.Sync()
-	checkError(err)
+	CheckError(err)
 
 	service_yml.Close()
 
@@ -100,23 +100,22 @@ func Transformer(filename string, formatTarget string, directlyTransformed bool)
 
 	_, err = service_yml.WriteString(text)
 
-	checkError(err)
+	CheckError(err)
 
-	return true, err
+	return err
 
 }
 
-func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (map[string]common.Service, []string) {
+func copyToServiceYML(d map[string]docker_Service) (map[string]ServiceYMLService, []string) {
 
 	serviceYaml := Serviceyml{
-		Services: make(map[string]common.Service),
+		Services: make(map[string]ServiceYMLService),
 		Dbs:      make([]string, 0),
 	}
 	var isDB bool
 	var err error
 	var dbs []string
 
-	directlyTransformed = true
 	for k, v := range d {
 		var current_db string
 		isDB = false
@@ -129,7 +128,7 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 		}
 		if !isDB {
 			var longSyntaxPorts []string
-			longSyntaxPorts = v.Expose //expose and long syntax for ports dont work together..i think?
+			longSyntaxPorts = v.Expose
 			if len(v.Ports.ShortSyntax) > 0 {
 				for i := 0; i < len(v.Ports.ShortSyntax); i++ {
 					longSyntaxPorts = append(longSyntaxPorts, v.Ports.ShortSyntax[i])
@@ -177,28 +176,28 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 				buildRoot, err = common.PathRelativeToGitRoot(gitPath)
 			}
 
-			var serviceYamlService common.Service
+			var serviceYamlService ServiceYMLService
 			serviceYamlService.GitRepo = gitURL
 			serviceYamlService.GitBranch = gitBranch
 			serviceYamlService.BuildRoot = buildRoot
 			serviceYamlService.BuildCommand = v.Build_Command.Build_Command
-			serviceYamlService.CommandSlice = v.Command.Command
+			serviceYamlService.Command = v.Command.Command
 			serviceYamlService.Image = v.Image
 			serviceYamlService.Requires = v.Depends_on
 			serviceYamlService.Volumes = v.Volumes.Volumes
-			serviceYamlService.Stop_grace = v.Stop_grace_period
-			serviceYamlService.Work_dir = v.Working_dir
-			serviceYamlService.EnvVarsSlice = v.EnvVars
+			serviceYamlService.StopGrace = v.Stop_grace_period
+			serviceYamlService.WorkDir = v.Working_dir
+			serviceYamlService.EnvVars = v.EnvVars
 			serviceYamlService.Tags = v.Labels
-			serviceYamlService.Dockerfile_path = v.Build_Command.Build.Dockerfile
+			serviceYamlService.DockerfilePath = v.Build_Command.Build.Dockerfile
 			serviceYamlService.Privileged = v.Privileged
-			serviceYamlService.Constraints = common.Constraints{
-				Resources: common.Resources{
-					Memory: v.Deploy.Resources.Limits.Memory,
-					Cpu:    v.Deploy.Resources.Limits.Cpus,
+			serviceYamlService.Constraints = Constraints{
+				Resources: Resources{
+					Memory: v.MemLimit,
+					Cpu:    v.CpuShares,
 				},
 			}
-			serviceYamlService.PortsShort = longSyntaxPorts
+			serviceYamlService.Ports = longSyntaxPorts
 			for key,w := range v.Deploy.Labels{
 				serviceYamlService.Tags[key]=w
 			}
@@ -209,7 +208,7 @@ func copyToServiceYML(d map[string]docker_Service, directlyTransformed bool) (ma
 					lines = readEnv_file(v.Env_file.Env_file[i])
 					for j,w := range lines{
 						if j!=""{
-							serviceYamlService.EnvVarsSlice[j]=w
+							serviceYamlService.EnvVars[j]=w
 						}
 					}
 				}

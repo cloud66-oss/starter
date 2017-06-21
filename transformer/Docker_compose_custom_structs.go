@@ -11,17 +11,7 @@ type Build struct {
 }
 
 type Deploy struct {
-	Resources Resources `yaml:"resources,omitempty"`
 	Labels map[string]string `yaml:"labels,omitempty"`
-}
-
-type Resources struct {
-	Limits Limits `yaml:"limits,omitempty"`
-}
-
-type Limits struct {
-	Cpus   string `yaml:"cpus,omitempty"`
-	Memory string `yaml:"memory,omitempty"`
 }
 
 type Command struct {

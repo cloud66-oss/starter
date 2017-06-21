@@ -77,7 +77,6 @@ var (
 	serviceYAMLTemplateDir       string
 	dockerfileTemplateDir        string
 	dockerComposeYAMLTemplateDir string
-	directlyTransformed          bool
 )
 
 const (
@@ -283,10 +282,8 @@ func main() {
 
 			inFile := string(flagIn)
 			outFile := string(flagOut)
-			ok, _ := transformer.Transformer(inFile, outFile, directlyTransformed)
-			if ok == true {
-				common.PrintlnTitle("Done!")
-			}
+			err := transformer.Transformer(inFile, outFile)
+			transformer.CheckError(err)
 		}
 		return
 	}
@@ -311,12 +308,10 @@ func main() {
 		common.PrintError(err.Error())
 		os.Exit(1)
 	}
-	if !directlyTransformed {
-		if len(result.Warnings) > 0 {
-			common.PrintlnWarning("Warnings:")
-			for _, warning := range result.Warnings {
-				common.PrintlnWarning(" * " + warning)
-			}
+	if len(result.Warnings) > 0 {
+		common.PrintlnWarning("Warnings:")
+		for _, warning := range result.Warnings {
+			common.PrintlnWarning(" * " + warning)
 		}
 	}
 
@@ -332,7 +327,6 @@ func main() {
 
 	common.PrintlnTitle("Done")
 }
-
 
 func analyze(
 	updateTemplates bool,
@@ -391,21 +385,13 @@ func analyze(
 		// file exists. should we overwrite?
 		if !overwrite {
 			return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
-		} else {
-			if _, err := os.Stat(dockercomposePath); err == nil {
-				// docker-compose.yml exists
-				directlyTransformed, err = transformer.Transformer(dockercomposePath, "service.yml", directlyTransformed)
-				return nil, err
-			}
 		}
+	}
 
-	} else {
-
-		if _, err := os.Stat(dockercomposePath); err == nil {
-			// docker-compose.yml exists
-			directlyTransformed, err = transformer.Transformer(dockercomposePath, "service.yml", directlyTransformed)
-			return nil, err
-		}
+	if _, err := os.Stat(dockercomposePath); err == nil {
+		// docker-compose.yml exists
+		err = transformer.Transformer(dockercomposePath, "service.yml")
+		return result, err
 	}
 
 	common.PrintlnTitle("Detecting framework for the project at %s", path)

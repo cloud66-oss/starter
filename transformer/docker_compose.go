@@ -1,6 +1,5 @@
 package transformer
 
-import "github.com/cloud66/starter/common"
 
 type Docker_compose struct {
 	Services map[string]docker_Service
@@ -8,11 +7,10 @@ type Docker_compose struct {
 }
 
 type Service_yml struct {
-	Services map[string]common.Service
-	//Dbs []string
+	Services map[string]ServiceYMLService
 }
 
 type Serviceyml struct{
-	Services map[string]common.Service `yaml:"services,omitempty"`
+	Services map[string]ServiceYMLService `yaml:"services,omitempty"`
 	Dbs []string `yaml:"dbs,omitempty"`
 }
