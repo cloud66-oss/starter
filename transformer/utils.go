@@ -6,53 +6,7 @@ import (
 	"strings"
 	"fmt"
 	"os"
-	"strconv"
-	"math"
 )
-
-func finalFormat(lines []string) string {
-
-	text := ""
-	for i := 0; i < len(lines); i++ {
-		if strings.Contains(lines[i], "cpu:") {
-			lines[i] = formatCpu(lines[i])
-		}
-		text += lines[i] + "\n"
-	}
-	return text
-}
-
-func formatCpu(cpuString string) string {
-	var i, auxInt, p int
-	var auxString string
-	//common.PrintlnTitle(cpuString)
-	for i = 0; i < len(cpuString); i++ {
-		if cpuString[i] == '\'' || cpuString[i] == '"' {
-			p = i
-			break
-		}
-	}
-	for i = i + 1; i < len(cpuString); i++ {
-		if cpuString[i] == '\'' || cpuString[i] == '"' {
-			break
-		} else {
-			auxString += string(cpuString[i])
-		}
-	}
-	auxFloat, err := strconv.ParseFloat(auxString, 64)
-	CheckError(err)
-	fract := auxFloat - math.Floor(auxFloat)
-	if auxFloat < 1 {
-		auxInt = 1
-	} else if fract < 0.5 {
-		auxInt = int(math.Floor(auxFloat))
-	} else {
-		auxInt = int(math.Ceil(auxFloat))
-	}
-	cpuString = cpuString[:p] + strconv.Itoa(auxInt)
-	return cpuString
-}
-
 
 func readEnv_file(path string) map[string]string {
 	var lines []string
@@ -120,17 +74,19 @@ func isCommentLine(line string) bool {
 
 func checkDB(image string) (string, bool) {
 	db_check := []string{"mysql", "postgresql", "redis", "mongodb", "elasticsearch", "glusterfs", "influxdb", "rabbitmq", "sqlite", "postgres", "mongo", "influx"}
-	var prefix string
-	if len(image) < 5 {
-		prefix = image
-	} else {
-		for i := 0; i < 4; i++ {
-			prefix += string(image[i])
-		}
-	}
+
 	for i := 0; i < len(db_check); i++ {
-		if strings.Contains(image, db_check[i]) || strings.Contains(db_check[i], image) || strings.Contains(prefix, db_check[i]) || strings.Contains(db_check[i], prefix) {
-			return db_check[i], true
+		if strings.Contains(image, db_check[i]) || strings.Contains(db_check[i], image) {
+			switch db_check[i] {
+			case "postgres":
+				return "postgresql", true
+			case "mongo":
+				return "mongodb", true
+			case "influx":
+				return "influxdb", true
+			default:
+				return db_check[i], true
+			}
 		}
 	}
 	return "", false

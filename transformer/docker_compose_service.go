@@ -1,10 +1,9 @@
 package transformer
 
-
-type docker_Service struct {
+type DockerService struct {
 	Command           Command `yaml:"command,omitempty"`
 	Ports             Ports `yaml:"ports,omitempty"`
-	Build_Command     Build_Command `yaml:"build,omitempty"`
+	BuildCommand      BuildCommand `yaml:"build,omitempty"`
 	Image             string `yaml:"image,omitempty"`
 	Depends_on        []string `yaml:"depends_on,omitempty"`
 	EnvVars           map[string]string `yaml:"environment,omitempty"`
@@ -15,28 +14,28 @@ type docker_Service struct {
 	Privileged        bool `yaml:"privileged,omitempty"`
 	Labels            map[string]string `yaml:"labels,omitempty"`
 	Expose            []string `yaml:"expose,omitempty"`
-	Env_file          Env_file `yaml:"env_file,omitempty"`
-	CpuShares	  int `yaml:"cpu_shares,omitempty"`
-	MemLimit	  int `yaml:"mem_limit,omitempty"`
+	EnvFile           EnvFile `yaml:"env_file,omitempty"`
+	CpuShares         int `yaml:"cpu_shares,omitempty"`
+	MemLimit          int `yaml:"mem_limit,omitempty"`
 
 	//unsupported docker-compose specifications
-	Links          Links
-	Cap_add        Cap_add
-	Cap_drop       Cap_drop
-	Logging        Logging
-	Cgroup_parent  Cgroup_parent
-	Container_name Container_name
-	Devices        Devices
-	Dns            Dns
-	Dns_search     Dns
-	External_links Links
-	Extra_hosts    Extra_hosts
-	Isolation      Isolation
-	Networks       Networks
-	Pid            Extra_hosts
-	Secrets        Secrets
-	Security_opt   Security_opt
-	Userns_mode    Userns_mode
-	Ulimits        Ulimits
-	Healthcheck    Healthcheck
+	Links         Links
+	CapAdd        CapAdd
+	CapDrop       CapDrop
+	Logging       Logging
+	CgroupParent  CgroupParent
+	ContainerName ContainerName
+	Devices       Devices
+	Dns           Dns
+	DnsSearch     Dns
+	ExternalLinks Links
+	ExtraHosts    ExtraHosts
+	Isolation     Isolation
+	Networks      Networks
+	Pid           ExtraHosts
+	Secrets       Secrets
+	SecurityOpt   SecurityOpt
+	UsernsMode    UsernsMode
+	Ulimits       Ulimits
+	Healthcheck   Healthcheck
 }

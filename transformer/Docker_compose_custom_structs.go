@@ -1,9 +1,9 @@
 package transformer
 
 
-type Build_Command struct {
+type BuildCommand struct {
 	Build         Build `yaml:"dockerfile,omitempty"`
-	Build_Command string `yaml:"build,omitempty"`
+	BuildCommand string `yaml:"build,omitempty"`
 }
 
 type Build struct {
@@ -22,8 +22,8 @@ type Volumes struct {
 	Volumes []string `yaml:"volumes,omitempty"`
 }
 
-type Env_file struct {
-	Env_file []string `yaml:"env_file,omitempty"`
+type EnvFile struct {
+	EnvFile []string `yaml:"env_file,omitempty"`
 }
 
 type EnvVars struct {

@@ -1,6 +1,7 @@
 package transformer
 
-func (e *Build_Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+func (e *BuildCommand) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	var build Build
 	err := unmarshal(&build)
@@ -10,7 +11,7 @@ func (e *Build_Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		if err != nil {
 			return err
 		}
-		e.Build_Command = single
+		e.BuildCommand = single
 	} else {
 		e.Build.Dockerfile = build.Dockerfile
 	}
@@ -34,7 +35,7 @@ func (sm *Volumes) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (ef *Env_file) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (ef *EnvFile) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var multi []string
 	err := unmarshal(&multi)
 	if err != nil {
@@ -43,10 +44,10 @@ func (ef *Env_file) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		if err != nil {
 			return err
 		}
-		ef.Env_file = make([]string, 1)
-		ef.Env_file[0] = single
+		ef.EnvFile = make([]string, 1)
+		ef.EnvFile[0] = single
 	} else {
-		ef.Env_file = multi
+		ef.EnvFile = multi
 	}
 	return nil
 }
@@ -87,6 +88,7 @@ func (sm *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+
 func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var multiPorts []Port
 	err := unmarshal(&multiPorts)
@@ -116,3 +118,31 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	return nil
 }
+/*
+
+func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	var f interface{}
+	err := unmarshal(&f)
+	CheckError(err)
+
+	m := f.(map[string]interface{})
+	for k, v := range m {
+		fmt.Println("the key is now %s", k)
+		switch vv :=v.(type) {
+		case Port:
+			fmt.Println("It is a long syntax port!")
+		case []Port:
+			fmt.Println("It is a slice of longs")
+		case []string:
+			fmt.Println("It is a slice of short")
+		case string:
+			fmt.Println("It is a short syntax port with value %s!", vv)
+		}
+
+	}
+
+	return nil
+}
+
+*/
