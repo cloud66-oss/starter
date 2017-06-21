@@ -27,7 +27,7 @@ type EnvFile struct {
 }
 
 type EnvVars struct {
-	EnvVars []string `yaml:"environment,omitempty"`
+	EnvVars map[string]string `yaml:"environment,omitempty"`
 }
 
 type Ports struct {

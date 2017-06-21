@@ -1,6 +1,5 @@
 package transformer
 
-
 func (e *BuildCommand) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	var build Build
@@ -52,6 +51,7 @@ func (ef *EnvFile) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+/*
 func (sm *EnvVars) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var multi []string
 	err := unmarshal(&multi)
@@ -68,8 +68,35 @@ func (sm *EnvVars) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	return nil
 }
+*/
 
-//unsupported warnings
+func (sm *EnvVars) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var m map[string]string
+	var key, value string
+	m = make(map[string]string, 1)
+	err := unmarshal(&m)
+	if err != nil {
+		var multi []string
+		err = unmarshal(&multi)
+		if err != nil {
+			var single string
+			err = unmarshal(&single)
+			if err != nil {
+				return err
+			}
+			//get key, value and add to map m
+			key, value = getKeyValue(single)
+			m[key] = value
+		}
+		for i := 0; i < len(multi); i++ {
+			key, value = getKeyValue(multi[i])
+			m[key] = value
+		}
+		//get keys, values and add to map m
+	}
+	sm.EnvVars = m
+	return nil
+}
 
 func (sm *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var multi []string
@@ -87,7 +114,6 @@ func (sm *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	return nil
 }
-
 
 func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var multiPorts []Port
@@ -118,6 +144,7 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	return nil
 }
+
 /*
 
 func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -144,5 +171,4 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	return nil
 }
-
 */

@@ -8,6 +8,20 @@ import (
 	"os"
 )
 
+func finalFormat(lines []string) []byte {
+
+	text := ""
+	for i := 0; i < len(lines); i++ {
+
+		if lines[i] == "    - |-" {
+			lines[i] = "    -"
+		}
+		text += lines[i] + "\n"
+	}
+	file := []byte(text)
+	return file
+}
+
 func readEnv_file(path string) map[string]string {
 	var lines []string
 	var env_vars map[string]string

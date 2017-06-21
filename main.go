@@ -395,7 +395,7 @@ func analyze(
 			return result, err
 		}
 	}
-		
+
 
 	common.PrintlnTitle("Detecting framework for the project at %s", path)
 

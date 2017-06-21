@@ -62,6 +62,12 @@ func Transformer(filename string, formatTarget string) error {
 
 	file, err := yaml.Marshal(serviceYaml)
 
+	//reformat the output from long syntax ports
+	text := string(file) //tvbot
+
+	lines := strings.Split(text, "\n")
+	file = finalFormat(lines)
+
 	err = ioutil.WriteFile("service.yml", file, 0644)
 	if err != nil {
 		log.Fatalf("ioutil.WriteFile: %v", err)
@@ -85,11 +91,12 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 		var current_db string
 		isDB = false
 
-
 		var gitURL, gitBranch, buildRoot string
 
 		if v.Image != "" {
 			current_db, isDB = checkDB(v.Image)
+
+		} else {
 
 			var gitPath string
 			gitPath, err = common.GitRootDir("/")
@@ -115,7 +122,6 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 					longSyntaxPorts = append(longSyntaxPorts, v.Ports.ShortSyntax[i])
 				}
 			} else {
-				longSyntaxPorts = []string{}
 				for i := 0; i < len(v.Ports.Port); i++ {
 
 					longSyntax := ""
@@ -127,7 +133,7 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 					} else if v.Ports.Port[i].Protocol == "tcp" {
 						reader := bufio.NewReader(os.Stdin)
 						fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", v.Ports.Port[i].Published)
-						var answer string //tvbot
+						var answer string
 						answer, _ = reader.ReadString('\n')
 						answer = strings.ToUpper(answer)
 						if answer == "TCP\n" {
@@ -154,7 +160,7 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 			serviceYamlService.Volumes = v.Volumes.Volumes
 			serviceYamlService.StopGrace = v.Stop_grace_period
 			serviceYamlService.WorkDir = v.Working_dir
-			serviceYamlService.EnvVars = v.EnvVars
+			serviceYamlService.EnvVars = v.EnvVars.EnvVars
 			serviceYamlService.Tags = v.Labels
 			serviceYamlService.DockerfilePath = v.BuildCommand.Build.Dockerfile
 			serviceYamlService.Privileged = v.Privileged
