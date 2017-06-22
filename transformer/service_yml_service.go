@@ -17,6 +17,13 @@ type ServiceYMLService struct {
 	Tags           map[string]string `yaml:"tags,omitempty"`
 	Command        []string `yaml:"command,omitempty"`
 	EnvVars        map[string]string `yaml:"env_vars,omitempty"`
-	Ports          []string `yaml:"ports,omitempty"`
+	Ports          []interface{} `yaml:"ports,omitempty"`
 }
 
+type ServicePort struct {
+	Container string `yaml:"container,omitempty"`
+	Tcp       string `yaml:"tcp,omitempty"`
+	Http      string `yaml:"http,omitempty"`
+	Https     string `yaml:"https,omitempty"`
+	Udp       string `yaml:"udp,omitempty"`
+}

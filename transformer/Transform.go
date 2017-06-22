@@ -62,14 +62,10 @@ func Transformer(filename string, formatTarget string) error {
 
 	file, err := yaml.Marshal(serviceYaml)
 
-	//reformat the output from long syntax ports
-	text := string(file) //tvbot
-
-	lines := strings.Split(text, "\n")
-	file = finalFormat(lines)
+	file = []byte("# Generated with <3 by Cloud66\n\n"+string(file))
 
 	err = ioutil.WriteFile("service.yml", file, 0644)
-	if err != nil {
+	if err != nil { //tvbot
 		log.Fatalf("ioutil.WriteFile: %v", err)
 	}
 
@@ -115,39 +111,42 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 			dbs = append(dbs, current_db)
 		}
 		if !isDB {
-			var longSyntaxPorts []string
-			longSyntaxPorts = v.Expose
+			var longSyntaxPorts []interface{}
+			for i := 0; i < len(v.Expose); i++ {
+				longSyntaxPorts = append(longSyntaxPorts, v.Expose[i])
+			}
 			if len(v.Ports.ShortSyntax) > 0 {
 				for i := 0; i < len(v.Ports.ShortSyntax); i++ {
 					longSyntaxPorts = append(longSyntaxPorts, v.Ports.ShortSyntax[i])
 				}
-			} else {
-				for i := 0; i < len(v.Ports.Port); i++ {
-
-					longSyntax := ""
-					longSyntax = "target: " + v.Ports.Port[i].Target + "\n"
-
-					if v.Ports.Port[i].Protocol == "udp" {
-						longSyntax += "udp: " + v.Ports.Port[i].Published
-						longSyntaxPorts = append(longSyntaxPorts, longSyntax)
-					} else if v.Ports.Port[i].Protocol == "tcp" {
-						reader := bufio.NewReader(os.Stdin)
-						fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", v.Ports.Port[i].Published)
-						var answer string
-						answer, _ = reader.ReadString('\n')
-						answer = strings.ToUpper(answer)
-						if answer == "TCP\n" {
-							longSyntax += "tcp: " + v.Ports.Port[i].Published
-						} else if answer == "HTTP\n" {
-							longSyntax += "http: " + v.Ports.Port[i].Published
-						} else if answer == "HTTPS\n" {
-							longSyntax += "http: " + v.Ports.Port[i].Published
-						}
-						longSyntaxPorts = append(longSyntaxPorts, longSyntax)
-					}
-
-				}
 			}
+
+			for i := 0; i < len(v.Ports.Port); i++ {
+
+				var serviceyml_longsyntax ServicePort
+				serviceyml_longsyntax.Container = v.Ports.Port[i].Target
+
+				if v.Ports.Port[i].Protocol == "tcp" {
+					reader := bufio.NewReader(os.Stdin)
+					fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", v.Ports.Port[i].Published)
+					var answer string
+					answer, _ = reader.ReadString('\n')
+					answer = strings.ToUpper(answer)
+					if answer == "TCP\n"{
+						serviceyml_longsyntax.Tcp = v.Ports.Port[i].Published
+					}
+					if answer == "HTTP\n"{
+						serviceyml_longsyntax.Http = v.Ports.Port[i].Published
+					}
+					if answer == "HTTPS\n"{
+						serviceyml_longsyntax.Https = v.Ports.Port[i].Published
+					}
+				} else {
+					serviceyml_longsyntax.Udp = v.Ports.Port[i].Published
+				}
+				longSyntaxPorts = append(longSyntaxPorts, serviceyml_longsyntax)
+			}
+
 
 			var serviceYamlService ServiceYMLService
 			serviceYamlService.GitRepo = gitURL
@@ -171,6 +170,7 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 				},
 			}
 			serviceYamlService.Ports = longSyntaxPorts
+
 			for key, w := range v.Deploy.Labels {
 				serviceYamlService.Tags[key] = w
 			}

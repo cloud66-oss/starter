@@ -1,5 +1,11 @@
 package transformer
 
+import (
+	"gopkg.in/yaml.v2"
+	"log"
+	"strconv"
+)
+
 func (e *BuildCommand) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	var build Build
@@ -51,25 +57,6 @@ func (ef *EnvFile) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-/*
-func (sm *EnvVars) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var multi []string
-	err := unmarshal(&multi)
-	if err != nil {
-		var single string
-		err := unmarshal(&single)
-		if err != nil {
-			return err
-		}
-		sm.EnvVars = make([]string, 1)
-		sm.EnvVars[0] = single
-	} else {
-		sm.EnvVars = multi
-	}
-	return nil
-}
-*/
-
 func (sm *EnvVars) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var m map[string]string
 	var key, value string
@@ -116,59 +103,40 @@ func (sm *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var multiPorts []Port
-	err := unmarshal(&multiPorts)
+
+	var ports interface{}
+
+	err := unmarshal(&ports)
 	if err != nil {
-		var singlePort Port
-		err := unmarshal(&singlePort)
-		if err != nil {
-			var multiString []string
-			err := unmarshal(&multiString)
-			if err != nil {
-				var single string
-				err := unmarshal(&single)
-				if err != nil {
-					return err
-				}
-				p.ShortSyntax = make([]string, 1)
-				p.ShortSyntax[0] = single
-			} else {
-				p.ShortSyntax = multiString
+		log.Fatalf("yaml.Unmarshal: %v", err)
+	}
+
+	switch ports := ports.(type) {
+	case string:
+		p.ShortSyntax = append(p.ShortSyntax, ports)
+	case []interface{}:
+		for _, vv := range ports {
+			switch vv := vv.(type) {
+			case string:
+				p.ShortSyntax = append(p.ShortSyntax, vv)
+			case int:
+				vvi := strconv.Itoa(vv)
+				p.ShortSyntax = append(p.ShortSyntax, vvi)
+			case map[interface{}]interface{}:
+				var longSyntaxPort Port
+				temp, er := yaml.Marshal(vv)
+				CheckError(er)
+				er = yaml.Unmarshal(temp, &longSyntaxPort)
+				CheckError(er)
+				p.Port = append(p.Port, longSyntaxPort)
+			default:
+				log.Fatal("Failed to unmarshal ")
 			}
-			return nil
 		}
-		p.Port = make([]Port, 1)
-		p.Port[0] = singlePort
-	} else {
-		p.Port = multiPorts
-	}
-	return nil
-}
-
-/*
-
-func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
-	var f interface{}
-	err := unmarshal(&f)
-	CheckError(err)
-
-	m := f.(map[string]interface{})
-	for k, v := range m {
-		fmt.Println("the key is now %s", k)
-		switch vv :=v.(type) {
-		case Port:
-			fmt.Println("It is a long syntax port!")
-		case []Port:
-			fmt.Println("It is a slice of longs")
-		case []string:
-			fmt.Println("It is a slice of short")
-		case string:
-			fmt.Println("It is a short syntax port with value %s!", vv)
-		}
+	default:
+		log.Fatal("Failed to unmarshal")
 
 	}
 
 	return nil
 }
-*/
