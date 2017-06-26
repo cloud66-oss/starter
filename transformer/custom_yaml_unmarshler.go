@@ -4,6 +4,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"log"
 	"strconv"
+	"github.com/cloud66/starter/common"
 )
 
 func (e *BuildCommand) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -19,23 +20,6 @@ func (e *BuildCommand) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		e.BuildCommand = single
 	} else {
 		e.Build.Dockerfile = build.Dockerfile
-	}
-	return nil
-}
-
-func (sm *Volumes) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var multi []string
-	err := unmarshal(&multi)
-	if err != nil {
-		var single string
-		err := unmarshal(&single)
-		if err != nil {
-			return err
-		}
-		sm.Volumes = make([]string, 1)
-		sm.Volumes[0] = single
-	} else {
-		sm.Volumes = multi
 	}
 	return nil
 }
@@ -136,6 +120,46 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	default:
 		log.Fatal("Failed to unmarshal")
 
+	}
+
+	return nil
+}
+
+func (sm *Volumes) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	var volumes interface{}
+
+	err := unmarshal(&volumes)
+	if err != nil {
+		log.Fatalf("yaml.Unmarshal: %v", err)
+	}
+
+	switch volumes := volumes.(type) {
+	case string:
+		sm.Volumes = append(sm.Volumes, volumes)
+	case []interface{}:
+		for _, vv := range volumes {
+			switch vv := vv.(type) {
+			case string:
+				sm.Volumes = append(sm.Volumes, vv)
+			case map[interface{}]interface{}:
+				var longSyntax LongSyntaxVolume
+				temp, er := yaml.Marshal(vv)
+				CheckError(er)
+				er = yaml.Unmarshal(temp, &longSyntax)
+				CheckError(er)
+				if longSyntax.Type == "bind" {
+					common.PrintlnWarning("Service.yml format does not support \"type: bind\" for volumes at the moment")
+
+				} else {
+					sm.LongSyntax = append(sm.LongSyntax, longSyntax)
+				}
+			default:
+				log.Fatal("Failed to unmarshal")
+			}
+		}
+	default:
+		log.Fatal("Failed to unmarshal")
 	}
 
 	return nil

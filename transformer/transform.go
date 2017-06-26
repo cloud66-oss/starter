@@ -1,8 +1,6 @@
 package transformer
 
 import (
-	"bufio"
-	"strings"
 	"fmt"
 	"os"
 	"io/ioutil"
@@ -111,40 +109,11 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 			dbs = append(dbs, current_db)
 		}
 		if !isDB {
-			var longSyntaxPorts []interface{}
-			for i := 0; i < len(v.Expose); i++ {
-				longSyntaxPorts = append(longSyntaxPorts, v.Expose[i])
-			}
-			if len(v.Ports.ShortSyntax) > 0 {
-				for i := 0; i < len(v.Ports.ShortSyntax); i++ {
-					longSyntaxPorts = append(longSyntaxPorts, v.Ports.ShortSyntax[i])
-				}
-			}
 
-			for i := 0; i < len(v.Ports.Port); i++ {
 
-				var serviceyml_longsyntax ServicePort
-				serviceyml_longsyntax.Container = v.Ports.Port[i].Target
+			if v.Deploy.Resources.Limits.Cpus!="" || v.Deploy.Resources.Limits.Memory!="" || v.Deploy.Resources.Reservations.Cpus!="" ||v.Deploy.Resources.Reservations.Memory!=""{
+				common.PrintlnWarning("Service.yml format does not support \"resources limitations and reservations\" for deploy at the moment, try using \"cpu_shares\" and \"mem_limit\" instead. ")
 
-				if v.Ports.Port[i].Protocol == "tcp" {
-					reader := bufio.NewReader(os.Stdin)
-					fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", v.Ports.Port[i].Published)
-					var answer string
-					answer, _ = reader.ReadString('\n')
-					answer = strings.ToUpper(answer)
-					if answer == "TCP\n"{
-						serviceyml_longsyntax.Tcp = v.Ports.Port[i].Published
-					}
-					if answer == "HTTP\n"{
-						serviceyml_longsyntax.Http = v.Ports.Port[i].Published
-					}
-					if answer == "HTTPS\n"{
-						serviceyml_longsyntax.Https = v.Ports.Port[i].Published
-					}
-				} else {
-					serviceyml_longsyntax.Udp = v.Ports.Port[i].Published
-				}
-				longSyntaxPorts = append(longSyntaxPorts, serviceyml_longsyntax)
 			}
 
 
@@ -156,7 +125,8 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 			serviceYamlService.Command = v.Command.Command
 			serviceYamlService.Image = v.Image
 			serviceYamlService.Requires = v.Depends_on
-			serviceYamlService.Volumes = v.Volumes.Volumes
+			serviceYamlService.Volumes = handleVolumes(v.Volumes.Volumes, v.Volumes.LongSyntax)
+			serviceYamlService.Ports = handlePorts(v.Expose, v.Ports.Port, v.Ports.ShortSyntax)
 			serviceYamlService.StopGrace = v.Stop_grace_period
 			serviceYamlService.WorkDir = v.Working_dir
 			serviceYamlService.EnvVars = v.EnvVars.EnvVars
@@ -169,8 +139,9 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 					Cpu:    v.CpuShares,
 				},
 			}
-			serviceYamlService.Ports = longSyntaxPorts
 
+
+			serviceYamlService.Tags = make(map[string]string,1)
 			for key, w := range v.Deploy.Labels {
 				serviceYamlService.Tags[key] = w
 			}

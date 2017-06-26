@@ -11,7 +11,19 @@ type Build struct {
 }
 
 type Deploy struct {
+	Resources DockerResources`yaml:"resources,omitempty"`
 	Labels map[string]string `yaml:"labels,omitempty"`
+}
+
+type DockerResources struct{
+	Limits CpusMem `yaml:"limits,omitempty"`
+	Reservations CpusMem `yaml:reservations",omitempty"`
+
+}
+
+type CpusMem struct{
+	Cpus string `yaml:"cpus,omitempty"`
+	Memory string `yaml:"memory,omitempty"`
 }
 
 type Command struct {
@@ -20,6 +32,14 @@ type Command struct {
 
 type Volumes struct {
 	Volumes []string `yaml:"volumes,omitempty"`
+	LongSyntax	[]LongSyntaxVolume
+}
+
+type LongSyntaxVolume struct{
+	Type	string `yaml:"type,omitempty"`
+	Source	string `yaml:"source,omitempty"`
+	Target	string `yaml:"target,omitempty"`
+	ReadOnly bool `yaml:"read_only,omitempty"`
 }
 
 type EnvFile struct {
