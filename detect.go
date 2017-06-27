@@ -7,13 +7,18 @@ import (
 	"github.com/cloud66/starter/packs/node"
 	"github.com/cloud66/starter/packs/php"
 	"github.com/cloud66/starter/packs/ruby"
+	"github.com/cloud66/starter/packs/docker_compose"
+	"bufio"
+	"os"
+	"strings"
 )
 
 func Detect(rootDir string) (packs.Pack, error) {
 	ruby := ruby.Pack{}
 	node := node.Pack{}
 	php := php.Pack{}
-	detectors := []packs.Detector{ruby.Detector(), node.Detector(), php.Detector()}
+	dockercompose := docker_compose.Pack{}
+	detectors := []packs.Detector{ruby.Detector(), node.Detector(), php.Detector(), dockercompose.Detector()}
 	var packs []packs.Pack
 
 	for _, d := range detectors {
@@ -26,7 +31,25 @@ func Detect(rootDir string) (packs.Pack, error) {
 	if len(packs) == 0 {
 		return nil, fmt.Errorf("Could not detect any of the supported frameworks")
 	} else if len(packs) > 1 {
-		return nil, fmt.Errorf("More than one framework detected")
+		common.PrintlnTitle("More than one framework detected. Please choose which of the following should be used:")
+		for i:=0;i<len(packs);i++{
+			common.PrintlnTitle(strings.ToUpper(packs[i].Name()))
+		}
+
+		reader := bufio.NewReader(os.Stdin)
+		var answer string
+		answer, _ = reader.ReadString('\n')
+
+		answer = strings.ToUpper(answer)
+
+		for i:=0;i<len(packs);i++ {
+			temp := strings.ToUpper(packs[i].Name())+"\n"
+			if answer == temp{
+				return packs[i], nil
+			}
+		}
+
+			return nil, fmt.Errorf("Starter was unable to match your answer")
 	} else {
 		return packs[0], nil
 	}

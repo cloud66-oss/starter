@@ -1,4 +1,4 @@
-package transformer
+package docker_compose
 
 import (
 	"gopkg.in/yaml.v2"
@@ -17,9 +17,10 @@ func (e *BuildCommand) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		if err != nil {
 			return err
 		}
-		e.BuildCommand = single
+		e.BuildRoot = single
 	} else {
 		e.Build.Dockerfile = build.Dockerfile
+		e.Build.Context = build.Context
 	}
 	return nil
 }

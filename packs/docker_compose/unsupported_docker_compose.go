@@ -1,4 +1,4 @@
-package transformer
+package docker_compose
 
 import "github.com/cloud66/starter/common"
 

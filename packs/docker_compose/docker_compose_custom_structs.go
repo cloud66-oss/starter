@@ -1,12 +1,13 @@
-package transformer
+package docker_compose
 
 
 type BuildCommand struct {
 	Build         Build `yaml:"dockerfile,omitempty"`
-	BuildCommand string `yaml:"build,omitempty"`
+	BuildRoot string `yaml:"build,omitempty"`
 }
 
 type Build struct {
+	Context	string `yaml:"context,omitempty"`
 	Dockerfile string `yaml:"dockerfile,omitempty"`
 }
 

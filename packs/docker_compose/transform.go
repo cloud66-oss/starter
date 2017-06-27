@@ -1,4 +1,4 @@
-package transformer
+package docker_compose
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 )
 
 //main transformation format function
-func Transformer(filename string, formatTarget string) error {
+func Transformer(filename string, formatTarget string, gitURL string, gitBranch string) error {
 
 	var err error
 	_, err = os.Stat(formatTarget)
@@ -52,10 +52,10 @@ func Transformer(filename string, formatTarget string) error {
 		err = yaml.Unmarshal([]byte(yamlFile), &d)
 		CheckError(err)
 
-		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(d)
+		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(d, gitURL, gitBranch)
 
 	} else {
-		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(dockerCompose.Services)
+		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(dockerCompose.Services, gitURL, gitBranch)
 	}
 
 	file, err := yaml.Marshal(serviceYaml)
@@ -71,7 +71,7 @@ func Transformer(filename string, formatTarget string) error {
 
 }
 
-func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService, []string) {
+func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch string) (map[string]ServiceYMLService, []string) {
 
 	serviceYaml := ServiceYml{
 		Services: make(map[string]ServiceYMLService),
@@ -85,7 +85,8 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 		var current_db string
 		isDB = false
 
-		var gitURL, gitBranch, buildRoot string
+		//var gitURL, gitBranch string
+		var buildRoot string
 
 		if v.Image != "" {
 			current_db, isDB = checkDB(v.Image)
@@ -100,8 +101,8 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 			hasGit := common.HasGit(gitPath)
 
 			if hasGit {
-				gitURL = common.RemoteGitUrl(gitPath)
-				gitBranch = common.LocalGitBranch(gitPath)
+				//gitURL = common.RemoteGitUrl(gitPath)
+				//gitBranch = common.LocalGitBranch(gitPath)
 				buildRoot, err = common.PathRelativeToGitRoot(gitPath)
 			}
 		}
@@ -120,8 +121,13 @@ func copyToServiceYML(d map[string]DockerService) (map[string]ServiceYMLService,
 			var serviceYamlService ServiceYMLService
 			serviceYamlService.GitRepo = gitURL
 			serviceYamlService.GitBranch = gitBranch
-			serviceYamlService.BuildRoot = buildRoot
-			serviceYamlService.BuildCommand = v.BuildCommand.BuildCommand
+			if v.BuildCommand.BuildRoot != ""{
+				serviceYamlService.BuildRoot = v.BuildCommand.BuildRoot
+			}else if v.BuildCommand.Build.Context != ""{
+				serviceYamlService.BuildRoot = v.BuildCommand.Build.Context
+			}else{
+				serviceYamlService.BuildRoot = buildRoot
+			}
 			serviceYamlService.Command = v.Command.Command
 			serviceYamlService.Image = v.Image
 			serviceYamlService.Requires = v.Depends_on

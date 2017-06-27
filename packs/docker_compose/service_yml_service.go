@@ -1,4 +1,4 @@
-package transformer
+package docker_compose
 
 type ServiceYMLService struct {
 	Name           string `yaml:"name,omitempty"`

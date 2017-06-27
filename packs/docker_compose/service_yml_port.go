@@ -1,4 +1,4 @@
-package transformer
+package docker_compose
 
 type ServicePort struct {
 	Container string `yaml:"container,omitempty"`

@@ -1,4 +1,4 @@
-package transformer
+package docker_compose
 
 type DockerService struct {
 	Command           Command `yaml:"command,omitempty"`
