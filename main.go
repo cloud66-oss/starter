@@ -17,6 +17,7 @@ import (
 	"github.com/cloud66/starter/common"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
+	"github.com/cloud66/starter/packs"
 )
 
 type downloadFile struct {
@@ -266,7 +267,6 @@ func main() {
 		os.Exit(0)
 	}
 
-
 	result, err := analyze(
 		true,
 		flagPath,
@@ -354,9 +354,15 @@ func analyze(
 
 	common.PrintlnTitle("Detecting framework for the project at %s", path)
 
-	pack, err := Detect(path)
+	detectedPacks, err := Detect(path)
+	var pack packs.Pack
+
+	pack, err = choosePack(detectedPacks, noPrompt)
+
+
 	if err != nil {
-		return nil, fmt.Errorf("Failed to detect framework due to: %s", err.Error())
+		pack = nil
+		fmt.Errorf("Failed to detect framework due to: %s", err.Error())
 	}
 
 	// check for Dockerfile (before analysis to avoid wasting time)

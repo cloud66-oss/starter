@@ -65,7 +65,7 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 
 func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldPrompt bool) error {
 
-	err := Transformer("docker-compose.yml", "service.yml", p.Analysis.GitURL, p.Analysis.GitBranch)
+	err := Transformer(outputDir+"/docker-compose.yml", outputDir+"/service.yml", p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt)
 
 	CheckError(err)
 

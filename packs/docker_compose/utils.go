@@ -33,7 +33,7 @@ func handleVolumes(shortSyntax []string, longSyntax []LongSyntaxVolume) []interf
 	return longSyntaxVolumes
 }
 
-func handlePorts(expose []string, longSyntax []Port, shortSyntax []string) []interface{}{
+func handlePorts(expose []string, longSyntax []Port, shortSyntax []string, shouldPrompt bool) []interface{} {
 
 	var longSyntaxPorts []interface{}
 
@@ -52,19 +52,23 @@ func handlePorts(expose []string, longSyntax []Port, shortSyntax []string) []int
 		serviceyml_longsyntax.Container = longSyntax[i].Target
 
 		if longSyntax[i].Protocol == "tcp" {
-			reader := bufio.NewReader(os.Stdin)
-			fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", longSyntax[i].Published)
-			var answer string
-			answer, _ = reader.ReadString('\n')
-			answer = strings.ToUpper(answer)
-			if answer == "TCP\n"{
+			if shouldPrompt == true {
+				reader := bufio.NewReader(os.Stdin)
+				fmt.Printf("\nYou have chosen a TCP protocol for the port published at %s - should it be mapped as HTTP, HTTPS or TCP ? : ", longSyntax[i].Published)
+				var answer string
+				answer, _ = reader.ReadString('\n')
+				answer = strings.ToUpper(answer)
+				if answer == "TCP\n" {
+					serviceyml_longsyntax.Tcp = longSyntax[i].Published
+				}
+				if answer == "HTTP\n" {
+					serviceyml_longsyntax.Http = longSyntax[i].Published
+				}
+				if answer == "HTTPS\n" {
+					serviceyml_longsyntax.Https = longSyntax[i].Published
+				}
+			} else{
 				serviceyml_longsyntax.Tcp = longSyntax[i].Published
-			}
-			if answer == "HTTP\n"{
-				serviceyml_longsyntax.Http = longSyntax[i].Published
-			}
-			if answer == "HTTPS\n"{
-				serviceyml_longsyntax.Https = longSyntax[i].Published
 			}
 		} else {
 			serviceyml_longsyntax.Udp = longSyntax[i].Published

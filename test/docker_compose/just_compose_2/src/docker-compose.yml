@@ -1,0 +1,77 @@
+version: '2'
+
+services:
+  http:
+    container_name: dev-a24
+    image: sergeyzskw/apache2
+    volumes:
+        - ${LOG_ROOT}:/var/log
+        - http_a2-vol:/etc/apache2
+        - ${HTTPD_DOCUMENT_ROOT}:/var/www
+    depends_on:
+        - php70
+    links:
+        - php55:php55.${HOST}
+        - php70:php70.${HOST}
+
+  php55:
+    container_name: dev-php55
+    image: sergeyzskw/php:5.5-fpm
+    volumes:
+        - ${LOG_ROOT}:/var/log
+        - php_55-vol:/etc/php5
+        - composer_55-vol:/home/composer/.composer
+        - ~/.ssh/${SSH_KEY}:/home/composer/.ssh/id_rsa
+        - ~/.ssh/known_hosts:/home/composer/.ssh/known_hosts
+        - ${HTTPD_DOCUMENT_ROOT}:/var/www
+    depends_on:
+        - es24
+    links:
+        - db:db.${HOST}
+        - es24:es24.${HOST}
+
+  php70:
+    container_name: dev-php70
+    image: sergeyzskw/php:7.0-fpm
+    volumes:
+        - ${LOG_ROOT}:/var/log
+        - php_70-vol:/etc/php
+        - composer_70-vol:/home/composer/.composer
+        - ~/.ssh/${SSH_KEY}:/home/composer/.ssh/id_rsa
+        - ~/.ssh/known_hosts:/home/composer/.ssh/known_hosts
+        - ${HTTPD_DOCUMENT_ROOT}:/var/www
+    depends_on:
+        - php55
+    links:
+        - db:db.${HOST}
+        - es24:es24.${HOST}
+
+  es24:
+    container_name: dev-es24
+    image: sergeyzskw/elasticsearch:2.4-magento-smile
+    volumes:
+        - es24-vol:/usr/share/elasticsearch/data
+    depends_on:
+        - db
+
+  db:
+    container_name: dev-db
+    image: mariadb
+    environment:
+        MYSQL_USER: root
+        MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    env_file:
+        - env.env
+        - settings.env
+    volumes:
+        - ${LOG_ROOT}:/var/log
+        - data_mariadb-vol:/var/lib/mysql
+
+volumes:
+  data_mariadb-vol:
+  http_a2-vol:
+  php_55-vol:
+  php_70-vol:
+  composer_55-vol:
+  composer_70-vol:
+  es24-vol:

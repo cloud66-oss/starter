@@ -5,13 +5,12 @@ import (
 	"os"
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
-	"log"
 
 	"github.com/cloud66/starter/common"
 )
 
 //main transformation format function
-func Transformer(filename string, formatTarget string, gitURL string, gitBranch string) error {
+func Transformer(filename string, formatTarget string, gitURL string, gitBranch string, shouldPrompt bool) error {
 
 	var err error
 	_, err = os.Stat(formatTarget)
@@ -52,26 +51,26 @@ func Transformer(filename string, formatTarget string, gitURL string, gitBranch 
 		err = yaml.Unmarshal([]byte(yamlFile), &d)
 		CheckError(err)
 
-		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(d, gitURL, gitBranch)
+		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(d, gitURL, gitBranch, shouldPrompt, filename)
 
 	} else {
-		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(dockerCompose.Services, gitURL, gitBranch)
+		serviceYaml.Services, serviceYaml.Dbs = copyToServiceYML(dockerCompose.Services, gitURL, gitBranch, shouldPrompt, filename)
 	}
 
 	file, err := yaml.Marshal(serviceYaml)
 
-	file = []byte("# Generated with <3 by Cloud66\n\n"+string(file))
+	file = []byte("# Generated with <3 by Cloud66\n\n" + string(file))
 
-	err = ioutil.WriteFile("service.yml", file, 0644)
-	if err != nil { //tvbot
-		log.Fatalf("ioutil.WriteFile: %v", err)
+	err = ioutil.WriteFile(formatTarget, file, 0644)
+	if err != nil {
+		return err
 	}
 
-	return err
+	return nil
 
 }
 
-func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch string) (map[string]ServiceYMLService, []string) {
+func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch string, shouldPrompt bool, filepath string) (map[string]ServiceYMLService, []string) {
 
 	serviceYaml := ServiceYml{
 		Services: make(map[string]ServiceYMLService),
@@ -80,6 +79,9 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 	var isDB bool
 	var err error
 	var dbs []string
+
+	var dbServicesNames []string
+	dbServicesNames = make([]string, 1)
 
 	for k, v := range d {
 		var current_db string
@@ -107,32 +109,31 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 			}
 		}
 		if isDB {
+			dbServicesNames = append(dbServicesNames, k)
 			dbs = append(dbs, current_db)
 		}
 		if !isDB {
 
-
-			if v.Deploy.Resources.Limits.Cpus!="" || v.Deploy.Resources.Limits.Memory!="" || v.Deploy.Resources.Reservations.Cpus!="" ||v.Deploy.Resources.Reservations.Memory!=""{
+			if v.Deploy.Resources.Limits.Cpus != "" || v.Deploy.Resources.Limits.Memory != "" || v.Deploy.Resources.Reservations.Cpus != "" || v.Deploy.Resources.Reservations.Memory != "" {
 				common.PrintlnWarning("Service.yml format does not support \"resources limitations and reservations\" for deploy at the moment, try using \"cpu_shares\" and \"mem_limit\" instead. ")
 
 			}
 
-
 			var serviceYamlService ServiceYMLService
 			serviceYamlService.GitRepo = gitURL
 			serviceYamlService.GitBranch = gitBranch
-			if v.BuildCommand.BuildRoot != ""{
+			if v.BuildCommand.BuildRoot != "" {
 				serviceYamlService.BuildRoot = v.BuildCommand.BuildRoot
-			}else if v.BuildCommand.Build.Context != ""{
+			} else if v.BuildCommand.Build.Context != "" {
 				serviceYamlService.BuildRoot = v.BuildCommand.Build.Context
-			}else{
+			} else {
 				serviceYamlService.BuildRoot = buildRoot
 			}
 			serviceYamlService.Command = v.Command.Command
 			serviceYamlService.Image = v.Image
 			serviceYamlService.Requires = v.Depends_on
 			serviceYamlService.Volumes = handleVolumes(v.Volumes.Volumes, v.Volumes.LongSyntax)
-			serviceYamlService.Ports = handlePorts(v.Expose, v.Ports.Port, v.Ports.ShortSyntax)
+			serviceYamlService.Ports = handlePorts(v.Expose, v.Ports.Port, v.Ports.ShortSyntax, shouldPrompt)
 			serviceYamlService.StopGrace = v.Stop_grace_period
 			serviceYamlService.WorkDir = v.Working_dir
 			serviceYamlService.EnvVars = v.EnvVars.EnvVars
@@ -146,8 +147,7 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 				},
 			}
 
-
-			serviceYamlService.Tags = make(map[string]string,1)
+			serviceYamlService.Tags = make(map[string]string, 1)
 			for key, w := range v.Deploy.Labels {
 				serviceYamlService.Tags[key] = w
 			}
@@ -155,7 +155,8 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 			if v.EnvFile.EnvFile != nil {
 				var lines map[string]string
 				for i := 0; i < len(v.EnvFile.EnvFile); i++ {
-					lines = readEnv_file(v.EnvFile.EnvFile[i])
+					path := filepath[0:len(filepath)-len("docker-compose.yml")]
+					lines = readEnv_file(path + v.EnvFile.EnvFile[i])
 					for j, w := range lines {
 						if j != "" {
 							serviceYamlService.EnvVars[j] = w
@@ -172,5 +173,35 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 			serviceYaml.Services[k] = serviceYamlService
 		}
 	}
+
+	for k, _ := range serviceYaml.Services {
+		for index, req := range serviceYaml.Services[k].Requires {
+			for _, i := range dbServicesNames {
+				if req == i {
+					temp := append(serviceYaml.Services[k].Requires[:index], serviceYaml.Services[k].Requires[index+1:]...)
+					serviceYaml.Services[k] = ServiceYMLService{
+						Name:           serviceYaml.Services[k].Name,
+						GitRepo:        serviceYaml.Services[k].GitRepo,
+						GitBranch:      serviceYaml.Services[k].GitBranch,
+						BuildCommand:   serviceYaml.Services[k].BuildCommand,
+						BuildRoot:      serviceYaml.Services[k].BuildRoot,
+						Image:          serviceYaml.Services[k].Image,
+						Requires:       temp,
+						Volumes:        serviceYaml.Services[k].Volumes,
+						StopGrace:      serviceYaml.Services[k].StopGrace,
+						Constraints:    serviceYaml.Services[k].Constraints,
+						WorkDir:        serviceYaml.Services[k].WorkDir,
+						Privileged:     serviceYaml.Services[k].Privileged,
+						DockerfilePath: serviceYaml.Services[k].DockerfilePath,
+						Tags:           serviceYaml.Services[k].Tags,
+						Command:        serviceYaml.Services[k].Command,
+						EnvVars:        serviceYaml.Services[k].EnvVars,
+						Ports:          serviceYaml.Services[k].Ports,
+					}
+				}
+			}
+		}
+	}
+
 	return serviceYaml.Services, dbs
 }
