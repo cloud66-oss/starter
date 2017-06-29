@@ -39,12 +39,6 @@ func choosePack(detectedPacks []packs.Pack, noPrompt bool) (packs.Pack, error) {
 
 	} else if len(detectedPacks) > 1 {
 
-		for i:=0;i<len(detectedPacks);i++{
-			if detectedPacks[i].Name() == "docker-compose" {
-				return detectedPacks[i], nil
-			}
-		}
-
 		if noPrompt == false {
 
 			common.PrintlnTitle("More than one framework detected. Please choose which of the following should be used:")
@@ -70,6 +64,12 @@ func choosePack(detectedPacks []packs.Pack, noPrompt bool) (packs.Pack, error) {
 		} else {
 
 			common.PrintlnTitle("More than one framework detected! NoPrompt flag value is set to true.")
+
+			for i := 0; i < len(detectedPacks); i++ {
+				if detectedPacks[i].Name() == "docker-compose" {
+					return detectedPacks[i], nil
+				}
+			}
 
 			return detectedPacks[0], nil
 		}

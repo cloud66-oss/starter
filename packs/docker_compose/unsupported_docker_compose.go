@@ -2,13 +2,6 @@ package docker_compose
 
 import "github.com/cloud66/starter/common"
 
-
-func (sm *Links) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	common.PrintlnWarning("Service.yml format does not support \"links\" at the moment")
-	return nil
-}
-
-
 func (sm *CapAdd) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	common.PrintlnWarning("Service.yml format does not support \"cap_add\" at the moment")
 	return nil

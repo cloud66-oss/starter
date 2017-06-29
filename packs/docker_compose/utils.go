@@ -84,7 +84,9 @@ func readEnv_file(path string) map[string]string {
 	var env_vars map[string]string
 	var key, value string
 	envFile, err := os.Open(path)
-	CheckError(err)
+	if err != nil{
+		return env_vars
+	}
 	env_vars = make(map[string]string, 1)
 	scanner := bufio.NewScanner(envFile)
 	for scanner.Scan() {

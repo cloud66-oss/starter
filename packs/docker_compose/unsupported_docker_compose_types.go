@@ -1,10 +1,6 @@
 package docker_compose
 
 
-type Links struct {
-	Links []string `yaml:"links,omitempty"`
-}
-
 type CapAdd struct {
 	CapAdd string
 }

@@ -17,9 +17,9 @@ type DockerService struct {
 	EnvFile           EnvFile `yaml:"env_file,omitempty"`
 	CpuShares         int `yaml:"cpu_shares,omitempty"`
 	MemLimit          int `yaml:"mem_limit,omitempty"`
+	Links             Links `yaml:"links,omitempty"`
 
 	//unsupported docker-compose specifications
-	Links         Links
 	CapAdd        CapAdd
 	CapDrop       CapDrop
 	Logging       Logging
