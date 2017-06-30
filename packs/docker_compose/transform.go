@@ -59,7 +59,7 @@ func Transformer(filename string, formatTarget string, gitURL string, gitBranch 
 
 	file, err := yaml.Marshal(serviceYaml)
 
-	file = []byte("# Generated with <3 by Cloud66\n\n" + string(file))
+	file = []byte("# Generated with <3 by Cloud66\n\n" + handleEnvVarsFormat(file))
 
 	err = ioutil.WriteFile(formatTarget, file, 0644)
 	if err != nil {
@@ -82,6 +82,17 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 
 	var dbServicesNames []string
 	dbServicesNames = make([]string, 1)
+
+	for k, v := range d {
+		isDB = false
+
+		if v.Image != "" {
+			_, isDB = checkDB(v.Image)
+		}
+		if isDB {
+			dbServicesNames = append(dbServicesNames, k)
+		}
+	}
 
 	for k, v := range d {
 		var current_db string
@@ -120,6 +131,8 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 			}
 
 			var serviceYamlService ServiceYMLService
+
+			//Set Git stuff and BuildRoot
 			serviceYamlService.GitRepo = gitURL
 			serviceYamlService.GitBranch = gitBranch
 			if v.BuildCommand.BuildRoot != "" {
@@ -129,10 +142,20 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 			} else {
 				serviceYamlService.BuildRoot = buildRoot
 			}
-			for i:=0;i<len(v.Links.Links);i++{
+
+			//Do not let a service require a db as service.yml runs dbs first anyway
+			for i := 0; i < len(v.Links.Links); i++ {
 				v.Depends_on = append(v.Depends_on, v.Links.Links[i])
 			}
-
+			for i := 0; i < len(v.Depends_on); i++ {
+				for j := 0; j < len(dbServicesNames); j++ {
+					if i < len(v.Depends_on) {
+						if v.Depends_on[i] == dbServicesNames[j] {
+							v.Depends_on = append(v.Depends_on[:i], v.Depends_on[i+1:]...)
+						}
+					}
+				}
+			}
 
 			serviceYamlService.Command = v.Command.Command
 			serviceYamlService.Image = v.Image
@@ -143,7 +166,7 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 			serviceYamlService.WorkDir = v.Working_dir
 			serviceYamlService.EnvVars = v.EnvVars.EnvVars
 			serviceYamlService.Tags = v.Labels
-			serviceYamlService.DockerfilePath = v.BuildCommand.Build.Dockerfile
+			//serviceYamlService.DockerfilePath = v.BuildCommand.Build.Dockerfile
 			serviceYamlService.Privileged = v.Privileged
 			serviceYamlService.Constraints = Constraints{
 				Resources: Resources{
@@ -176,35 +199,6 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 				serviceYamlService.BuildRoot = ""
 			}
 			serviceYaml.Services[k] = serviceYamlService
-		}
-	}
-
-	for k, _ := range serviceYaml.Services {
-		for index, req := range serviceYaml.Services[k].Requires {
-			for _, i := range dbServicesNames {
-				if req == i {
-					temp := append(serviceYaml.Services[k].Requires[:index], serviceYaml.Services[k].Requires[index+1:]...)
-					serviceYaml.Services[k] = ServiceYMLService{
-						Name:           serviceYaml.Services[k].Name,
-						GitRepo:        serviceYaml.Services[k].GitRepo,
-						GitBranch:      serviceYaml.Services[k].GitBranch,
-						BuildCommand:   serviceYaml.Services[k].BuildCommand,
-						BuildRoot:      serviceYaml.Services[k].BuildRoot,
-						Image:          serviceYaml.Services[k].Image,
-						Requires:       temp,
-						Volumes:        serviceYaml.Services[k].Volumes,
-						StopGrace:      serviceYaml.Services[k].StopGrace,
-						Constraints:    serviceYaml.Services[k].Constraints,
-						WorkDir:        serviceYaml.Services[k].WorkDir,
-						Privileged:     serviceYaml.Services[k].Privileged,
-						DockerfilePath: serviceYaml.Services[k].DockerfilePath,
-						Tags:           serviceYaml.Services[k].Tags,
-						Command:        serviceYaml.Services[k].Command,
-						EnvVars:        serviceYaml.Services[k].EnvVars,
-						Ports:          serviceYaml.Services[k].Ports,
-					}
-				}
-			}
 		}
 	}
 

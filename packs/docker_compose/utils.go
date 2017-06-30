@@ -8,6 +8,33 @@ import (
 	"os"
 )
 
+func handleEnvVarsFormat(text []byte) string{
+
+	for i:=0;i<len(text)-1;i++{
+		if text[i]=='$' && text[i+1]=='{'{
+			text= []byte(string(text[:i])+"_env("+string(text[i+2:]))
+			for ;i<len(text);i++{
+				if text[i]=='-'{
+					if text[i+1]=='.' && text[i+2]=='}'{
+						text = []byte(string(text[:i+1])+"Default"+string(text[i+2:]))
+					}
+					if text[i-1]==':'{
+						text = []byte(string(text[:i])+string(text[i+1:]))
+					}else{
+						text[i]=':'
+					}
+				}
+				if text[i]=='}'{
+					text[i]=')'
+					break
+				}
+			}
+		}
+	}
+	return string(text)
+}
+
+
 func handleVolumes(shortSyntax []string, longSyntax []LongSyntaxVolume) []interface{} {
 
 	var longSyntaxVolumes []interface{}
