@@ -76,136 +76,93 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 		Services: make(map[string]ServiceYMLService),
 		Dbs:      make([]string, 0),
 	}
-	var isDB bool
 	var err error
-	var dbs []string
-
-	var dbServicesNames []string
-	dbServicesNames = make([]string, 1)
 	servicesNames := make([]string, 1)
 
-	for k, v := range d {
-
-		isDB = false
-
-		if v.Image != "" {
-			_, isDB = checkDB(v.Image)
-		}
-		if isDB {
-			dbServicesNames = append(dbServicesNames, k)
-		}
+	for k, _ := range d {
 		servicesNames = append(servicesNames, k)
 	}
 
 	for k, v := range d {
-		var current_db string
-		isDB = false
-
-		//var gitURL, gitBranch string
 		var buildRoot string
 
-		if v.Image != "" {
-			current_db, isDB = checkDB(v.Image)
+		var gitPath string
+		gitPath, err = common.GitRootDir("/")
+		if err != nil {
 
+		}
+		hasGit := common.HasGit(gitPath)
+
+		if hasGit {
+			buildRoot, err = common.PathRelativeToGitRoot(gitPath)
+		}
+
+		if v.Deploy.Resources.Limits.Cpus != "" || v.Deploy.Resources.Limits.Memory != "" || v.Deploy.Resources.Reservations.Cpus != "" || v.Deploy.Resources.Reservations.Memory != "" {
+			common.PrintlnWarning("Service.yml format does not support \"resources limitations and reservations\" for deploy at the moment, try using \"cpu_shares\" and \"mem_limit\" instead. ")
+
+		}
+
+		var serviceYamlService ServiceYMLService
+
+		//Set Git stuff and BuildRoot
+		serviceYamlService.GitRepo = gitURL
+		serviceYamlService.GitBranch = gitBranch
+		if v.BuildCommand.BuildRoot != "" {
+			serviceYamlService.BuildRoot = v.BuildCommand.BuildRoot
+		} else if v.BuildCommand.Build.Context != "" {
+			serviceYamlService.BuildRoot = v.BuildCommand.Build.Context
 		} else {
-
-			var gitPath string
-			gitPath, err = common.GitRootDir("/")
-			if err != nil {
-
-			}
-			hasGit := common.HasGit(gitPath)
-
-			if hasGit {
-				//gitURL = common.RemoteGitUrl(gitPath)
-				//gitBranch = common.LocalGitBranch(gitPath)
-				buildRoot, err = common.PathRelativeToGitRoot(gitPath)
-			}
+			serviceYamlService.BuildRoot = buildRoot
 		}
-		if isDB {
-			dbServicesNames = append(dbServicesNames, k)
-			dbs = append(dbs, current_db)
+
+		if serviceYamlService.BuildRoot == "." {
+			serviceYamlService.BuildRoot = ""
 		}
-		if !isDB {
 
-			if v.Deploy.Resources.Limits.Cpus != "" || v.Deploy.Resources.Limits.Memory != "" || v.Deploy.Resources.Reservations.Cpus != "" || v.Deploy.Resources.Reservations.Memory != "" {
-				common.PrintlnWarning("Service.yml format does not support \"resources limitations and reservations\" for deploy at the moment, try using \"cpu_shares\" and \"mem_limit\" instead. ")
 
-			}
+		serviceYamlService.Command = v.Command.Command
+		serviceYamlService.Image = v.Image
+		serviceYamlService.Requires = v.Depends_on
+		serviceYamlService.Volumes = handleVolumes(v.Volumes.Volumes, v.Volumes.LongSyntax)
+		serviceYamlService.Ports = handlePorts(v.Expose, v.Ports.Port, v.Ports.ShortSyntax, shouldPrompt)
+		serviceYamlService.StopGrace = v.Stop_grace_period
+		serviceYamlService.WorkDir = v.Working_dir
+		serviceYamlService.EnvVars = v.EnvVars.EnvVars
+		serviceYamlService.Tags = v.Labels
+		serviceYamlService.DockerfilePath = v.BuildCommand.Build.Dockerfile
+		serviceYamlService.Privileged = v.Privileged
+		serviceYamlService.Constraints = Constraints{
+			Resources: Resources{
+				Memory: v.MemLimit,
+				Cpu:    v.CpuShares,
+			},
+		}
 
-			var serviceYamlService ServiceYMLService
+		serviceYamlService.Tags = make(map[string]string, 1)
+		for key, w := range v.Deploy.Labels {
+			serviceYamlService.Tags[key] = w
+		}
 
-			//Set Git stuff and BuildRoot
-			serviceYamlService.GitRepo = gitURL
-			serviceYamlService.GitBranch = gitBranch
-			if v.BuildCommand.BuildRoot != "" {
-				serviceYamlService.BuildRoot = v.BuildCommand.BuildRoot
-			} else if v.BuildCommand.Build.Context != "" {
-				serviceYamlService.BuildRoot = v.BuildCommand.Build.Context
-			} else {
-				serviceYamlService.BuildRoot = buildRoot
-			}
-
-			if serviceYamlService.BuildRoot == "."{
-				serviceYamlService.BuildRoot = ""
-			}
-
-			//Do not let a service require a db as service.yml runs dbs first anyway
-
-			for i := 0; i < len(v.Depends_on); i++ {
-				for j := 0; j < len(dbServicesNames); j++ {
-					if i < len(v.Depends_on) {
-						if v.Depends_on[i] == dbServicesNames[j] {
-							v.Depends_on = append(v.Depends_on[:i], v.Depends_on[i+1:]...)
-						}
+		if v.EnvFile.EnvFile != nil {
+			var lines map[string]string
+			for i := 0; i < len(v.EnvFile.EnvFile); i++ {
+				path := filepath[0:len(filepath)-len("docker-compose.yml")]
+				lines = readEnv_file(path + v.EnvFile.EnvFile[i])
+				for j, w := range lines {
+					if j != "" {
+						serviceYamlService.EnvVars[j] = w
 					}
 				}
 			}
-
-			serviceYamlService.Command = v.Command.Command
-			serviceYamlService.Image = v.Image
-			serviceYamlService.Requires = v.Depends_on
-			serviceYamlService.Volumes = handleVolumes(v.Volumes.Volumes, v.Volumes.LongSyntax)
-			serviceYamlService.Ports = handlePorts(v.Expose, v.Ports.Port, v.Ports.ShortSyntax, shouldPrompt)
-			serviceYamlService.StopGrace = v.Stop_grace_period
-			serviceYamlService.WorkDir = v.Working_dir
-			serviceYamlService.EnvVars = v.EnvVars.EnvVars
-			serviceYamlService.Tags = v.Labels
-			serviceYamlService.DockerfilePath = v.BuildCommand.Build.Dockerfile
-			serviceYamlService.Privileged = v.Privileged
-			serviceYamlService.Constraints = Constraints{
-				Resources: Resources{
-					Memory: v.MemLimit,
-					Cpu:    v.CpuShares,
-				},
-			}
-
-			serviceYamlService.Tags = make(map[string]string, 1)
-			for key, w := range v.Deploy.Labels {
-				serviceYamlService.Tags[key] = w
-			}
-
-			if v.EnvFile.EnvFile != nil {
-				var lines map[string]string
-				for i := 0; i < len(v.EnvFile.EnvFile); i++ {
-					path := filepath[0:len(filepath)-len("docker-compose.yml")]
-					lines = readEnv_file(path + v.EnvFile.EnvFile[i])
-					for j, w := range lines {
-						if j != "" {
-							serviceYamlService.EnvVars[j] = w
-						}
-					}
-				}
-			}
-
-			if serviceYamlService.Image != "" {
-				serviceYamlService.GitRepo = ""
-				serviceYamlService.GitBranch = ""
-				serviceYamlService.BuildRoot = ""
-			}
-			serviceYaml.Services[k] = serviceYamlService
 		}
+
+		if serviceYamlService.Image != "" {
+			serviceYamlService.GitRepo = ""
+			serviceYamlService.GitBranch = ""
+			serviceYamlService.BuildRoot = ""
+		}
+		serviceYaml.Services[k] = serviceYamlService
 	}
 
-	return serviceYaml.Services, dbs
+	return serviceYaml.Services, []string{}
 }

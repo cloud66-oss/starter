@@ -207,26 +207,6 @@ func isCommentLine(line string) bool {
 	return false
 }
 
-func checkDB(image string) (string, bool) {
-	db_check := []string{"mysql", "postgresql", "redis", "mongodb", "elasticsearch", "glusterfs", "influxdb", "rabbitmq", "sqlite", "postgres", "mongo", "influx"}
-
-	for i := 0; i < len(db_check); i++ {
-		if strings.Contains(image, db_check[i]) {
-			switch db_check[i] {
-			case "postgres":
-				return "postgresql", true
-			case "mongo":
-				return "mongodb", true
-			case "influx":
-				return "influxdb", true
-			default:
-				return db_check[i], true
-			}
-		}
-	}
-	return "", false
-}
-
 func CheckError(err error) {
 	if err != nil {
 		fmt.Println(err.Error())

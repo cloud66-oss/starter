@@ -28,7 +28,6 @@ func Detect(rootDir string) ([]packs.Pack, error) {
 		}
 	}
 	return packs, nil
-
 }
 
 func choosePack(detectedPacks []packs.Pack, noPrompt bool) (packs.Pack, error) {
@@ -71,7 +70,7 @@ func choosePack(detectedPacks []packs.Pack, noPrompt bool) (packs.Pack, error) {
 				}
 			}
 
-			return detectedPacks[0], nil
+			return nil, fmt.Errorf("Multiple frameworks detected. Unable to generate.")
 		}
 	} else {
 
