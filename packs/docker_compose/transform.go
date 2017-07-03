@@ -82,8 +82,10 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 
 	var dbServicesNames []string
 	dbServicesNames = make([]string, 1)
+	servicesNames := make([]string, 1)
 
 	for k, v := range d {
+
 		isDB = false
 
 		if v.Image != "" {
@@ -92,6 +94,7 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 		if isDB {
 			dbServicesNames = append(dbServicesNames, k)
 		}
+		servicesNames = append(servicesNames, k)
 	}
 
 	for k, v := range d {
@@ -166,7 +169,7 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 			serviceYamlService.WorkDir = v.Working_dir
 			serviceYamlService.EnvVars = v.EnvVars.EnvVars
 			serviceYamlService.Tags = v.Labels
-			//serviceYamlService.DockerfilePath = v.BuildCommand.Build.Dockerfile
+			serviceYamlService.DockerfilePath = v.BuildCommand.Build.Dockerfile
 			serviceYamlService.Privileged = v.Privileged
 			serviceYamlService.Constraints = Constraints{
 				Resources: Resources{

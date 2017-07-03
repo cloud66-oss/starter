@@ -8,24 +8,24 @@ import (
 	"os"
 )
 
-func handleEnvVarsFormat(text []byte) string{
+func handleEnvVarsFormat(text []byte) string {
 
-	for i:=0;i<len(text)-1;i++{
-		if text[i]=='$' && text[i+1]=='{'{
-			text= []byte(string(text[:i])+"_env("+string(text[i+2:]))
-			for ;i<len(text);i++{
-				if text[i]=='-'{
-					if text[i+1]=='.' && text[i+2]=='}'{
-						text = []byte(string(text[:i+1])+"Default"+string(text[i+2:]))
+	for i := 0; i < len(text)-1; i++ {
+		if text[i] == '$' && text[i+1] == '{' {
+			text = []byte(string(text[:i]) + "_env(" + string(text[i+2:]))
+			for ; i < len(text); i++ {
+				if text[i] == '-' {
+					if text[i+1] == '.' && text[i+2] == '}' {
+						text = []byte(string(text[:i+1]) + "Default" + string(text[i+2:]))
 					}
-					if text[i-1]==':'{
-						text = []byte(string(text[:i])+string(text[i+1:]))
-					}else{
-						text[i]=':'
+					if text[i-1] == ':' {
+						text = []byte(string(text[:i]) + string(text[i+1:]))
+					} else {
+						text[i] = ':'
 					}
 				}
-				if text[i]=='}'{
-					text[i]=')'
+				if text[i] == '}' {
+					text[i] = ')'
 					break
 				}
 			}
@@ -33,7 +33,6 @@ func handleEnvVarsFormat(text []byte) string{
 	}
 	return string(text)
 }
-
 
 func handleVolumes(shortSyntax []string, longSyntax []LongSyntaxVolume) []interface{} {
 
@@ -54,10 +53,39 @@ func handleVolumes(shortSyntax []string, longSyntax []LongSyntaxVolume) []interf
 				tempString = longSyntax[i].Source + ":" + longSyntax[i].Target
 			}
 		}
+
 		longSyntaxVolumes = append(longSyntaxVolumes, tempString)
 	}
 
 	return longSyntaxVolumes
+}
+
+func formatShortPorts(dockerPort string) string {
+	var servicePort, aux, aux2 string
+	var i int
+
+	for i = 0; i < len(dockerPort); i++ {
+		if unicode.IsDigit(rune(dockerPort[i])){
+			break
+		}
+	}
+	for ;i<len(dockerPort);i++ {
+		if dockerPort[i] == ':' || dockerPort[i] == '\n' {
+			break
+		} else {
+			aux = string(append([]byte(aux), dockerPort[i]))
+		}
+	}
+	for i=i+1; i < len(dockerPort); i++ {
+		if dockerPort[i] == ':' || dockerPort[i] == '\n' {
+			break
+		} else {
+			aux2 = string(append([]byte(aux2), dockerPort[i]))
+		}
+	}
+	servicePort = aux2 + ":" + aux + dockerPort[i:]
+
+	return servicePort
 }
 
 func handlePorts(expose []string, longSyntax []Port, shortSyntax []string, shouldPrompt bool) []interface{} {
@@ -69,6 +97,7 @@ func handlePorts(expose []string, longSyntax []Port, shortSyntax []string, shoul
 	}
 	if len(shortSyntax) > 0 {
 		for i := 0; i < len(shortSyntax); i++ {
+			shortSyntax[i] = formatShortPorts(shortSyntax[i])
 			longSyntaxPorts = append(longSyntaxPorts, shortSyntax[i])
 		}
 	}
@@ -94,7 +123,7 @@ func handlePorts(expose []string, longSyntax []Port, shortSyntax []string, shoul
 				if answer == "HTTPS\n" {
 					serviceyml_longsyntax.Https = longSyntax[i].Published
 				}
-			} else{
+			} else {
 				serviceyml_longsyntax.Tcp = longSyntax[i].Published
 			}
 		} else {
@@ -111,7 +140,7 @@ func readEnv_file(path string) map[string]string {
 	var env_vars map[string]string
 	var key, value string
 	envFile, err := os.Open(path)
-	if err != nil{
+	if err != nil {
 		return env_vars
 	}
 	env_vars = make(map[string]string, 1)
