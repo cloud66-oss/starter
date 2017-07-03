@@ -65,26 +65,32 @@ func formatShortPorts(dockerPort string) string {
 	var i int
 
 	for i = 0; i < len(dockerPort); i++ {
-		if unicode.IsDigit(rune(dockerPort[i])){
+		if unicode.IsDigit(rune(dockerPort[i])) {
 			break
 		}
 	}
-	for ;i<len(dockerPort);i++ {
+	for ; i < len(dockerPort); i++ {
 		if dockerPort[i] == ':' || dockerPort[i] == '\n' {
 			break
 		} else {
 			aux = string(append([]byte(aux), dockerPort[i]))
 		}
 	}
-	for i=i+1; i < len(dockerPort); i++ {
+	for i = i + 1; i < len(dockerPort); i++ {
 		if dockerPort[i] == ':' || dockerPort[i] == '\n' {
 			break
 		} else {
 			aux2 = string(append([]byte(aux2), dockerPort[i]))
 		}
 	}
-	servicePort = aux2 + ":" + aux + dockerPort[i:]
-
+	if i < len(dockerPort)-1 {
+		servicePort = aux2 + ":" + aux + dockerPort[i:]
+	} else {
+		servicePort = aux2 + ":" + aux
+	}
+	if servicePort[0] == ':' {
+		servicePort = servicePort[1:]
+	}
 	return servicePort
 }
 
@@ -124,7 +130,7 @@ func handlePorts(expose []string, longSyntax []Port, shortSyntax []string, shoul
 					serviceyml_longsyntax.Https = longSyntax[i].Published
 				}
 			} else {
-				serviceyml_longsyntax.Tcp = longSyntax[i].Published
+				serviceyml_longsyntax.Http = longSyntax[i].Published
 			}
 		} else {
 			serviceyml_longsyntax.Udp = longSyntax[i].Published

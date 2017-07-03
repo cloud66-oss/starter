@@ -26,6 +26,11 @@ func (sm *Devices) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+func (l *Links) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	common.PrintlnWarning("Service.yml format does not support \"links\" at the moment")
+	return nil
+}
+
 func (sm *Dns) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	common.PrintlnWarning("Service.yml format does not support \"dns\" at the moment")
 	return nil

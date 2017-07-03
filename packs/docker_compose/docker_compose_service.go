@@ -16,7 +16,7 @@ type DockerService struct {
 	Expose            []string `yaml:"expose,omitempty"`
 	EnvFile           EnvFile `yaml:"env_file,omitempty"`
 	CpuShares         int `yaml:"cpu_shares,omitempty"`
-	MemLimit          int `yaml:"mem_limit,omitempty"`
+	MemLimit          string `yaml:"mem_limit,omitempty"`
 	Links             Links `yaml:"links,omitempty"`
 
 	//unsupported docker-compose specifications

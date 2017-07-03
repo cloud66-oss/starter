@@ -146,10 +146,12 @@ func copyToServiceYML(d map[string]DockerService, gitURL string, gitBranch strin
 				serviceYamlService.BuildRoot = buildRoot
 			}
 
-			//Do not let a service require a db as service.yml runs dbs first anyway
-			for i := 0; i < len(v.Links.Links); i++ {
-				v.Depends_on = append(v.Depends_on, v.Links.Links[i])
+			if serviceYamlService.BuildRoot == "."{
+				serviceYamlService.BuildRoot = ""
 			}
+
+			//Do not let a service require a db as service.yml runs dbs first anyway
+
 			for i := 0; i < len(v.Depends_on); i++ {
 				for j := 0; j < len(dbServicesNames); j++ {
 					if i < len(v.Depends_on) {

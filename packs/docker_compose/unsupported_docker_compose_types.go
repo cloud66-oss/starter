@@ -19,6 +19,10 @@ type Devices struct {
 	Devices string
 }
 
+type Links struct {
+	Links []string `yaml:"links,omitempty"`
+}
+
 type Dns struct {
 	Dns string
 }

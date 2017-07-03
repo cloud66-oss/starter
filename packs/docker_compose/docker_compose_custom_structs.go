@@ -28,12 +28,9 @@ type CpusMem struct{
 }
 
 type Command struct {
-	Command []string `yaml:"command,omitempty"`
+	Command string `yaml:"command,omitempty"`
 }
 
-type Links struct {
-	Links []string `yaml:"links,omitempty"`
-}
 
 type Volumes struct {
 	Volumes []string `yaml:"volumes,omitempty"`

@@ -15,7 +15,7 @@ type ServiceYMLService struct {
 	Privileged     bool `yaml:"privileged,omitempty"`
 	DockerfilePath string `yaml:"dockerfile_path,omitempty"`
 	Tags           map[string]string `yaml:"tags,omitempty"`
-	Command        []string `yaml:"command,omitempty"`
+	Command        string `yaml:"command,omitempty"`
 	EnvVars        map[string]string `yaml:"env_vars,omitempty"`
 	Ports          []interface{} `yaml:"ports,omitempty"`
 }

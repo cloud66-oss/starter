@@ -42,7 +42,7 @@ func (ef *EnvFile) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-
+/*
 func (l *Links) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var multi []string
 	err := unmarshal(&multi)
@@ -59,6 +59,7 @@ func (l *Links) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	return nil
 }
+*/
 
 func (sm *EnvVars) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var m map[string]string
@@ -97,10 +98,13 @@ func (sm *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		if err != nil {
 			return err
 		}
-		sm.Command = make([]string, 1)
-		sm.Command[0] = single
+		sm.Command = single
 	} else {
-		sm.Command = multi
+		temp := ""
+		for _,v := range multi{
+			temp = temp + " " + v
+		}
+		sm.Command = temp
 	}
 	return nil
 }
