@@ -40,6 +40,12 @@ func handleVolumes(shortSyntax []string, longSyntax []LongSyntaxVolume) []interf
 
 	if len(shortSyntax) > 0 {
 		for i := 0; i < len(shortSyntax); i++ {
+			if shortSyntax[i][0] == '.'{
+				shortSyntax[i]= shortSyntax[i][1:]
+			}
+			if shortSyntax[i][0]!='/'{
+				shortSyntax[i] = "/"+shortSyntax[i]
+			}
 			longSyntaxVolumes = append(longSyntaxVolumes, shortSyntax[i])
 		}
 	}
@@ -53,7 +59,12 @@ func handleVolumes(shortSyntax []string, longSyntax []LongSyntaxVolume) []interf
 				tempString = longSyntax[i].Source + ":" + longSyntax[i].Target
 			}
 		}
-
+		if tempString[0] == '.'{
+			tempString = tempString[1:]
+		}
+		if tempString[0]!='/'{
+			tempString = "/"+tempString
+		}
 		longSyntaxVolumes = append(longSyntaxVolumes, tempString)
 	}
 

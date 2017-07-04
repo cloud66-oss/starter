@@ -4,44 +4,50 @@ services:
   db:
     image: mariadb
     volumes:
-    - ${LOG_ROOT}:/var/log
-    - data_mariadb-vol:/var/lib/mysql
+    - /_env(LOG_ROOT):/var/log
+    - /data_mariadb-vol:/var/lib/mysql
     env_vars:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_USER: root
-      NODE_ENV: ${NODE_ENV}
-      PORT: ${PORT}
+      NODE_ENV: _env(NODE_ENV)
+      PORT: _env(PORT)
       RACK_ENV: Env_var_from_file
       RACK2: a second env var from file
-      VIRTUAL_HOST: ${VIRTUAL_HOST}
-      VIRTUAL_PORT: ${PORT}
+      VIRTUAL_HOST: _env(VIRTUAL_HOST)
+      VIRTUAL_PORT: _env(PORT)
+  es24:
+    image: sergeyzskw/elasticsearch:2.4-magento-smile
+    requires:
+    - db
+    volumes:
+    - /es24-vol:/usr/share/elasticsearch/data
   http:
     image: sergeyzskw/apache2
     requires:
     - php70
     volumes:
-    - ${LOG_ROOT}:/var/log
-    - http_a2-vol:/etc/apache2
-    - ${HTTPD_DOCUMENT_ROOT}:/var/www
+    - /_env(LOG_ROOT):/var/log
+    - /http_a2-vol:/etc/apache2
+    - /_env(HTTPD_DOCUMENT_ROOT):/var/www
   php55:
     image: sergeyzskw/php:5.5-fpm
+    requires:
+    - es24
     volumes:
-    - ${LOG_ROOT}:/var/log
-    - php_55-vol:/etc/php5
-    - composer_55-vol:/home/composer/.composer
-    - ~/.ssh/${SSH_KEY}:/home/composer/.ssh/id_rsa
-    - ~/.ssh/known_hosts:/home/composer/.ssh/known_hosts
-    - ${HTTPD_DOCUMENT_ROOT}:/var/www
+    - /_env(LOG_ROOT):/var/log
+    - /php_55-vol:/etc/php5
+    - /composer_55-vol:/home/composer/.composer
+    - /~/.ssh/_env(SSH_KEY):/home/composer/.ssh/id_rsa
+    - /~/.ssh/known_hosts:/home/composer/.ssh/known_hosts
+    - /_env(HTTPD_DOCUMENT_ROOT):/var/www
   php70:
     image: sergeyzskw/php:7.0-fpm
     requires:
     - php55
     volumes:
-    - ${LOG_ROOT}:/var/log
-    - php_70-vol:/etc/php
-    - composer_70-vol:/home/composer/.composer
-    - ~/.ssh/${SSH_KEY}:/home/composer/.ssh/id_rsa
-    - ~/.ssh/known_hosts:/home/composer/.ssh/known_hosts
-    - ${HTTPD_DOCUMENT_ROOT}:/var/www
-dbs:
-- elasticsearch
+    - /_env(LOG_ROOT):/var/log
+    - /php_70-vol:/etc/php
+    - /composer_70-vol:/home/composer/.composer
+    - /~/.ssh/_env(SSH_KEY):/home/composer/.ssh/id_rsa
+    - /~/.ssh/known_hosts:/home/composer/.ssh/known_hosts
+    - /_env(HTTPD_DOCUMENT_ROOT):/var/www

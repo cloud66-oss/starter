@@ -69,11 +69,11 @@ func choosePack(detectedPacks []packs.Pack, noPrompt bool) (packs.Pack, error) {
 					return detectedPacks[i], nil
 				}
 			}
-
+			//return detectedPacks[0], nil
 			return nil, fmt.Errorf("Multiple frameworks detected. Unable to generate.")
 		}
 	} else {
-
+		common.PrintlnTitle(detectedPacks[0].Name())
 		return detectedPacks[0], nil
 	}
 

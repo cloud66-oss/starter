@@ -11,29 +11,35 @@ services:
       this_is_a_label: first
     env_vars:
       FOREMAN_URL: http://haproxy
+  db:
+    image: postgres:9.5
+    volumes:
+    - /pgdata:/var/lib/postgresql/data/pgdata:z
+    env_vars:
+      PGDATA: /var/lib/postgresql/data/pgdata
   foreman:
     git_url: git@github.com:cloud66/starter.git
     git_branch: master
     build_root: ./somewhere
     volumes:
-    - ./assets:/usr/src/app/public/assets:z
-    - ./webpack:/usr/src/app/public/webpack:z
-    - mydata1:/data1
-    - mydata3:/data3
+    - /assets:/usr/src/app/public/assets:z
+    - /webpack:/usr/src/app/public/webpack:z
+    - /mydata1:/data1
+    - /mydata3:/data3
     dockerfile_path: ./here
-    command:
-    - rails server -p 80 -b 0.0.0.0
+    command: rails server -p 80 -b 0.0.0.0
     ports:
     - "80"
   foreman-init:
     git_url: git@github.com:cloud66/starter.git
     git_branch: master
     build_root: foreman
+    requires:
+    - db
     volumes:
-    - ./assets:/usr/src/app/public/assets
-    - ./webpack:/usr/src/app/public/webpack
-    command:
-    - bundle exec rake db:migrate db:seed assets:clean assets:precompile webpack:compile
+    - /assets:/usr/src/app/public/assets
+    - /webpack:/usr/src/app/public/webpack
+    command: bundle exec rake db:migrate db:seed assets:clean assets:precompile webpack:compile
       apipie:cache:index
   haproxy:
     image: dockercloud/haproxy
@@ -44,16 +50,13 @@ services:
     - 8000:8000
     - 80:80
     - container: "80"
-      tcp: "8080"
+      http: "8080"
   memcache:
     image: memcached
   proxy:
     git_url: git@github.com:cloud66/starter.git
     git_branch: master
     build_root: proxy
-    command:
-    - /usr/src/app/bin/smart-proxy
+    command: /usr/src/app/bin/smart-proxy
     ports:
     - 8000:8000
-dbs:
-- postgresql

@@ -359,7 +359,6 @@ func analyze(
 
 	pack, err = choosePack(detectedPacks, noPrompt)
 
-
 	if err != nil {
 		pack = nil
 		fmt.Errorf("Failed to detect framework due to: %s", err.Error())
@@ -403,47 +402,48 @@ func analyze(
 
 		pack.SetSupportedLanguageVersions(tags)
 	}
+	//if pack != nil {
 
-	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to analyze the project due to: %s", err.Error())
-	}
-
-	err = pack.WriteDockerfile(dockerfileTemplateDir, path, !noPrompt)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to write Dockerfile due to: %s", err.Error())
-	}
-
-	if strings.Contains(generator, "service") {
-		err = pack.WriteServiceYAML(serviceYAMLTemplateDir, path, !noPrompt)
+		err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to write service.yml due to: %s", err.Error())
+			return nil, fmt.Errorf("Failed to analyze the project due to: %s", err.Error())
 		}
-	}
 
-	if strings.Contains(generator, "docker-compose") {
-		err = pack.WriteDockerComposeYAML(dockerComposeYAMLTemplateDir, path, !noPrompt)
+		err = pack.WriteDockerfile(dockerfileTemplateDir, path, !noPrompt)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to write docker-compose.yml due to: %s", err.Error())
+			return nil, fmt.Errorf("Failed to write Dockerfile due to: %s", err.Error())
 		}
-	}
 
-	if len(pack.GetMessages()) > 0 {
-		for _, warning := range pack.GetMessages() {
-			result.Warnings = append(result.Warnings, warning)
+		if strings.Contains(generator, "service") {
+			err = pack.WriteServiceYAML(serviceYAMLTemplateDir, path, !noPrompt)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to write service.yml due to: %s", err.Error())
+			}
 		}
-	}
 
-	result.Ok = true
-	result.Language = pack.Name()
-	result.LanguageVersion = pack.LanguageVersion()
-	result.Framework = pack.Framework()
-	result.FrameworkVersion = pack.FrameworkVersion()
-	result.Databases = pack.GetDatabases()
-	result.StartCommands = pack.GetStartCommands()
-	result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
-	result.BuildCommands = []string{}
-	result.DeployCommands = []string{}
+		if strings.Contains(generator, "docker-compose") {
+			err = pack.WriteDockerComposeYAML(dockerComposeYAMLTemplateDir, path, !noPrompt)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to write docker-compose.yml due to: %s", err.Error())
+			}
+		}
 
+		if len(pack.GetMessages()) > 0 {
+			for _, warning := range pack.GetMessages() {
+				result.Warnings = append(result.Warnings, warning)
+			}
+		}
+
+		result.Ok = true
+		result.Language = pack.Name()
+		result.LanguageVersion = pack.LanguageVersion()
+		result.Framework = pack.Framework()
+		result.FrameworkVersion = pack.FrameworkVersion()
+		result.Databases = pack.GetDatabases()
+		result.StartCommands = pack.GetStartCommands()
+		result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
+		result.BuildCommands = []string{}
+		result.DeployCommands = []string{}
+	//}
 	return result, nil
 }
