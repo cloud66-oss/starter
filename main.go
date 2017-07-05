@@ -10,14 +10,14 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"regexp"
+	"strings"
 
-	"github.com/getsentry/raven-go"
 	"github.com/cloud66/starter/common"
+	"github.com/cloud66/starter/packs"
+	"github.com/getsentry/raven-go"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
-	"github.com/cloud66/starter/packs"
 	"runtime"
 )
 
@@ -101,9 +101,8 @@ func init() {
 	-g service: only the service.yml + Dockerfile (cloud 66 specific)
 	-g dockerfile,service,docker-compose (all files)`)
 
-
 	//sentry DSN setup
-	raven.SetDSN("https://39c187859231424fb4865e90d42a29a3:cfbc35db1b954f04be995a3d0ec3fbae@sentry.io/153008")
+	raven.SetDSN("https://b67185420a71409d900c7affe3a4287d:c5402650974e4a179227591ef8c4fd75@sentry.io/187937")
 }
 
 // downloading templates from github and putting them into homedir
@@ -281,12 +280,11 @@ func main() {
 		"",
 		flagRegistry)
 
-
 	if err != nil {
 		common.PrintError(err.Error())
 		os.Exit(1)
 	}
-	
+
 	if len(result.Warnings) > 0 {
 		common.PrintlnWarning("Warnings:")
 		for _, warning := range result.Warnings {
@@ -407,7 +405,7 @@ func analyze(
 		pack.SetSupportedLanguageVersions(tags)
 	}
 
-	if pack == nil{
+	if pack == nil {
 		return nil, err
 	}
 
