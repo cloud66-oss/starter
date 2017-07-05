@@ -9,6 +9,7 @@ RUN go get github.com/mitchellh/gox
 RUN go get github.com/tools/godep
 RUN go get github.com/onsi/ginkgo/ginkgo
 RUN go get github.com/onsi/gomega
+RUN go get github.com/getsentry/raven-go
 
 #copy the source files
 RUN mkdir -p /usr/local/go/src/github.com/cloud66/starter
