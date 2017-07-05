@@ -17,6 +17,8 @@ import (
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
 	"github.com/cloud66/starter/packs"
+	"github.com/getsentry/raven-go"
+	"runtime"
 )
 
 type downloadFile struct {
@@ -98,6 +100,9 @@ func init() {
 	-g docker-compose: only the docker-compose.yml + Dockerfile
 	-g service: only the service.yml + Dockerfile (cloud 66 specific)
 	-g dockerfile,service,docker-compose (all files)`)
+
+	//sentry DSN setup
+	raven.SetDSN("https://b67185420a71409d900c7affe3a4287d:c5402650974e4a179227591ef8c4fd75@sentry.io/187937")
 }
 
 // downloading templates from github and putting them into homedir
@@ -204,6 +209,8 @@ func downloadSingleFile(tempDir string, temp downloadFile) error {
 
 func main() {
 	args := os.Args[1:]
+
+	defer recoverPanic()
 
 	if len(args) > 0 && (args[0] == "help" || args[0] == "-h") {
 		fmt.Printf("Starter (%s) Help\n", VERSION)
@@ -442,4 +449,20 @@ func analyze(
 	result.DeployCommands = []string{}
 	//}
 	return result, nil
+}
+
+
+
+func recoverPanic() {
+	if VERSION != "dev" {
+		raven.CapturePanicAndWait(func() {
+			if rec := recover(); rec != nil {
+				panic(rec)
+			}
+		}, map[string]string{
+			"Version":      VERSION,
+			"Platform":     runtime.GOOS,
+			"Architecture": runtime.GOARCH,
+			"goversion":    runtime.Version()})
+	}
 }

@@ -24,6 +24,13 @@ var _ = BeforeSuite(func() {
 	Expect(common.FileExists(binPath)).To(BeTrue())
 
 	err = exec.Command(binPath, "-daemon", "-templates", "templates").Start()
+
+	// daemon takes time to start up - works fine without waiting in a Docker container, but codeship needs some time to start it
+	if true {
+		timer := time.NewTimer(time.Second * 4)
+		<-timer.C
+	}
+
 	Expect(err).NotTo(HaveOccurred())
 })
 
