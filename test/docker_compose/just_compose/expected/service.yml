@@ -14,7 +14,7 @@ services:
   db:
     image: postgres:9.5
     volumes:
-    - /pgdata:/var/lib/postgresql/data/pgdata:z
+    - ./pgdata:/var/lib/postgresql/data/pgdata:z
     env_vars:
       PGDATA: /var/lib/postgresql/data/pgdata
   foreman:
@@ -22,10 +22,10 @@ services:
     git_branch: master
     build_root: ./somewhere
     volumes:
-    - /assets:/usr/src/app/public/assets:z
-    - /webpack:/usr/src/app/public/webpack:z
-    - /mydata1:/data1
-    - /mydata3:/data3
+    - ./assets:/usr/src/app/public/assets:z
+    - ./webpack:/usr/src/app/public/webpack:z
+    - mydata1:/data1
+    - mydata3:/data3
     dockerfile_path: ./here
     command: rails server -p 80 -b 0.0.0.0
     ports:
@@ -37,8 +37,8 @@ services:
     requires:
     - db
     volumes:
-    - /assets:/usr/src/app/public/assets
-    - /webpack:/usr/src/app/public/webpack
+    - ./assets:/usr/src/app/public/assets
+    - ./webpack:/usr/src/app/public/webpack
     command: bundle exec rake db:migrate db:seed assets:clean assets:precompile webpack:compile
       apipie:cache:index
   haproxy:

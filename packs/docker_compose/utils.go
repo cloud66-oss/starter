@@ -6,6 +6,7 @@ import (
 	"strings"
 	"fmt"
 	"os"
+	"github.com/cloud66/starter/common"
 )
 
 func handleEnvVarsFormat(text []byte) string {
@@ -40,11 +41,8 @@ func handleVolumes(shortSyntax []string, longSyntax []LongSyntaxVolume) []interf
 
 	if len(shortSyntax) > 0 {
 		for i := 0; i < len(shortSyntax); i++ {
-			if shortSyntax[i][0] == '.'{
-				shortSyntax[i]= shortSyntax[i][1:]
-			}
 			if shortSyntax[i][0]!='/'{
-				shortSyntax[i] = "/"+shortSyntax[i]
+				common.PrintlnWarning("Volumes host should be an absolute path. Please modify manually.")
 			}
 			longSyntaxVolumes = append(longSyntaxVolumes, shortSyntax[i])
 		}
@@ -59,11 +57,9 @@ func handleVolumes(shortSyntax []string, longSyntax []LongSyntaxVolume) []interf
 				tempString = longSyntax[i].Source + ":" + longSyntax[i].Target
 			}
 		}
-		if tempString[0] == '.'{
-			tempString = tempString[1:]
-		}
+
 		if tempString[0]!='/'{
-			tempString = "/"+tempString
+			common.PrintlnWarning("Volumes host should be an absolute path. Please modify manually.")
 		}
 		longSyntaxVolumes = append(longSyntaxVolumes, tempString)
 	}

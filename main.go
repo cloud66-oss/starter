@@ -13,7 +13,6 @@ import (
 	"strings"
 	"regexp"
 
-	"github.com/bugsnag/bugsnag-go"
 	"github.com/cloud66/starter/common"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
@@ -83,11 +82,6 @@ const (
 )
 
 func init() {
-	bugsnag.Configure(bugsnag.Configuration{
-		APIKey:     "916591d12b54e689edde67e641c5843d",
-		AppVersion: VERSION,
-	})
-
 	flag.StringVar(&flagPath, "p", "", "project path")
 	flag.StringVar(&flagConfig, "c", "", "configuration path for the daemon mode")
 	flag.BoolVar(&flagNoPrompt, "y", false, "do not prompt user")
@@ -406,46 +400,46 @@ func analyze(
 	}
 	//if pack != nil {
 
-		err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
+	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to analyze the project due to: %s", err.Error())
+	}
+
+	err = pack.WriteDockerfile(dockerfileTemplateDir, path, !noPrompt)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to write Dockerfile due to: %s", err.Error())
+	}
+
+	if strings.Contains(generator, "service") {
+		err = pack.WriteServiceYAML(serviceYAMLTemplateDir, path, !noPrompt)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to analyze the project due to: %s", err.Error())
+			return nil, fmt.Errorf("Failed to write service.yml due to: %s", err.Error())
 		}
+	}
 
-		err = pack.WriteDockerfile(dockerfileTemplateDir, path, !noPrompt)
+	if strings.Contains(generator, "docker-compose") {
+		err = pack.WriteDockerComposeYAML(dockerComposeYAMLTemplateDir, path, !noPrompt)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to write Dockerfile due to: %s", err.Error())
+			return nil, fmt.Errorf("Failed to write docker-compose.yml due to: %s", err.Error())
 		}
+	}
 
-		if strings.Contains(generator, "service") {
-			err = pack.WriteServiceYAML(serviceYAMLTemplateDir, path, !noPrompt)
-			if err != nil {
-				return nil, fmt.Errorf("Failed to write service.yml due to: %s", err.Error())
-			}
+	if len(pack.GetMessages()) > 0 {
+		for _, warning := range pack.GetMessages() {
+			result.Warnings = append(result.Warnings, warning)
 		}
+	}
 
-		if strings.Contains(generator, "docker-compose") {
-			err = pack.WriteDockerComposeYAML(dockerComposeYAMLTemplateDir, path, !noPrompt)
-			if err != nil {
-				return nil, fmt.Errorf("Failed to write docker-compose.yml due to: %s", err.Error())
-			}
-		}
-
-		if len(pack.GetMessages()) > 0 {
-			for _, warning := range pack.GetMessages() {
-				result.Warnings = append(result.Warnings, warning)
-			}
-		}
-
-		result.Ok = true
-		result.Language = pack.Name()
-		result.LanguageVersion = pack.LanguageVersion()
-		result.Framework = pack.Framework()
-		result.FrameworkVersion = pack.FrameworkVersion()
-		result.Databases = pack.GetDatabases()
-		result.StartCommands = pack.GetStartCommands()
-		result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
-		result.BuildCommands = []string{}
-		result.DeployCommands = []string{}
+	result.Ok = true
+	result.Language = pack.Name()
+	result.LanguageVersion = pack.LanguageVersion()
+	result.Framework = pack.Framework()
+	result.FrameworkVersion = pack.FrameworkVersion()
+	result.Databases = pack.GetDatabases()
+	result.StartCommands = pack.GetStartCommands()
+	result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
+	result.BuildCommands = []string{}
+	result.DeployCommands = []string{}
 	//}
 	return result, nil
 }
