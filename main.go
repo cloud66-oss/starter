@@ -13,10 +13,12 @@ import (
 	"strings"
 	"regexp"
 
+	"github.com/getsentry/raven-go"
 	"github.com/cloud66/starter/common"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
 	"github.com/cloud66/starter/packs"
+	"runtime"
 )
 
 type downloadFile struct {
@@ -98,6 +100,10 @@ func init() {
 	-g docker-compose: only the docker-compose.yml + Dockerfile
 	-g service: only the service.yml + Dockerfile (cloud 66 specific)
 	-g dockerfile,service,docker-compose (all files)`)
+
+
+	//sentry DSN setup
+	raven.SetDSN("https://39c187859231424fb4865e90d42a29a3:cfbc35db1b954f04be995a3d0ec3fbae@sentry.io/153008")
 }
 
 // downloading templates from github and putting them into homedir
@@ -205,6 +211,8 @@ func downloadSingleFile(tempDir string, temp downloadFile) error {
 func main() {
 	args := os.Args[1:]
 
+	defer recoverPanic()
+
 	if len(args) > 0 && (args[0] == "help" || args[0] == "-h") {
 		fmt.Printf("Starter (%s) Help\n", VERSION)
 		flag.PrintDefaults()
@@ -236,7 +244,6 @@ func main() {
 	}
 
 	common.PrintlnTitle("Starter (c) 2016 Cloud66 Inc.")
-
 	// Run in daemon mode
 	if flagDaemon {
 		signalChan := make(chan os.Signal, 1)
@@ -262,7 +269,6 @@ func main() {
 		<-cleanupDone
 		os.Exit(0)
 	}
-
 	result, err := analyze(
 		true,
 		flagPath,
@@ -275,10 +281,12 @@ func main() {
 		"",
 		flagRegistry)
 
+
 	if err != nil {
 		common.PrintError(err.Error())
 		os.Exit(1)
 	}
+	
 	if len(result.Warnings) > 0 {
 		common.PrintlnWarning("Warnings:")
 		for _, warning := range result.Warnings {
@@ -398,7 +406,10 @@ func analyze(
 
 		pack.SetSupportedLanguageVersions(tags)
 	}
-	//if pack != nil {
+
+	if pack == nil{
+		return nil, err
+	}
 
 	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
 	if err != nil {
@@ -440,6 +451,20 @@ func analyze(
 	result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
 	result.BuildCommands = []string{}
 	result.DeployCommands = []string{}
-	//}
+
 	return result, nil
+}
+
+func recoverPanic() {
+	if VERSION != "dev" {
+		raven.CapturePanicAndWait(func() {
+			if rec := recover(); rec != nil {
+				panic(rec)
+			}
+		}, map[string]string{
+			"Version":      VERSION,
+			"Platform":     runtime.GOOS,
+			"Architecture": runtime.GOARCH,
+			"goversion":    runtime.Version()})
+	}
 }
