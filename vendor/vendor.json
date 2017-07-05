@@ -9,10 +9,28 @@
 			"revisionTime": "2017-06-30T00:54:20Z"
 		},
 		{
+			"checksumSHA1": "KMTpIQS+cdSCzMN5TC6GfNLTv0o=",
+			"path": "github.com/ant0ine/go-json-rest/rest",
+			"revision": "4127f183c172b25f51dbaaa2e035e8f262ac57fb",
+			"revisionTime": "2017-06-25T01:11:07Z"
+		},
+		{
+			"checksumSHA1": "sXuwczp4nGdlq20zJoGHmA8IYPg=",
+			"path": "github.com/ant0ine/go-json-rest/rest/trie",
+			"revision": "4127f183c172b25f51dbaaa2e035e8f262ac57fb",
+			"revisionTime": "2017-06-25T01:11:07Z"
+		},
+		{
 			"checksumSHA1": "gntLgvUzJqZWf4NYxJr3p/3gcvk=",
 			"path": "github.com/blang/semver",
 			"revision": "4a1e882c79dcf4ec00d2e29fac74b9c8938d5052",
 			"revisionTime": "2017-02-02T18:38:21Z"
+		},
+		{
+			"checksumSHA1": "0hWqEc//bdHUtnxlAo/UPkHSIS0=",
+			"path": "github.com/certifi/gocertifi",
+			"revision": "a9c833d2837d3b16888d55d5aafa9ffe9afb22b0",
+			"revisionTime": "2017-04-17T19:39:30Z"
 		},
 		{
 			"checksumSHA1": "JCofbE9dfFqvXNc3AEfSQx0u148=",
@@ -39,6 +57,30 @@
 			"versionExact": "docker/1.13"
 		},
 		{
+			"checksumSHA1": "oYy5Q1HBImMQvh9t96cmNzWar80=",
+			"path": "github.com/docker/distribution/manifest",
+			"revision": "28602af35aceda2f8d571bad7ca37a54cf0250bc",
+			"revisionTime": "2016-12-16T19:12:11Z",
+			"version": "docker/1.13",
+			"versionExact": "docker/1.13"
+		},
+		{
+			"checksumSHA1": "f1zUOceTZKwsdAV0ftwx+ynYWxs=",
+			"path": "github.com/docker/distribution/manifest/schema1",
+			"revision": "28602af35aceda2f8d571bad7ca37a54cf0250bc",
+			"revisionTime": "2016-12-16T19:12:11Z",
+			"version": "docker/1.13",
+			"versionExact": "docker/1.13"
+		},
+		{
+			"checksumSHA1": "JaxWnDO1ygU5ffdCSDRUq02R/Jw=",
+			"path": "github.com/docker/distribution/manifest/schema2",
+			"revision": "28602af35aceda2f8d571bad7ca37a54cf0250bc",
+			"revisionTime": "2016-12-16T19:12:11Z",
+			"version": "docker/1.13",
+			"versionExact": "docker/1.13"
+		},
+		{
 			"checksumSHA1": "0nVrpfzMAIALB7Glf7kpXjYe/Ig=",
 			"path": "github.com/docker/distribution/reference",
 			"revision": "28602af35aceda2f8d571bad7ca37a54cf0250bc",
@@ -53,6 +95,12 @@
 			"revisionTime": "2016-12-16T19:12:11Z",
 			"version": "docker/1.13",
 			"versionExact": "docker/1.13"
+		},
+		{
+			"checksumSHA1": "sNAU9ojYVUhO6dVXey6T3JhRQpw=",
+			"path": "github.com/docker/libtrust",
+			"revision": "aabc10ec26b754e797f9028f4589c5b7bd90dc20",
+			"revisionTime": "2016-07-08T17:25:13Z"
 		},
 		{
 			"checksumSHA1": "v80i7OW4AhVGbebGd7oTyfpV/Oc=",
@@ -85,6 +133,18 @@
 			"revisionTime": "2017-02-17T08:40:47Z"
 		},
 		{
+			"checksumSHA1": "qNkx9+OTwZI6aFv7K9zuFCGODUw=",
+			"path": "github.com/mattn/go-colorable",
+			"revision": "941b50ebc6efddf4c41c8e4537a5f68a4e686b24",
+			"revisionTime": "2017-06-15T03:49:14Z"
+		},
+		{
+			"checksumSHA1": "U6lX43KDDlNOn+Z0Yyww+ZzHfFo=",
+			"path": "github.com/mattn/go-isatty",
+			"revision": "fc9e8d8ef48496124e79ae0df75490096eccf6fe",
+			"revisionTime": "2017-03-22T23:44:13Z"
+		},
+		{
 			"checksumSHA1": "CIK3BBNX3nuUQCmNqTQydNfMNKI=",
 			"path": "github.com/mgutz/ansi",
 			"revision": "9520e82c474b0a04dd04f8a40959027271bab992",
@@ -95,12 +155,6 @@
 			"path": "github.com/mitchellh/go-homedir",
 			"revision": "b8bc1bf767474819792c23f32d8286a45736f1c6",
 			"revisionTime": "2016-12-03T19:45:07Z"
-		},
-		{
-			"checksumSHA1": "OFNit1Qx2DdWhotfREKodDNUwCM=",
-			"path": "github.com/opencontainers/go-digest",
-			"revision": "279bed98673dd5bef374d3b6e4b09e2af76183bf",
-			"revisionTime": "2017-06-07T19:53:33Z"
 		},
 		{
 			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
@@ -117,8 +171,8 @@
 		{
 			"checksumSHA1": "2ncnCWXu6MhDubZJYmyFNBYsrXE=",
 			"path": "golang.org/x/sys/unix",
-			"revision": "94b76065f2d2081d0fef24a6e67c571f51a6408a",
-			"revisionTime": "2017-07-01T06:49:51Z"
+			"revision": "6faef541c73732f438fb660a212750a9ba9f9362",
+			"revisionTime": "2017-06-30T11:05:18Z"
 		},
 		{
 			"checksumSHA1": "fALlQNY1fM99NesfLJ50KguWsio=",
