@@ -1,0 +1,131 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "9X1/hLR+WoHu3Vg6SDKF6W6Rjm4=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "7dd06bf38e1e13df288d471a57d5adbac106be9e",
+			"revisionTime": "2017-06-30T00:54:20Z"
+		},
+		{
+			"checksumSHA1": "gntLgvUzJqZWf4NYxJr3p/3gcvk=",
+			"path": "github.com/blang/semver",
+			"revision": "4a1e882c79dcf4ec00d2e29fac74b9c8938d5052",
+			"revisionTime": "2017-02-02T18:38:21Z"
+		},
+		{
+			"checksumSHA1": "JCofbE9dfFqvXNc3AEfSQx0u148=",
+			"path": "github.com/docker/distribution",
+			"revision": "28602af35aceda2f8d571bad7ca37a54cf0250bc",
+			"revisionTime": "2016-12-16T19:12:11Z",
+			"version": "docker/1.13",
+			"versionExact": "docker/1.13"
+		},
+		{
+			"checksumSHA1": "0au+tD+jymXNssdb1JgcctY7PN4=",
+			"path": "github.com/docker/distribution/context",
+			"revision": "28602af35aceda2f8d571bad7ca37a54cf0250bc",
+			"revisionTime": "2016-12-16T19:12:11Z",
+			"version": "docker/1.13",
+			"versionExact": "docker/1.13"
+		},
+		{
+			"checksumSHA1": "enhseHrqeUX9iJQ+dMSebjO7Syg=",
+			"path": "github.com/docker/distribution/digest",
+			"revision": "28602af35aceda2f8d571bad7ca37a54cf0250bc",
+			"revisionTime": "2016-12-16T19:12:11Z",
+			"version": "docker/1.13",
+			"versionExact": "docker/1.13"
+		},
+		{
+			"checksumSHA1": "0nVrpfzMAIALB7Glf7kpXjYe/Ig=",
+			"path": "github.com/docker/distribution/reference",
+			"revision": "28602af35aceda2f8d571bad7ca37a54cf0250bc",
+			"revisionTime": "2016-12-16T19:12:11Z",
+			"version": "docker/1.13",
+			"versionExact": "docker/1.13"
+		},
+		{
+			"checksumSHA1": "cNp7rNReJHvdSfrIetXS9RGsLSo=",
+			"path": "github.com/docker/distribution/uuid",
+			"revision": "28602af35aceda2f8d571bad7ca37a54cf0250bc",
+			"revisionTime": "2016-12-16T19:12:11Z",
+			"version": "docker/1.13",
+			"versionExact": "docker/1.13"
+		},
+		{
+			"checksumSHA1": "v80i7OW4AhVGbebGd7oTyfpV/Oc=",
+			"path": "github.com/getsentry/raven-go",
+			"revision": "d175f85701dfbf44cb0510114c9943e665e60907",
+			"revisionTime": "2017-03-30T19:40:04Z"
+		},
+		{
+			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
+			"path": "github.com/gorilla/context",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
+		},
+		{
+			"checksumSHA1": "hIbmXmNbwyP44fi1hh6zJrMcYws=",
+			"path": "github.com/gorilla/mux",
+			"revision": "ac112f7d75a0714af1bd86ab17749b31f7809640",
+			"revisionTime": "2017-07-03T15:07:09Z"
+		},
+		{
+			"checksumSHA1": "tUGxc7rfX0cmhOOUDhMuAZ9rWsA=",
+			"path": "github.com/hashicorp/go-version",
+			"revision": "03c5bf6be031b6dd45afec16b1cf94fc8938bc77",
+			"revisionTime": "2017-02-02T08:07:59Z"
+		},
+		{
+			"checksumSHA1": "gAqIxmhElSUq+G+oqaPf2VM1UjU=",
+			"path": "github.com/heroku/docker-registry-client/registry",
+			"revision": "95467b6cacee2a06f112a3cf7e47a70fad6000cf",
+			"revisionTime": "2017-02-17T08:40:47Z"
+		},
+		{
+			"checksumSHA1": "CIK3BBNX3nuUQCmNqTQydNfMNKI=",
+			"path": "github.com/mgutz/ansi",
+			"revision": "9520e82c474b0a04dd04f8a40959027271bab992",
+			"revisionTime": "2017-02-06T15:57:36Z"
+		},
+		{
+			"checksumSHA1": "V/quM7+em2ByJbWBLOsEwnY3j/Q=",
+			"path": "github.com/mitchellh/go-homedir",
+			"revision": "b8bc1bf767474819792c23f32d8286a45736f1c6",
+			"revisionTime": "2016-12-03T19:45:07Z"
+		},
+		{
+			"checksumSHA1": "OFNit1Qx2DdWhotfREKodDNUwCM=",
+			"path": "github.com/opencontainers/go-digest",
+			"revision": "279bed98673dd5bef374d3b6e4b09e2af76183bf",
+			"revisionTime": "2017-06-07T19:53:33Z"
+		},
+		{
+			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "5bf94b69c6b68ee1b541973bb8e1144db23a194b",
+			"revisionTime": "2017-03-21T23:07:31Z"
+		},
+		{
+			"checksumSHA1": "Y+HGqEkYM15ir+J93MEaHdyFy0c=",
+			"path": "golang.org/x/net/context",
+			"revision": "570fa1c91359c1869590e9cedf3b53162a51a167",
+			"revisionTime": "2017-07-01T00:59:03Z"
+		},
+		{
+			"checksumSHA1": "2ncnCWXu6MhDubZJYmyFNBYsrXE=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "94b76065f2d2081d0fef24a6e67c571f51a6408a",
+			"revisionTime": "2017-07-01T06:49:51Z"
+		},
+		{
+			"checksumSHA1": "fALlQNY1fM99NesfLJ50KguWsio=",
+			"path": "gopkg.in/yaml.v2",
+			"revision": "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b",
+			"revisionTime": "2017-04-07T17:21:22Z"
+		}
+	],
+	"rootPath": "/github.com/cloud66/starter"
+}

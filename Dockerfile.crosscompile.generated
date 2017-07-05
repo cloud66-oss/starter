@@ -1,0 +1,15 @@
+#use the golang base image
+FROM golang:1.7
+MAINTAINER Daniel van Gils
+
+#get all the go crosscompile stuff
+RUN go get github.com/mitchellh/gox
+
+#copy the source files
+RUN mkdir -p /usr/local/go/src/github.com/cloud66/starter
+ADD . /usr/local/go/src/github.com/cloud66/starter
+
+#switch to our app directory
+WORKDIR /usr/local/go/src/github.com/cloud66/starter
+
+RUN ./compile.sh

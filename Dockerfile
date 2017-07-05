@@ -5,6 +5,9 @@ MAINTAINER Daniel van Gils
 #get all the go crosscompile stuff
 RUN go get github.com/mitchellh/gox
 
+#get govener for package management
+RUN go get -u github.com/kardianos/govendor
+
 #gat all the go testing stuff
 RUN go get github.com/tools/godep
 RUN go get github.com/onsi/ginkgo/ginkgo
