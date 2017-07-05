@@ -64,6 +64,8 @@ var (
 	flagDaemon      bool
 	flagRegistry    bool
 
+	//flags are gone
+
 	config = &Config{}
 
 	// VERSION holds the starter version
