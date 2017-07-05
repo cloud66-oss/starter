@@ -3,7 +3,7 @@
 FROM node:4.6
 
 ENV APP_HOME /app
-RUN mkdir $APP_HOME
+RUN mkdir -pv $APP_HOME
 WORKDIR $APP_HOME
 
 ADD . $APP_HOME
