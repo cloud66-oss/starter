@@ -18,8 +18,6 @@ import (
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
 	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/vendor/github.com/bugsnag/bugsnag-go"
-	"github.com/cloud66/starter/vendor/github.com/mitchellh/go-homedir"
 )
 
 type downloadFile struct {
