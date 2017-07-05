@@ -64,9 +64,6 @@ var (
 	flagDaemon      bool
 	flagRegistry    bool
 
-	flagIn  string
-	flagOut string
-
 	config = &Config{}
 
 	// VERSION holds the starter version
@@ -471,6 +468,7 @@ func analyze(
 				return nil, fmt.Errorf("Failed to write docker-compose.yml due to: %s", err.Error())
 			}
 		}
+
 
 		if len(pack.GetMessages()) > 0 {
 			for _, warning := range pack.GetMessages() {
