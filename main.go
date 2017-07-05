@@ -13,7 +13,6 @@ import (
 	"strings"
 	"regexp"
 
-	"github.com/bugsnag/bugsnag-go"
 	"github.com/cloud66/starter/common"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
@@ -83,11 +82,6 @@ const (
 )
 
 func init() {
-	bugsnag.Configure(bugsnag.Configuration{
-		APIKey:     "916591d12b54e689edde67e641c5843d",
-		AppVersion: VERSION,
-	})
-
 	flag.StringVar(&flagPath, "p", "", "project path")
 	flag.StringVar(&flagConfig, "c", "", "configuration path for the daemon mode")
 	flag.BoolVar(&flagNoPrompt, "y", false, "do not prompt user")
