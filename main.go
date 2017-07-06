@@ -384,8 +384,9 @@ func analyze(
 		}
 	}
 
+
 	//get all the support language versions
-	if use_registry {
+	if use_registry && pack.Name()!="docker-compose" {
 		url := "https://registry-1.docker.io/"
 		username := "" // anonymous
 		password := "" // anonymous
