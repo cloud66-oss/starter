@@ -5,11 +5,13 @@ MAINTAINER Daniel van Gils
 #get all the go crosscompile stuff
 RUN go get github.com/mitchellh/gox
 
+#get govener for package management
+RUN go get -u github.com/kardianos/govendor
+
 #gat all the go testing stuff
 RUN go get github.com/tools/godep
 RUN go get github.com/onsi/ginkgo/ginkgo
 RUN go get github.com/onsi/gomega
-RUN go get github.com/getsentry/raven-go
 
 #copy the source files
 RUN mkdir -p /usr/local/go/src/github.com/cloud66/starter

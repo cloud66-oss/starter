@@ -25,10 +25,8 @@ var _ = BeforeSuite(func() {
 
 	err = exec.Command(binPath, "-daemon", "-templates", "templates").Start()
 
-	if true {
-		timer := time.NewTimer(time.Second * 4)
-		<-timer.C
-	}
+	// daemon takes time to start up - works fine without waiting in a Docker container, but codeship needs some time to start it
+	time.Sleep(5 * time.Second)
 
 	Expect(err).NotTo(HaveOccurred())
 })

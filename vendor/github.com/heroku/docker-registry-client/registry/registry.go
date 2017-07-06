@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-type LogfCallback func(format string, args... interface{})
+type LogfCallback func(format string, args ...interface{})
 
 /*
  * Discard log messages silently.
  */
-func Quiet(format string, args... interface{}) {
+func Quiet(format string, args ...interface{}) {
 	/* discard logs */
 }
 

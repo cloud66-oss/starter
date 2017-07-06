@@ -1,3 +1,0 @@
-- name: test_step
-  service: cx
-  command: go test
