@@ -109,6 +109,12 @@
 			"revisionTime": "2017-03-30T19:40:04Z"
 		},
 		{
+			"checksumSHA1": "g0E62MwfVLxjrthuCkPXPHoYzdQ=",
+			"path": "github.com/go-resty/resty",
+			"revision": "52992d9da3c3eff6bfa873ca253ea1e03b352356",
+			"revisionTime": "2017-07-02T17:10:10Z"
+		},
+		{
 			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
 			"path": "github.com/gorilla/context",
 			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
