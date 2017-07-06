@@ -24,6 +24,12 @@ var _ = BeforeSuite(func() {
 	Expect(common.FileExists(binPath)).To(BeTrue())
 
 	err = exec.Command(binPath, "-daemon", "-templates", "templates").Start()
+
+	if true {
+		timer := time.NewTimer(time.Second * 4)
+		<-timer.C
+	}
+
 	Expect(err).NotTo(HaveOccurred())
 })
 

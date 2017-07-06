@@ -13,10 +13,12 @@ import (
 	"strings"
 	"regexp"
 
-	"github.com/bugsnag/bugsnag-go"
 	"github.com/cloud66/starter/common"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
+	"github.com/cloud66/starter/packs"
+	"github.com/getsentry/raven-go"
+	"runtime"
 )
 
 type downloadFile struct {
@@ -63,6 +65,8 @@ var (
 	flagDaemon      bool
 	flagRegistry    bool
 
+	//flags are gone
+
 	config = &Config{}
 
 	// VERSION holds the starter version
@@ -80,11 +84,6 @@ const (
 )
 
 func init() {
-	bugsnag.Configure(bugsnag.Configuration{
-		APIKey:     "916591d12b54e689edde67e641c5843d",
-		AppVersion: VERSION,
-	})
-
 	flag.StringVar(&flagPath, "p", "", "project path")
 	flag.StringVar(&flagConfig, "c", "", "configuration path for the daemon mode")
 	flag.BoolVar(&flagNoPrompt, "y", false, "do not prompt user")
@@ -101,6 +100,9 @@ func init() {
 	-g docker-compose: only the docker-compose.yml + Dockerfile
 	-g service: only the service.yml + Dockerfile (cloud 66 specific)
 	-g dockerfile,service,docker-compose (all files)`)
+
+	//sentry DSN setup
+	raven.SetDSN("https://b67185420a71409d900c7affe3a4287d:c5402650974e4a179227591ef8c4fd75@sentry.io/187937")
 }
 
 // downloading templates from github and putting them into homedir
@@ -208,6 +210,8 @@ func downloadSingleFile(tempDir string, temp downloadFile) error {
 func main() {
 	args := os.Args[1:]
 
+	defer recoverPanic()
+
 	if len(args) > 0 && (args[0] == "help" || args[0] == "-h") {
 		fmt.Printf("Starter (%s) Help\n", VERSION)
 		flag.PrintDefaults()
@@ -301,7 +305,6 @@ func main() {
 
 	common.PrintlnTitle("Done")
 }
-
 func analyze(
 	updateTemplates bool,
 	path string,
@@ -354,9 +357,14 @@ func analyze(
 
 	common.PrintlnTitle("Detecting framework for the project at %s", path)
 
-	pack, err := Detect(path)
+	detectedPacks, err := Detect(path)
+	var pack packs.Pack
+
+	pack, err = choosePack(detectedPacks, noPrompt)
+
 	if err != nil {
-		return nil, fmt.Errorf("Failed to detect framework due to: %s", err.Error())
+		pack = nil
+		fmt.Errorf("Failed to detect framework due to: %s", err.Error())
 	}
 
 	// check for Dockerfile (before analysis to avoid wasting time)
@@ -376,8 +384,9 @@ func analyze(
 		}
 	}
 
+
 	//get all the support language versions
-	if use_registry {
+	if use_registry && pack.Name()!="docker-compose" {
 		url := "https://registry-1.docker.io/"
 		username := "" // anonymous
 		password := "" // anonymous
@@ -397,6 +406,7 @@ func analyze(
 
 		pack.SetSupportedLanguageVersions(tags)
 	}
+	//if pack != nil {
 
 	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
 	if err != nil {
@@ -438,6 +448,22 @@ func analyze(
 	result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
 	result.BuildCommands = []string{}
 	result.DeployCommands = []string{}
-
+	//}
 	return result, nil
+}
+
+
+
+func recoverPanic() {
+	if VERSION != "dev" {
+		raven.CapturePanicAndWait(func() {
+			if rec := recover(); rec != nil {
+				panic(rec)
+			}
+		}, map[string]string{
+			"Version":      VERSION,
+			"Platform":     runtime.GOOS,
+			"Architecture": runtime.GOARCH,
+			"goversion":    runtime.Version()})
+	}
 }
