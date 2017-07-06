@@ -91,7 +91,7 @@ func (a *API) StartAPI() error {
 			support.Name = p.Name()
 			support.Files = p.FilesToBeAnalysed()
 
-			if a.config.use_registry {
+			if a.config.use_registry && p.Name()!="docker-compose"{
 				url := "https://registry-1.docker.io/"
 				username := "" // anonymous
 				password := "" // anonymous
