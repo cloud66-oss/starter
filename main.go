@@ -19,6 +19,8 @@ import (
 	"github.com/cloud66/starter/packs"
 	"github.com/getsentry/raven-go"
 	"runtime"
+	"github.com/cloud66/starter/vendor/github.com/getsentry/raven-go"
+	"github.com/cloud66/starter/vendor/github.com/mitchellh/go-homedir"
 )
 
 type downloadFile struct {
@@ -242,7 +244,7 @@ func main() {
 		config.SetDefaults()
 	}
 
-	common.PrintlnTitle("Starter (c) 2016 Cloud66 Inc.")
+	common.PrintlnTitle("Starter (c) 2017 Cloud66 Inc.")
 
 	// Run in daemon mode
 	if flagDaemon {
