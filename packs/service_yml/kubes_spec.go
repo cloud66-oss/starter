@@ -1,5 +1,10 @@
 package service_yml
 
 type Spec struct {
-	Ports Ports `yaml:"ports,omitempety"`
+	Ports []KubesPorts `yaml:"ports,omitempety"`
+	Template Template `yaml:"template,omitempty"`
+}
+
+type PodSpec struct{
+	Containers []Containers `yaml:"containers,omitemptys"`
 }
