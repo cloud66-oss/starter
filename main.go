@@ -19,8 +19,6 @@ import (
 	"github.com/cloud66/starter/packs"
 	"github.com/getsentry/raven-go"
 	"runtime"
-	"github.com/cloud66/starter/vendor/github.com/getsentry/raven-go"
-	"github.com/cloud66/starter/vendor/github.com/mitchellh/go-homedir"
 )
 
 type downloadFile struct {
