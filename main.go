@@ -369,24 +369,24 @@ func analyze(
 
 	// check for Dockerfile (before analysis to avoid wasting time)
 	dockerfilePath := filepath.Join(path, "Dockerfile")
-	if _, err := os.Stat(dockerfilePath); err == nil {
+	if _, err := os.Stat(dockerfilePath); err == nil && pack.Name() != "docker-compose" && pack.Name() != "service.yml" {
 		// file exists. should we overwrite?
 		if !overwrite {
 			return nil, errors.New("Dockerfile already exists. Use overwrite flag to overwrite it")
 		}
 	}
-
-	serviceYAMLPath := filepath.Join(path, "service.yml")
-	if _, err := os.Stat(serviceYAMLPath); err == nil {
-		// file exists. should we overwrite?
-		if !overwrite {
-			return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
+	if pack.Name() != "service.yml" {
+		serviceYAMLPath := filepath.Join(path, "service.yml")
+		if _, err := os.Stat(serviceYAMLPath); err == nil {
+			// file exists. should we overwrite?
+			if !overwrite {
+				return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
+			}
 		}
 	}
 
-
 	//get all the support language versions
-	if use_registry && pack.Name()!="docker-compose" && pack.Name()!="service-yml" {
+	if use_registry && pack.Name() != "docker-compose" && pack.Name() != "service-yml" {
 		url := "https://registry-1.docker.io/"
 		username := "" // anonymous
 		password := "" // anonymous
@@ -406,7 +406,6 @@ func analyze(
 
 		pack.SetSupportedLanguageVersions(tags)
 	}
-
 
 	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
 	if err != nil {
@@ -432,9 +431,9 @@ func analyze(
 		}
 	}
 
-	if strings.Contains(generator, "kubes"){
+	if strings.Contains(generator, "kubes") {
 		err = pack.WriteKubesConfig(path, !noPrompt)
-		if err!=nil{
+		if err != nil {
 			return nil, fmt.Errorf("Failed to write kubes configuration file due to: %s", err.Error())
 		}
 	}
@@ -458,8 +457,6 @@ func analyze(
 
 	return result, nil
 }
-
-
 
 func recoverPanic() {
 	if VERSION != "dev" {
