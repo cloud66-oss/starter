@@ -53,13 +53,12 @@ http://www.startwithdocker.com/
 ### Quick Start:
 ___
 
-If you are on OS X, the best way to install starter is using homebrew
 
+Just run the install script on macOS or Linux!
 
-    $ brew tap cloud66/tap
-    $ brew install c66starter
+`curl -sSL https://raw.githubusercontent.com/cloud66/starter/master/install.sh | bash`
 
-Alternatively you can download the latest release executable and run it on your development machine.
+Or [download](https://github.com/cloud66/starter/releases?utm_source=Githubdownload&utm_medium=GHDpage&utm_campaign=starter) Starter straight from this repo. Starter can run on Linux, Windows and macOS. Copy the Starter application into `/usr/local/bin/starter` and check if it has the executable flags, if not run `chmod a+x /usr/local/bin/starter`. Containerize your first application with Starter now:
 
 
     $ cd /my/project
@@ -68,7 +67,7 @@ Alternatively you can download the latest release executable and run it on your 
 This will analyze the project in the current folder and generate the three files: `Dockerfile, docker-compose.yml and `service.yml` in the same folder, prompting for information when required.
 
 
-    Cloud 66 Starter ~ (c) 2016 Cloud 66
+    Cloud 66 Starter ~ (c) 2017 Cloud 66
     Detecting framework for the project at /Users/awesome/work/boom
     Found ruby application
     Enter ruby version: [latest]
@@ -110,7 +109,7 @@ If you want to contribute to Starter. You can build Starter using [Habitus](http
 
 Run Habitus in the root directory of this repository. The latest version is generated (after tests) inside the `./artifacts/compiled` directory.
 
-<kbd>$ sudo habitus –host $DOCKER\_HOST –certs $DOCKER\_CERT\_PATH</kbd>
+<kbd>habitus --keep-artifacts=true</kbd>
 
 To make sure you a have isolated development environment for contribution. You can use the `docker-compose` for developing, testing and compiling. 
 
