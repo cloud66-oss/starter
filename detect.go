@@ -11,6 +11,7 @@ import (
 	"strings"
 	"bufio"
 	"os"
+	"github.com/cloud66/starter/packs/service_yml"
 )
 
 func Detect(rootDir string) ([]packs.Pack, error) {
@@ -18,7 +19,8 @@ func Detect(rootDir string) ([]packs.Pack, error) {
 	node := node.Pack{}
 	php := php.Pack{}
 	dockercompose := docker_compose.Pack{}
-	detectors := []packs.Detector{dockercompose.Detector(), ruby.Detector(), node.Detector(), php.Detector()}
+	serviceyml := service_yml.Pack{}
+	detectors := []packs.Detector{dockercompose.Detector(), ruby.Detector(), node.Detector(), php.Detector(), serviceyml.Detector()}
 	var packs []packs.Pack
 
 	for _, d := range detectors {
@@ -69,7 +71,13 @@ func choosePack(detectedPacks []packs.Pack, noPrompt bool) (packs.Pack, error) {
 					return detectedPacks[i], nil
 				}
 			}
-			//return detectedPacks[0], nil
+
+			for i:=0;i<len(detectedPacks);i++{
+				if detectedPacks[i].Name() == "service.yml"{
+					return detectedPacks[i], nil
+				}
+			}
+
 			return nil, fmt.Errorf("Multiple frameworks detected. Unable to generate.")
 		}
 	} else {

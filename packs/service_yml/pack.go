@@ -1,4 +1,4 @@
-package docker_compose
+package service_yml
 
 import ()
 import (
@@ -12,7 +12,7 @@ type Pack struct {
 }
 
 func (p *Pack) Name() string {
-	return "docker-compose"
+	return "service.yml"
 }
 
 func (p *Pack) LanguageVersion() string {
@@ -20,7 +20,7 @@ func (p *Pack) LanguageVersion() string {
 }
 
 func (p *Pack) FilesToBeAnalysed() [] string {
-	return []string{"docker-compose.yml"}
+	return []string{"service.yml"}
 }
 
 func (p *Pack) Framework() string {
@@ -63,9 +63,9 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 	return nil
 }
 
-func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldPrompt bool) error {
+func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 
-	err := Transformer(outputDir+"/docker-compose.yml", outputDir+"/service.yml", p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt)
+	err := Transformer(outputDir+"/service.yml", outputDir+"/kubernetes.yml", p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt)
 
 	CheckError(err)
 
@@ -73,13 +73,11 @@ func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldProm
 }
 
 func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shouldPrompt bool) error {
-	common.PrintlnWarning("There is already an existing docker-compose.yml. Nothing to do.")
+	common.PrintlnWarning("You can not generate a docker-compose.yml using this pack. Nothing to do.")
 	return nil
 }
-
-
-func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
-	common.PrintlnWarning("You can not generate a Kubernetes configuration file using this pack. Nothing to do.")
+func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldPrompt bool) error {
+	common.PrintlnWarning("There is already an existing service.yml. Nothing to do.")
 	return nil
 }
 

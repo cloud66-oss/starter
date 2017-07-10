@@ -1,6 +1,9 @@
 package python
 
-import "github.com/cloud66/starter/packs"
+import (
+	"github.com/cloud66/starter/packs"
+	"github.com/cloud66/starter/common"
+)
 
 type Pack struct {
 	packs.PackBase
@@ -51,6 +54,11 @@ func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldProm
 				OutputDir:    outputDir,
 				ShouldPrompt: shouldPrompt}}}
 	return w.Write(p.Analysis.ServiceYAMLContext)
+}
+
+func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
+	common.PrintlnWarning("You can not generate a Kubernetes configuration file using this pack. Nothing to do.")
+	return nil
 }
 
 func (p *Pack) GetMessages() []string {

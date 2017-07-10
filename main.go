@@ -386,7 +386,7 @@ func analyze(
 
 
 	//get all the support language versions
-	if use_registry && pack.Name()!="docker-compose" {
+	if use_registry && pack.Name()!="docker-compose" && pack.Name()!="service-yml" {
 		url := "https://registry-1.docker.io/"
 		username := "" // anonymous
 		password := "" // anonymous
@@ -406,7 +406,7 @@ func analyze(
 
 		pack.SetSupportedLanguageVersions(tags)
 	}
-	//if pack != nil {
+
 
 	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
 	if err != nil {
@@ -432,6 +432,13 @@ func analyze(
 		}
 	}
 
+	if strings.Contains(generator, "kubes"){
+		err = pack.WriteKubesConfig(path, !noPrompt)
+		if err!=nil{
+			return nil, fmt.Errorf("Failed to write kubes configuration file due to: %s", err.Error())
+		}
+	}
+
 	if len(pack.GetMessages()) > 0 {
 		for _, warning := range pack.GetMessages() {
 			result.Warnings = append(result.Warnings, warning)
@@ -448,7 +455,7 @@ func analyze(
 	result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
 	result.BuildCommands = []string{}
 	result.DeployCommands = []string{}
-	//}
+
 	return result, nil
 }
 
