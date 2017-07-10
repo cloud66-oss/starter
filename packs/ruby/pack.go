@@ -1,6 +1,8 @@
 package ruby
 
-import "github.com/cloud66/starter/packs"
+import (
+	"github.com/cloud66/starter/packs"
+)
 
 type Pack struct {
 	packs.PackBase

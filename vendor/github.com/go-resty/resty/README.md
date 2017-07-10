@@ -1,10 +1,15 @@
-# resty  [![Build Status](https://travis-ci.org/go-resty/resty.svg?branch=master)](https://travis-ci.org/go-resty/resty) [![codecov](https://codecov.io/gh/go-resty/resty/branch/master/graph/badge.svg)](https://codecov.io/gh/go-resty/resty/branch/master)  [![GoReport](https://goreportcard.com/badge/go-resty/resty)](https://goreportcard.com/report/go-resty/resty)  [![GoDoc](https://godoc.org/github.com/go-resty/resty?status.svg)](https://godoc.org/github.com/go-resty/resty)  [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+# resty  [![Build Status](https://travis-ci.org/go-resty/resty.svg?branch=master)](https://travis-ci.org/go-resty/resty) [![codecov](https://codecov.io/gh/go-resty/resty/branch/master/graph/badge.svg)](https://codecov.io/gh/go-resty/resty/branch/master)  [![GoReport](https://goreportcard.com/badge/go-resty/resty)](https://goreportcard.com/report/go-resty/resty)  [![Version](https://img.shields.io/badge/version-0.13-blue.svg)](https://github.com/go-resty/resty/releases/latest)  [![GoDoc](https://godoc.org/github.com/go-resty/resty?status.svg)](https://godoc.org/github.com/go-resty/resty) [![License](https://img.shields.io/github/license/go-resty/resty.svg)](LICENSE)
 
 Simple HTTP and REST client for Go inspired by Ruby rest-client. [Features](#features) section describes in detail about resty capabilities.
 
-***v0.8 [released](https://github.com/go-resty/resty/releases/latest) and tagged on Jul 08, 2016.***
+***v0.13 [released](https://github.com/go-resty/resty/releases/latest) and tagged on Jun 22, 2017.***
 
 *Since Go v1.6 HTTP/2 & HTTP/1.1 protocol is used transparently. `Resty` works fine with HTTP/2 and HTTP/1.1.*
+
+#### Roadmap
+***v1.0***
+
+Go Resty first released on Sep 15, 2015 then go-resty grew gradually as a very handy and helpful library of HTTP & REST Client in the golang community. I'm planning to freeze API and make v1.0 release.
 
 #### Features
 * GET, POST, PUT, DELETE, HEAD, PATCH and OPTIONS
@@ -16,8 +21,13 @@ Simple HTTP and REST client for Go inspired by Ruby rest-client. [Features](#fea
   * Know your `response.Time()` and when we `response.ReceivedAt()`
 * Automatic marshal and unmarshal for `JSON` and `XML` content type
   * Default is `JSON`, if you supply `struct/map` without header `Content-Type`
+  * For auto-unmarshal, refer to -
+      - Success scenario [Request.SetResult()](https://godoc.org/gopkg.in/resty.v0#Request.SetResult) and [Response.Result()](https://godoc.org/gopkg.in/resty.v0#Response.Result).
+      - Error scenario [Request.SetError()](https://godoc.org/gopkg.in/resty.v0#Request.SetError) and [Response.Error()](https://godoc.org/gopkg.in/resty.v0#Response.Error).
 * Easy to upload one or more file(s) via `multipart/form-data`
-* resty client [Request](https://godoc.org/github.com/go-resty/resty#Client.OnBeforeRequest) and [Response](https://godoc.org/github.com/go-resty/resty#Client.OnAfterResponse) middlewares
+* Backoff Retry Mechanism with retry condition function [reference](retry_test.go)
+* resty client HTTP & REST [Request](https://godoc.org/github.com/go-resty/resty#Client.OnBeforeRequest) and [Response](https://godoc.org/github.com/go-resty/resty#Client.OnAfterResponse) middlewares
+* `Request.SetContext` supported `go1.7` and above
 * Authorization option of `BasicAuth` and `Bearer` token
 * Set request `ContentLength` value for all request or particular request
 * Choose between HTTP and REST mode. Default is `REST`
@@ -26,40 +36,54 @@ Simple HTTP and REST client for Go inspired by Ruby rest-client. [Features](#fea
 * Custom [Root Certificates](https://godoc.org/github.com/go-resty/resty#Client.SetRootCertificate) and Client [Certificates](https://godoc.org/github.com/go-resty/resty#Client.SetCertificates)
 * Download/Save HTTP response directly into File, like `curl -o` flag. See [SetOutputDirectory](https://godoc.org/github.com/go-resty/resty#Client.SetOutputDirectory) & [SetOutput](https://godoc.org/github.com/go-resty/resty#Request.SetOutput).
 * Cookies for your request and CookieJar support
+* SRV Record based request instead of Host URL
 * Client settings like `Timeout`, `RedirectPolicy`, `Proxy`, `TLSClientConfig`, `Transport`, etc.
-* Client API design
+* resty design
   * Have client level settings & options and also override at Request level if you want to
-  * Create Multiple clients if want to `resty.New()`
+  * Request and Response middlewares
+  * Create Multiple clients if you want to `resty.New()`
   * goroutine concurrent safe
+  * REST and HTTP modes
   * Debug mode - clean and informative logging presentation
   * Gzip - I'm not doing anything here. Go does it automatically
 * Well tested client library
 
-resty tested with Go `v1.2` and above.
+resty tested with Go `v1.3` and above.
 
 #### Included Batteries
-  * Redirect Policies - see [how to use in action](#redirect-policy)
+  * Redirect Policies - see [how to use](#redirect-policy)
     * NoRedirectPolicy
     * FlexibleRedirectPolicy
     * DomainCheckRedirectPolicy
     * etc. [more info](redirect.go)
+  * Retry Mechanism [how to use](#retries)
+    * Backoff Retry
+    * Conditional Retry
+  * SRV Record based request instead of Host URL [how to use](resty_test.go#L1412)
   * etc (upcoming - throw your idea's [here](https://github.com/go-resty/resty/issues)).
 
 ## Installation
-#### Stable - Version
+#### Stable Version - Production Ready
 Please refer section [Versioning](#versioning) for detailed info.
 ```sh
 # install the library
 go get -u gopkg.in/resty.v0
 ```
-#### Latest
+#### Latest Version - Development Edge
 ```sh
 # install the latest & greatest library
 go get -u github.com/go-resty/resty
 ```
 
+## It might interest you :)
+
+Resty author also published following projects to Go Community.
+
+  * [aah framework](https://aahframework.org) - Web and API framework for Go.
+  * [go-model](https://github.com/jeevatkm/go-model) - Robust & Easy to use model mapper and utility methods for Go `struct`.
+
 ## Usage
-Following samples will assist you to become as much comfortable as possible with resty library. Resty comes with ready to use DefaultClient.
+The following samples will assist you to become as comfortable as possible with resty library. Resty comes with ready to use DefaultClient.
 
 Import resty into your code and refer it as `resty`.
 ```go
@@ -304,6 +328,14 @@ resp, err := resty.R().
         "city": "new city update",
       }).
       Post("http://myapp.com/profile")
+
+// Multi value form data
+criteria := url.Values{
+  "search_criteria": []string{"book", "glass", "pencil"},
+}
+resp, err := resty.R().
+      SetMultiValueFormData(criteria).
+      Post("http://myapp.com/search")
 ```
 
 #### Save HTTP Response into File
@@ -426,6 +458,50 @@ resp, err := c.R().
     Get("http://httpbin.org/get")
 ```
 
+#### Retries
+
+Resty uses [backoff](http://www.awsarchitectureblog.com/2015/03/backoff.html)
+to increase retry intervals after each attempt.
+
+Usage example:
+```go
+// Retries are configured per client
+resty.DefaultClient.
+    // Set retry count to non zero to enable retries
+    SetRetryCount(3).
+    // You can override initial retry wait time.
+    // Default is 100 milliseconds.
+    SetRetryWaitTime(5 * time.Second).
+    // MaxWaitTime can be overridden as well.
+    // Default is 2 seconds.
+    SetRetryMaxWaitTime(20 * time.Second)
+```
+
+Above setup will result in resty retrying requests returned non nil error up to
+3 times with delay increased after each attempt.
+
+You can optionally provide client with custom retry conditions:
+
+```go
+resty.DefaultClient.
+    AddRetryCondition(
+        // Condition function will be provided with *resty.Response as a
+        // parameter. It is expected to return (bool, error) pair. Resty will retry
+        // in case condition returns true or non nil error.
+        func(r *resty.Response) (bool, error) {
+            return r.StatusCode() == http.StatusTooManyRequests, nil
+        }
+    )
+```
+
+Above example will make resty retry requests ended with `429 Too Many Requests`
+status code.
+
+Multiple retry conditions can be added.
+
+It is also possible to use `resty.Backoff(...)` to get arbitrary retry scenarios
+implemented. [Reference](retry_test.go).
+
 #### Choose REST or HTTP mode
 ```go
 // REST mode. This is Default.
@@ -526,7 +602,7 @@ resty.SetError(&Error{})    // or resty.SetError(Error{})
 #### Unix Socket
 
 ```go
-unixSocket := "unix:///var/run/my_socket.sock"
+unixSocket := "/var/run/my_socket.sock"
 
 // Create a Go's http.Transport so we can set it in resty.
 transport := http.Transport{
@@ -537,7 +613,7 @@ transport := http.Transport{
 
 // Set the previous transport that we created, set the scheme of the communication to the
 // socket and set the unixSocket as the HostURL.
-r := resty.New().SetTransport(transport).SetScheme("http").SetHostURL(unixSocket)
+r := resty.New().SetTransport(&transport).SetScheme("http").SetHostURL(unixSocket)
 
 // No need to write the host's URL on the request, just the path.
 r.R().Get("/index.html")

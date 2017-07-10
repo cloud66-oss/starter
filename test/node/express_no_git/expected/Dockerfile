@@ -2,7 +2,7 @@
 FROM node:latest
 
 ENV APP_HOME /app
-RUN mkdir $APP_HOME
+RUN mkdir -pv $APP_HOME
 WORKDIR $APP_HOME
 
 ADD package.json $APP_HOME/

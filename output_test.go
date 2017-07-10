@@ -46,6 +46,14 @@ func runStarterWithProjectGeneratingOnlyDockerCompose(projectFixture string) (st
 	return output, err
 }
 
+
+func runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath string) (string, error){
+	command:=exec.Command(binPath, "-y", "-p",projectFixturePath+"/src", "-g", "service.yml")
+	command_out, err:= command.Output()
+	output := string(command_out)
+	return output, err
+}
+
 func cleanupGeneratedFiles(projectFixture string) {
 	os.Remove(projectFixture + "/src/Dockerfile")
 	os.Remove(projectFixture + "/src/service.yml")
@@ -579,4 +587,43 @@ var _ = Describe("Generating only a docker-compose.yml with Starter", func() {
 		})
 	})
 
+})
+
+var _ = Describe("Generating service.yml from docker-compose.yml", func(){
+	Context("using an empty project - just docker-compose.yml", func(){
+		var projectFixturePath string = "test/docker_compose/just_compose"
+
+		BeforeEach(func(){
+			_, err := runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+		AfterEach(func() {
+			os.Remove(projectFixturePath+"/src/service.yml")
+		})
+
+		It("should generate a service.yml", func(){
+			service_yml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
+			service_yml_generated, _ := ioutil.ReadFile(projectFixturePath+"/src/service.yml")
+			service_yml_generated = convertServiceYaml(service_yml_generated)
+			Expect(service_yml_generated).To(Equal(service_yml_expected))
+		})
+	})
+	Context("using an empty project - just docker-compose.yml that calls .env files", func(){
+		var projectFixturePath string = "test/docker_compose/just_compose_2"
+
+		BeforeEach(func(){
+			_, err := runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+		AfterEach(func() {
+			os.Remove(projectFixturePath+"/src/service.yml")
+		})
+
+		It("should generate a service.yml", func(){
+			service_yml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
+			service_yml_generated, _ := ioutil.ReadFile(projectFixturePath+"/src/service.yml")
+			service_yml_generated = convertServiceYaml(service_yml_generated)
+			Expect(service_yml_generated).To(Equal(service_yml_expected))
+		})
+	})
 })

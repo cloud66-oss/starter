@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/docker/distribution"
 	"github.com/docker/distribution/digest"
 )
 
@@ -66,6 +67,24 @@ func (registry *Registry) HasLayer(repository string, digest digest.Digest) (boo
 	}
 
 	return false, err
+}
+
+func (registry *Registry) LayerMetadata(repository string, digest digest.Digest) (distribution.Descriptor, error) {
+	checkUrl := registry.url("/v2/%s/blobs/%s", repository, digest)
+	registry.Logf("registry.layer.check url=%s repository=%s digest=%s", checkUrl, repository, digest)
+
+	resp, err := registry.Client.Head(checkUrl)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return distribution.Descriptor{}, err
+	}
+
+	return distribution.Descriptor{
+		Digest: digest,
+		Size:   resp.ContentLength,
+	}, nil
 }
 
 func (registry *Registry) initiateUpload(repository string) (*url.URL, error) {
