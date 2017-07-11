@@ -39,7 +39,6 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 	default:
 		log.Fatal("Failed to unmarshal")
-
 	}
 
 	return nil

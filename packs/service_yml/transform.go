@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 	"fmt"
+	"strconv"
 )
 
 func Transformer(filename string, formatTarget string, gitURL string, gitBranch string, shouldPrompt bool) error {
@@ -26,38 +27,90 @@ func Transformer(filename string, formatTarget string, gitURL string, gitBranch 
 
 	serviceYML := ServiceYml{
 		Services: make(map[string]ServiceYMLService),
-		Dbs:  []string{},
+		Dbs:      []string{},
 	}
 
 	kubes := Kubes{
-		Services: make(map[string]KubesService),
-		Deployments: make(map[string]KubesDeployment),
+		Services:    []KubesService{},
+		Deployments: []KubesDeployment{},
 	}
 
-	if err := yaml.Unmarshal([]byte(yamlFile), &serviceYML); err!=nil{
+	if err := yaml.Unmarshal([]byte(yamlFile), &serviceYML); err != nil {
 		fmt.Println(err.Error())
 	}
 
-	kubes.Services, kubes.Deployments = copyToKubes(serviceYML, shouldPrompt, filename)
+	kubes = copyToKubes(serviceYML, shouldPrompt)
 
 	file, err := yaml.Marshal(kubes)
 
-
 	//Might need some formating for the "file"
-	file = []byte("# Generated with <3 by Cloud66\n\n"+handleEnvVars(file))
+	file = []byte("# Generated with <3 by Cloud66\n\n" + handleEnvVars(file))
 
 	err = ioutil.WriteFile(formatTarget, file, 0644)
-	if err!=nil{
+	if err != nil {
 		return err
 	}
 
-	//common.PrintlnTitle("In the kubes pack!")
 	return nil
 }
 
-func copyToKubes (serviceYml ServiceYml, shouldPrompt bool, filepath string) (map[string]KubesService, map[string]KubesDeployment){
+func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) Kubes {
 
+	kubes := Kubes{
+		Services:    []KubesService{},
+		Deployments: []KubesDeployment{},
+	}
 
+	for serviceName, serviceSpecs := range serviceYml.Services {
+		deploy := KubesDeployment{ApiVersion: "extensions/v1beta1",
+			Kind:                         "Deployment",
+			Metadata: Metadata{
+				Name: serviceName + "-deployment",
+			},
+			Spec: Spec{
+				Template: Template{
+					Metadata: Metadata{
+						Labels: serviceSpecs.Tags,
+					},
+					PodSpec: PodSpec{
+						Containers: []Containers{
+							{
+								Name:    serviceName,
+								Image:   serviceSpecs.Image,
+								Command: serviceSpecs.Command,
+								//add some ports here
+								//add some volumes here
+								WorkingDir: serviceSpecs.WorkDir,
+								Resources: KubesResources{
+									Limits: Limits{
+										Cpu:    strconv.Itoa(serviceSpecs.Constraints.Resources.Cpu),
+										Memory: serviceSpecs.Constraints.Resources.Memory,
+									},
+								},
+								SecurityContext: SecurityContext{
+									Priviliged: serviceSpecs.Privileged,
+								},
+							},
+						},
+					},
+				},
+			},
+		}
 
-	return nil, nil
+		service := KubesService{ApiVersion: "extensions/v1beta1",
+			Kind:                       "Service",
+			Metadata: Metadata{
+				Name:   serviceName + "-svc",
+				Labels: serviceSpecs.Tags,
+			},
+			Spec: Spec{
+				//add some ports here
+			},
+		}
+
+		kubes.Services = append(kubes.Services, service)
+		kubes.Deployments = append(kubes.Deployments, deploy)
+	}
+
+	return kubes
 }

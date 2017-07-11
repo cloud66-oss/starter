@@ -360,7 +360,9 @@ func analyze(
 	detectedPacks, err := Detect(path)
 	var pack packs.Pack
 
-	//Added so that it will be easier to call the pack directly using the API
+	// Added so that it will be easier to call the pack directly using the API.
+	// Also, with this, avoids looking for other packs than "service_yml" one
+	// if the generator flags requires the kubernetes format.
 	if strings.Contains(generator, "kube") {
 		if len(detectedPacks) > 0 {
 			for i := 0; i < len(detectedPacks); i++ {
@@ -378,7 +380,6 @@ func analyze(
 	if err != nil {
 		pack = nil
 		return nil, fmt.Errorf("Failed to detect framework due to: %s", err.Error())
-
 	}
 
 	// check for Dockerfile (before analysis to avoid wasting time)
