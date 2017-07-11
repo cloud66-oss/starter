@@ -44,7 +44,7 @@ func Transformer(filename string, formatTarget string, gitURL string, gitBranch 
 
 
 	//Might need some formating for the "file"
-	file = []byte("# Generated with <3 by Cloud66\n\n"+string(file))
+	file = []byte("# Generated with <3 by Cloud66\n\n"+handleEnvVars(file))
 
 	err = ioutil.WriteFile(formatTarget, file, 0644)
 	if err!=nil{

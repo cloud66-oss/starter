@@ -7,6 +7,8 @@ type Containers struct{
 	Image string `yaml:"image,omitempty"`
 	Resources KubesResources `yaml:"resources,omitempty"`
 	Env []EnvVar `yaml:"env,omitempty"`
-	VolumeMounts []VolumeMounts `"volumeMounts,omitempty"`
+	VolumeMounts []VolumeMounts `yaml:"volumeMounts,omitempty"`
+	WorkingDir string `yaml:"workingDir,omitempty"`
+	SecurityContext SecurityContext `yaml:"securityContext,omitempty"`
 }
 

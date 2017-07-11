@@ -6,5 +6,6 @@ type Spec struct {
 }
 
 type PodSpec struct{
-	Containers []Containers `yaml:"containers,omitemptys"`
+	Containers []Containers `yaml:"containers,omitempty"`
+	TerminationGracePeriodSeconds int `yaml:"terminationGracePeriodSeconds,omitempty"`
 }
