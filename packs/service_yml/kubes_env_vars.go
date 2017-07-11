@@ -1,6 +1,6 @@
 package service_yml
 
 type EnvVar struct{
-	Name string `yaml:"name,omitempty"`
-	Value string  `yaml:"value,omitempty"`
+	Name interface{} `yaml:"name,omitempty"`
+	Value interface{}  `yaml:"value,omitempty"`
 }

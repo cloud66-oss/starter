@@ -3,7 +3,7 @@ package service_yml
 type ServiceYMLService struct {
 	Name           string `yaml:"name,omitempty"`
 	Image          string `yaml:"image,omitempty"`
-	Volumes        []interface{} `yaml:"volumes,omitempty"`
+	Volumes        []string `yaml:"volumes,omitempty"`
 	StopGrace      string `yaml:"stop_grace,omitempty"`
 	Constraints    Constraints  `yaml:"constraints,omitempty"`
 	WorkDir        string `yaml:"work_dir,omitempty"`

@@ -6,10 +6,9 @@ import (
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 	"fmt"
-	"strconv"
 )
 
-func Transformer(filename string, formatTarget string, gitURL string, gitBranch string, shouldPrompt bool) error {
+func Transformer(filename string, formatTarget string, shouldPrompt bool) error {
 
 	var err error
 	_, err = os.Stat(formatTarget)
@@ -30,21 +29,11 @@ func Transformer(filename string, formatTarget string, gitURL string, gitBranch 
 		Dbs:      []string{},
 	}
 
-	kubes := Kubes{
-		Services:    []KubesService{},
-		Deployments: []KubesDeployment{},
-	}
-
 	if err := yaml.Unmarshal([]byte(yamlFile), &serviceYML); err != nil {
 		fmt.Println(err.Error())
 	}
 
-	kubes = copyToKubes(serviceYML, shouldPrompt)
-
-	file, err := yaml.Marshal(kubes)
-
-	//Might need some formating for the "file"
-	file = []byte("# Generated with <3 by Cloud66\n\n" + handleEnvVars(file))
+	file := copyToKubes(serviceYML, shouldPrompt)
 
 	err = ioutil.WriteFile(formatTarget, file, 0644)
 	if err != nil {
@@ -54,14 +43,18 @@ func Transformer(filename string, formatTarget string, gitURL string, gitBranch 
 	return nil
 }
 
-func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) Kubes {
+func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 
 	kubes := Kubes{
 		Services:    []KubesService{},
 		Deployments: []KubesDeployment{},
 	}
+	var file []byte
+
+	file = []byte("# Generated with <3 by Cloud66\n\n")
 
 	for serviceName, serviceSpecs := range serviceYml.Services {
+
 		deploy := KubesDeployment{ApiVersion: "extensions/v1beta1",
 			Kind:                         "Deployment",
 			Metadata: Metadata{
@@ -79,11 +72,10 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) Kubes {
 								Image:   serviceSpecs.Image,
 								Command: serviceSpecs.Command,
 								//add some ports here
-								//add some volumes here
 								WorkingDir: serviceSpecs.WorkDir,
 								Resources: KubesResources{
 									Limits: Limits{
-										Cpu:    strconv.Itoa(serviceSpecs.Constraints.Resources.Cpu),
+										Cpu:    serviceSpecs.Constraints.Resources.Cpu,
 										Memory: serviceSpecs.Constraints.Resources.Memory,
 									},
 								},
@@ -96,6 +88,21 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) Kubes {
 				},
 			},
 		}
+		keys, values := getKeysValues(serviceSpecs.EnvVars)
+		if len(keys) > 0 {
+			for k := 0; k < len(keys); k++ {
+				if values[k] == "\"\"" {
+					values[k] = ""
+				}
+				env := EnvVar{
+					Name:  keys[k],
+					Value: values[k],
+				}
+				deploy.Spec.Template.PodSpec.Containers[0].Env = append(deploy.Spec.Template.PodSpec.Containers[0].Env, env)
+			}
+		}
+		kubeVolumes := handleVolumes(serviceSpecs.Volumes)
+		deploy.Spec.Template.PodSpec.Containers[0].VolumeMounts = kubeVolumes
 
 		service := KubesService{ApiVersion: "extensions/v1beta1",
 			Kind:                       "Service",
@@ -108,9 +115,19 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) Kubes {
 			},
 		}
 
+		fileServices, er := yaml.Marshal(service)
+		CheckError(er)
+		fileDeployments, er := yaml.Marshal(deploy)
+		CheckError(er)
+
+		file = []byte(string(file) + string(handleEnvVarsFormat(fileServices)) + "---\n" + string(handleEnvVarsFormat(fileDeployments)) + "---\n")
 		kubes.Services = append(kubes.Services, service)
 		kubes.Deployments = append(kubes.Deployments, deploy)
 	}
-
-	return kubes
+	
+	//delete the last row of "---"
+	if len(file) > 3 {
+		file = file[:len(file)-3]
+	}
+	return file
 }
