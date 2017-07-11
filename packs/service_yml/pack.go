@@ -1,6 +1,6 @@
 package service_yml
 
-import ()
+
 import (
 	"github.com/cloud66/starter/packs"
 	"github.com/cloud66/starter/common"
@@ -64,11 +64,8 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 }
 
 func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
-
 	err := Transformer(outputDir+"/service.yml", outputDir+"/kubernetes.yml", p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt)
-
 	CheckError(err)
-
 	return nil
 }
 

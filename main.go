@@ -360,11 +360,25 @@ func analyze(
 	detectedPacks, err := Detect(path)
 	var pack packs.Pack
 
-	pack, err = choosePack(detectedPacks, noPrompt)
-
+	//Added so that it will be easier to call the pack directly using the API
+	if strings.Contains(generator, "kube") {
+		if len(detectedPacks) > 0 {
+			for i := 0; i < len(detectedPacks); i++ {
+				if detectedPacks[i].Name() == "service.yml"{
+					pack = detectedPacks[i]
+				}
+			}
+			if pack== nil{
+				return nil, fmt.Errorf("Failed to detect service.yml")
+			}
+		}
+	} else {
+		pack, err = choosePack(detectedPacks, noPrompt)
+	}
 	if err != nil {
 		pack = nil
-		fmt.Errorf("Failed to detect framework due to: %s", err.Error())
+		return nil, fmt.Errorf("Failed to detect framework due to: %s", err.Error())
+
 	}
 
 	// check for Dockerfile (before analysis to avoid wasting time)
@@ -386,7 +400,7 @@ func analyze(
 	}
 
 	//get all the support language versions
-	if use_registry && pack.Name() != "docker-compose" && pack.Name() != "service-yml" {
+	if use_registry && pack.Name() != "docker-compose" && pack.Name() != "service.yml" {
 		url := "https://registry-1.docker.io/"
 		username := "" // anonymous
 		password := "" // anonymous
@@ -431,8 +445,13 @@ func analyze(
 		}
 	}
 
-	if strings.Contains(generator, "kubes") {
+	if strings.Contains(generator, "kube") {
+		_, err = os.Stat("kubernetes.yml")
+		if err == nil && !overwrite {
+			return nil, fmt.Errorf("kubernetes.yml already exists. Use flag to overwrite.")
+		}
 		err = pack.WriteKubesConfig(path, !noPrompt)
+
 		if err != nil {
 			return nil, fmt.Errorf("Failed to write kubes configuration file due to: %s", err.Error())
 		}
