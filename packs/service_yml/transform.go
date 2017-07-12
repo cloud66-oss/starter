@@ -123,14 +123,26 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 								Command:    serviceSpecs.Command,
 								Ports:      deployPorts,
 								WorkingDir: serviceSpecs.WorkDir,
+								SecurityContext: SecurityContext{
+									Priviliged: serviceSpecs.Privileged,
+								},
+								Lifecycle: Lifecycle{
+									PostStart: Handler{
+										Exec: Exec{
+											Command: serviceSpecs.PostStartCommand,
+										},
+									},
+									PreStop: Handler{
+										Exec: Exec{
+											Command: serviceSpecs.PreStopCommand,
+										},
+									},
+								},
 								Resources: KubesResources{
 									Limits: Limits{
 										Cpu:    serviceSpecs.Constraints.Resources.Cpu,
 										Memory: serviceSpecs.Constraints.Resources.Memory,
 									},
-								},
-								SecurityContext: SecurityContext{
-									Priviliged: serviceSpecs.Privileged,
 								},
 							},
 						},
