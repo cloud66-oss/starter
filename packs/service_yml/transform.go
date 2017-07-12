@@ -50,6 +50,56 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 
 	file = []byte("# Generated with <3 by Cloud66\n\n")
 
+	for _, dbName := range serviceYml.Dbs {
+		file = []byte(string(file) + "####### " + string(dbName) + " #######" + "\n\n")
+
+		service := KubesService{
+			ApiVersion: "extenstions/v1beta1",
+			Kind:       "Service",
+			Metadata: Metadata{
+				Name:   dbName + "-svc",
+				Labels: map[string]string{},
+			},
+			Spec: Spec{
+				Type:  "ClusterIP",
+				Ports: nil,
+			},
+		}
+		deploy := KubesService{ApiVersion: "extensions/v1beta1",
+			Kind:                      "Deployment",
+			Metadata: Metadata{
+				Name: dbName + "-deployment",
+			},
+			Spec: Spec{
+				Template: Template{
+					Metadata: Metadata{
+						Labels: service.Metadata.Labels,
+					},
+					PodSpec: PodSpec{
+						Containers: []Containers{
+							{
+								Name: dbName,
+								Image: dbName+":latest",
+								Ports: nil,
+							},
+						},
+					},
+				},
+			},
+		}
+
+		//write db service
+		fileServices, er := yaml.Marshal(service)
+		CheckError(er)
+		file = []byte(string(file) + string(handleEnvVarsFormat(fileServices)) + "---\n")
+
+		//write db deployment
+		fileDeployments, er := yaml.Marshal(deploy)
+		CheckError(er)
+		file = []byte(string(file) + string(handleEnvVarsFormat(fileDeployments)) + "---\n")
+
+	}
+
 	for serviceName, serviceSpecs := range serviceYml.Services {
 
 		//gets ports to populate deployment and generates the required service(s)
@@ -105,7 +155,7 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 				deploy.Spec.Template.PodSpec.Containers[0].Env = append(deploy.Spec.Template.PodSpec.Containers[0].Env, env)
 			}
 		}
-		file = []byte(string(file) + "####### " + string(serviceName) +" #######"+ "\n\n")
+		file = []byte(string(file) + "####### " + string(serviceName) + " #######" + "\n\n")
 		for _, service := range services {
 			fileServices, er := yaml.Marshal(service)
 			CheckError(er)
