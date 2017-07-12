@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 	"strconv"
-	"github.com/cloud66/starter/common"
 	"gopkg.in/yaml.v2"
 )
 
@@ -83,17 +82,17 @@ func getKeysValues(env_vars map[string]string) ([]interface{}, []interface{}) {
 }
 
 func generatePortsFromShortSyntax(shortSyntax string, clusterPorts []KubesPorts, nodePorts []KubesPorts) ([]KubesPorts, []KubesPorts, []KubesPorts) {
-	var dPort []KubesPorts
-	x := ""
-	y := ""
-	z := ""
+	var dPorts []KubesPorts
+	container := ""
+	http := ""
+	https := ""
 	var i int
 
 	for i = 0; i < len(shortSyntax); i++ {
 		if shortSyntax[i] == ':' {
 			break
 		} else {
-			x = string(append([]byte(x), shortSyntax[i]))
+			container = string(append([]byte(container), shortSyntax[i]))
 		}
 	}
 
@@ -101,7 +100,7 @@ func generatePortsFromShortSyntax(shortSyntax string, clusterPorts []KubesPorts,
 		if shortSyntax[i] == ':' {
 			break
 		} else {
-			y = string(append([]byte(y), shortSyntax[i]))
+			http = string(append([]byte(http), shortSyntax[i]))
 		}
 	}
 
@@ -109,21 +108,27 @@ func generatePortsFromShortSyntax(shortSyntax string, clusterPorts []KubesPorts,
 		if shortSyntax[i] == '"' || shortSyntax[i] == '\n' {
 			break
 		} else {
-			z = string(append([]byte(z), shortSyntax[i]))
+			https = string(append([]byte(https), shortSyntax[i]))
 		}
 	}
 
-	if y == "" && z == "" {
+	if http == "" && https == "" {
 		//crate new node of type ClusterIP
+		clusterPorts = appendNewPort(clusterPorts, container+"-expose", container, container, "", "")
+		dPorts = appendNewPort(dPorts, container+"-expose", "", "", "", container)
 	}
-	if y != "" {
+	if http != "" {
+		nodePorts = appendNewPort(nodePorts, container+"-http", container, http, "tcp", "")
+		dPorts = appendNewPort(dPorts, container+"-http", "", "", "tcp", container)
 		//create new port with name "http" of type NodePort
 	}
-	if z != "" {
+	if https != "" {
 		//create new port with name "https of type NodePort
+		nodePorts = appendNewPort(nodePorts, container+"-https", container, https, "tcp", "")
+		dPorts = appendNewPort(dPorts, container+"-https", "", "", "tcp", container)
 	}
 
-	return dPort, clusterPorts, nodePorts
+	return dPorts, clusterPorts, nodePorts
 }
 
 func generatePortsFromLongSyntax(longSyntax ServicePort, clusterPorts []KubesPorts, nodePorts []KubesPorts) ([]KubesPorts, []KubesPorts, []KubesPorts) {
@@ -131,46 +136,49 @@ func generatePortsFromLongSyntax(longSyntax ServicePort, clusterPorts []KubesPor
 
 	if longSyntax.Tcp == "" && longSyntax.Https == "" && longSyntax.Https == "" && longSyntax.Udp == "" {
 		//type "ClusterIP"
-		cPort := KubesPorts{
-			Port:       longSyntax.Container,
-			TargetPort: longSyntax.Container,
-		}
-		dPort := KubesPorts{
-			ContainerPort: longSyntax.Container,
-		}
-
-		clusterPorts = append(clusterPorts, cPort)
-		dPorts = append(dPorts, dPort)
+		clusterPorts = appendNewPort(clusterPorts, longSyntax.Container+"-expose", longSyntax.Container, longSyntax.Container, "", "")
+		dPorts = appendNewPort(dPorts, longSyntax.Container+"-expose", "", "", "", longSyntax.Container)
 	}
 	if longSyntax.Udp != "" {
-		
+		nodePorts = appendNewPort(nodePorts, longSyntax.Container+"-udp", longSyntax.Container, longSyntax.Udp, "udp", "")
+		dPorts = appendNewPort(dPorts, longSyntax.Container+"-udp", "", "", "udp", longSyntax.Container)
 	}
 	if longSyntax.Tcp != "" {
-
+		nodePorts = appendNewPort(nodePorts, longSyntax.Container+"-tcp", longSyntax.Container, longSyntax.Tcp, "tcp", "")
+		dPorts = appendNewPort(dPorts, longSyntax.Container+"-tcp", "", "", "tcp", longSyntax.Container)
 	}
 	if longSyntax.Http != "" {
-
+		nodePorts = appendNewPort(nodePorts, longSyntax.Container+"-http", longSyntax.Container, longSyntax.Http, "tcp", "")
+		dPorts = appendNewPort(dPorts, longSyntax.Container+"-http", "", "", "tcp", longSyntax.Container)
 	}
 	if longSyntax.Https != "" {
-
+		nodePorts = appendNewPort(nodePorts, longSyntax.Container+"-https", longSyntax.Container, longSyntax.Https, "tcp", "")
+		dPorts = appendNewPort(dPorts, longSyntax.Container+"-https", "", "", "tcp", longSyntax.Container)
 	}
 
 	return dPorts, clusterPorts, nodePorts
 }
 
+func appendNewPort(ports []KubesPorts, name string, port string, targetPort string, protocol string, containerPort string) []KubesPorts {
+	ports = append(ports, KubesPorts{
+		Name:          name,
+		Port:          port,
+		TargetPort:    targetPort,
+		Protocol:      protocol,
+		ContainerPort: containerPort,
+	})
+	return ports
+}
+
 func handlePorts(serviceName string, serviceSpecs ServiceYMLService) ([]KubesPorts, []KubesService) {
-	deployPorts := []KubesPorts{}
 	services := []KubesService{}
-	var dPorts, cPorts, nPorts, clusterPorts, nodePorts []KubesPorts
+	var dPorts, cPorts, nPorts, clusterPorts, nodePorts, deployPorts []KubesPorts
 	for _, v := range serviceSpecs.Ports {
-		common.PrintlnTitle("%#v", v)
-		switch vv := v.(type) {
+		switch v.(type) {
 		case string:
-			common.PrintlnL0("It s a string %v", vv)
 			shortSyntax := v.(string)
 			dPorts, cPorts, nPorts = generatePortsFromShortSyntax(shortSyntax, clusterPorts, nodePorts)
 		case int:
-			common.PrintlnL0("It s int %v", vv)
 			shortSyntax := strconv.Itoa(v.(int))
 			dPorts, cPorts, nPorts = generatePortsFromShortSyntax(shortSyntax, clusterPorts, nodePorts)
 		case map[interface{}]interface{}:
@@ -179,7 +187,6 @@ func handlePorts(serviceName string, serviceSpecs ServiceYMLService) ([]KubesPor
 			CheckError(er)
 			er = yaml.Unmarshal(temp, &longSyntaxPort)
 			CheckError(er)
-			common.PrintlnTitle("It s a long one %v", vv)
 			dPorts, cPorts, nPorts = generatePortsFromLongSyntax(longSyntaxPort, clusterPorts, nodePorts)
 		}
 
@@ -195,10 +202,14 @@ func handlePorts(serviceName string, serviceSpecs ServiceYMLService) ([]KubesPor
 	}
 
 	//generate services with the specific type required by the found nodes
-	clusterService := generateService("ClusterIP", serviceSpecs, serviceName, clusterPorts)
-	nodeService := generateService("NodePorts", serviceSpecs, serviceName, nodePorts)
-	services = append(services, clusterService)
-	services = append(services, nodeService)
+	if len(clusterPorts) > 0 {
+		clusterService := generateService("ClusterIP", serviceSpecs, serviceName, clusterPorts)
+		services = append(services, clusterService)
+	}
+	if len(nodePorts) > 0 {
+		nodeService := generateService("NodePorts", serviceSpecs, serviceName, nodePorts)
+		services = append(services, nodeService)
+	}
 
 	return deployPorts, services
 }

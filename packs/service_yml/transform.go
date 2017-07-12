@@ -56,7 +56,7 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 		deployPorts, services := handlePorts(serviceName, serviceSpecs)
 
 		deploy = KubesDeployment{ApiVersion: "extensions/v1beta1",
-			Kind:                         "Deployment",
+			Kind:                        "Deployment",
 			Metadata: Metadata{
 				Name: serviceName + "-deployment",
 			},
@@ -68,10 +68,10 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 					PodSpec: PodSpec{
 						Containers: []Containers{
 							{
-								Name:    serviceName,
-								Image:   serviceSpecs.Image,
-								Command: serviceSpecs.Command,
-								Ports: deployPorts,
+								Name:       serviceName,
+								Image:      serviceSpecs.Image,
+								Command:    serviceSpecs.Command,
+								Ports:      deployPorts,
 								WorkingDir: serviceSpecs.WorkDir,
 								Resources: KubesResources{
 									Limits: Limits{
@@ -105,22 +105,23 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 				deploy.Spec.Template.PodSpec.Containers[0].Env = append(deploy.Spec.Template.PodSpec.Containers[0].Env, env)
 			}
 		}
-
+		file = []byte(string(file) + "####### " + string(serviceName) +" #######"+ "\n\n")
 		for _, service := range services {
 			fileServices, er := yaml.Marshal(service)
 			CheckError(er)
-			file = []byte(string(file)+ string(handleEnvVarsFormat(fileServices))+"---\n")
+			file = []byte(string(file) + string(handleEnvVarsFormat(fileServices)) + "---\n")
 		}
 
 		fileDeployments, er := yaml.Marshal(deploy)
 		CheckError(er)
 
 		file = []byte(string(file) + string(handleEnvVarsFormat(fileDeployments)) + "---\n")
+
+		//delete the last row of "---"
+		if len(file) > 3 {
+			file = file[:len(file)-4]
+		}
 	}
 
-	//delete the last row of "---"
-	if len(file) > 3 {
-		file = file[:len(file)-3]
-	}
 	return file
 }
