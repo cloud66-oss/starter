@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-func Transformer(filename string, formatTarget string, shouldPrompt bool) error {
+func Transformer(filename string, formatTarget string) error {
 
 	var err error
 	_, err = os.Stat(formatTarget)
@@ -33,7 +33,7 @@ func Transformer(filename string, formatTarget string, shouldPrompt bool) error 
 		fmt.Println(err.Error())
 	}
 
-	file := copyToKubes(serviceYML, shouldPrompt)
+	file := copyToKubes(serviceYML)
 
 	err = ioutil.WriteFile(formatTarget, file, 0644)
 	if err != nil {
@@ -43,7 +43,7 @@ func Transformer(filename string, formatTarget string, shouldPrompt bool) error 
 	return nil
 }
 
-func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
+func copyToKubes(serviceYml ServiceYml) []byte {
 
 	var file []byte
 	var deploy KubesDeployment
@@ -62,7 +62,7 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 			},
 			Spec: Spec{
 				Type:  "ClusterIP",
-				Ports: nil,
+				Ports: setDbServicePorts(dbName),
 			},
 		}
 		deploy := KubesService{ApiVersion: "extensions/v1beta1",
@@ -78,9 +78,9 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 					PodSpec: PodSpec{
 						Containers: []Containers{
 							{
-								Name: dbName,
-								Image: dbName+":latest",
-								Ports: nil,
+								Name:  dbName,
+								Image: dbName + ":latest",
+								Ports: setDbDeploymentPorts(dbName),
 							},
 						},
 					},

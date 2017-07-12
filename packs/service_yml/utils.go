@@ -6,6 +6,7 @@ import (
 	"strings"
 	"strconv"
 	"gopkg.in/yaml.v2"
+	"github.com/cloud66/starter/common"
 )
 
 func handleEnvVarsFormat(file []byte) string {
@@ -229,6 +230,56 @@ func generateService(serviceType string, serviceSpecs ServiceYMLService, service
 	}
 
 	return service
+}
+
+func setDbDeploymentPorts(dbName string) []KubesPorts {
+	ports, _ := getExposedPorts(dbName)
+	return ports
+}
+
+func setDbServicePorts(dbName string) []KubesPorts {
+	_, ports := getExposedPorts(dbName)
+	return ports
+}
+
+func getExposedPorts(dbName string) ([]KubesPorts, []KubesPorts) {
+	dPorts := []KubesPorts{}
+	sPorts := []KubesPorts{}
+
+	switch dbName {
+	case "mysql":
+		dPorts = appendNewPort(dPorts, "mysql", "", "", "", "3306")
+		sPorts = appendNewPort(sPorts, "mysql", "3306", "3306", "", "")
+	case "redis":
+		dPorts = appendNewPort(dPorts, "redis", "", "", "", "6379")
+		sPorts = appendNewPort(sPorts, "redis", "6379", "6379", "", "")
+	case "postgresql":
+		dPorts = appendNewPort(dPorts, "postgresql", "", "", "", "5432")
+		sPorts = appendNewPort(sPorts, "postgresql", "5432", "5432", "", "")
+	case "mongodb":
+		dPorts = appendNewPort(dPorts, "mongodb", "", "", "", "27017")
+		sPorts = appendNewPort(sPorts, "mongodb", "27017", "27017", "", "")
+	case "elasticsearch":
+		dPorts = appendNewPort(dPorts, "elasticsearch", "", "", "", "9200")
+		sPorts = appendNewPort(sPorts, "elasticsearch", "9200", "9200", "", "")
+		dPorts = appendNewPort(dPorts, "elasticsearch", "", "", "", "9300")
+		sPorts = appendNewPort(sPorts, "elasticsearch", "9300", "9300", "", "")
+	case "glusterfs":
+		dPorts = appendNewPort(dPorts, "glusterfs", "", "", "tcp", "24007")
+		sPorts = appendNewPort(sPorts, "glusterfs", "24007", "24007", "tcp", "")
+		dPorts = appendNewPort(dPorts, "glusterfs", "", "", "udp", "24008")
+		sPorts = appendNewPort(sPorts, "glusterfs", "24008", "24008", "udp", "")
+	case "influxdb":
+		dPorts = appendNewPort(dPorts, "influxdb", "", "", "", "8086")
+		sPorts = appendNewPort(sPorts, "influxdb", "8086", "8086", "", "")
+	case "rabbitmq":
+		dPorts = appendNewPort(dPorts, "rabbitmq", "", "", "", "15672")
+		sPorts = appendNewPort(sPorts, "rabbitmq", "15672", "15672", "", "")
+	default:
+		common.PrintlnWarning("Not a recognized database.")
+	}
+
+	return dPorts, sPorts
 }
 
 func CheckError(err error) {
