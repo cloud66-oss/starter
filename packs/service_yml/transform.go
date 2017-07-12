@@ -45,17 +45,17 @@ func Transformer(filename string, formatTarget string, shouldPrompt bool) error 
 
 func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 
-	kubes := Kubes{
-		Services:    []KubesService{},
-		Deployments: []KubesDeployment{},
-	}
 	var file []byte
+	var deploy KubesDeployment
 
 	file = []byte("# Generated with <3 by Cloud66\n\n")
 
 	for serviceName, serviceSpecs := range serviceYml.Services {
 
-		deploy := KubesDeployment{ApiVersion: "extensions/v1beta1",
+		//gets ports to populate deployment and generates the required service(s)
+		deployPorts, services := handlePorts(serviceName, serviceSpecs)
+
+		deploy = KubesDeployment{ApiVersion: "extensions/v1beta1",
 			Kind:                         "Deployment",
 			Metadata: Metadata{
 				Name: serviceName + "-deployment",
@@ -71,7 +71,7 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 								Name:    serviceName,
 								Image:   serviceSpecs.Image,
 								Command: serviceSpecs.Command,
-								//add some ports here
+								Ports: deployPorts,
 								WorkingDir: serviceSpecs.WorkDir,
 								Resources: KubesResources{
 									Limits: Limits{
@@ -88,6 +88,10 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 				},
 			},
 		}
+
+		kubeVolumes := handleVolumes(serviceSpecs.Volumes)
+		deploy.Spec.Template.PodSpec.Containers[0].VolumeMounts = kubeVolumes
+
 		keys, values := getKeysValues(serviceSpecs.EnvVars)
 		if len(keys) > 0 {
 			for k := 0; k < len(keys); k++ {
@@ -101,30 +105,19 @@ func copyToKubes(serviceYml ServiceYml, shouldPrompt bool) []byte {
 				deploy.Spec.Template.PodSpec.Containers[0].Env = append(deploy.Spec.Template.PodSpec.Containers[0].Env, env)
 			}
 		}
-		kubeVolumes := handleVolumes(serviceSpecs.Volumes)
-		deploy.Spec.Template.PodSpec.Containers[0].VolumeMounts = kubeVolumes
 
-		service := KubesService{ApiVersion: "extensions/v1beta1",
-			Kind:                       "Service",
-			Metadata: Metadata{
-				Name:   serviceName + "-svc",
-				Labels: serviceSpecs.Tags,
-			},
-			Spec: Spec{
-				//add some ports here
-			},
+		for _, service := range services {
+			fileServices, er := yaml.Marshal(service)
+			CheckError(er)
+			file = []byte(string(file)+ string(handleEnvVarsFormat(fileServices))+"---\n")
 		}
 
-		fileServices, er := yaml.Marshal(service)
-		CheckError(er)
 		fileDeployments, er := yaml.Marshal(deploy)
 		CheckError(er)
 
-		file = []byte(string(file) + string(handleEnvVarsFormat(fileServices)) + "---\n" + string(handleEnvVarsFormat(fileDeployments)) + "---\n")
-		kubes.Services = append(kubes.Services, service)
-		kubes.Deployments = append(kubes.Deployments, deploy)
+		file = []byte(string(file) + string(handleEnvVarsFormat(fileDeployments)) + "---\n")
 	}
-	
+
 	//delete the last row of "---"
 	if len(file) > 3 {
 		file = file[:len(file)-3]

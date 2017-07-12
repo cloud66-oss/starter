@@ -1,10 +1,10 @@
 package service_yml
 
 type KubesPorts struct {
-	Port int `yaml:"port,omitempty"`
-	TargetPort int `yaml:"targetPort,omitempty"`
-	ContainerPort int `yaml:"containerPort,omitempty"`
+	Port string `yaml:"port,omitempty"`
+	TargetPort string `yaml:"targetPort,omitempty"`
+	ContainerPort string `yaml:"containerPort,omitempty"`
 	Protocol string `yaml:"protocol,omitempty"`
-	NodePort int `yaml:"nodePort,omitempty"`
+	NodePort string `yaml:"nodePort,omitempty"`
 	Name string `yaml:"name,omitempty"`
 }
