@@ -10,14 +10,14 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"regexp"
+	"strings"
 
 	"github.com/cloud66/starter/common"
-	"github.com/heroku/docker-registry-client/registry"
-	"github.com/mitchellh/go-homedir"
 	"github.com/cloud66/starter/packs"
 	"github.com/getsentry/raven-go"
+	"github.com/heroku/docker-registry-client/registry"
+	"github.com/mitchellh/go-homedir"
 	"runtime"
 )
 
@@ -366,11 +366,11 @@ func analyze(
 	if strings.Contains(generator, "kube") {
 		if len(detectedPacks) > 0 {
 			for i := 0; i < len(detectedPacks); i++ {
-				if detectedPacks[i].Name() == "service.yml"{
+				if detectedPacks[i].Name() == "service.yml" {
 					pack = detectedPacks[i]
 				}
 			}
-			if pack== nil{
+			if pack == nil {
 				return nil, fmt.Errorf("Failed to detect service.yml")
 			}
 		}

@@ -8,7 +8,7 @@ type ServiceYMLService struct {
 	WorkDir          string `yaml:"work_dir,omitempty"`
 	Privileged       bool `yaml:"privileged,omitempty"`
 	Tags             map[string]string `yaml:"tags,omitempty"`
-	Command          string `yaml:"command,omitempty"`
+	Command          Command `yaml:"command,omitempty"`
 	EnvVars          map[string]string `yaml:"env_vars,omitempty"`
 	Ports            []interface{} `yaml:"ports,omitempty"`
 	PreStopCommand   string `yaml:"pre_stop_command"`

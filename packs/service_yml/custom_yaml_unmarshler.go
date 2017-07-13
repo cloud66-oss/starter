@@ -44,3 +44,20 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+func (c *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var multi []string
+	err := unmarshal(&multi)
+	if err != nil {
+		var single string
+		err := unmarshal(&single)
+		if err != nil {
+			return err
+		}
+		c.Command = make([]string, 1)
+		c.Command[0] = single
+	} else {
+		c.Command = multi
+	}
+	return nil
+}
+

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 	"fmt"
+	"strings"
 )
 
 func Transformer(filename string, formatTarget string) error {
@@ -48,13 +49,17 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 	var file []byte
 	var deploy KubesDeployment
 
+	//Each service needs an unique nodePort, so we hand-pick to start
+	//from 31111 and pray that it will not collide with other stuff.
+	nodePort := 31111
+
 	file = []byte("# Generated with <3 by Cloud66\n\n")
 
 	for _, dbName := range serviceYml.Dbs {
-		file = []byte(string(file) + "####### " + string(dbName) + " #######" + "\n\n")
+		file = []byte(string(file) + "####### " + strings.ToUpper(string(dbName)) + " #######" + "\n\n")
 
 		service := KubesService{
-			ApiVersion: "extenstions/v1beta1",
+			ApiVersion: "v1",
 			Kind:       "Service",
 			Metadata: Metadata{
 				Name:   dbName + "-svc",
@@ -87,7 +92,6 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 				},
 			},
 		}
-
 		//write db service
 		fileServices, er := yaml.Marshal(service)
 		CheckError(er)
@@ -99,11 +103,15 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 		file = []byte(string(file) + string(handleEnvVarsFormat(fileDeployments)) + "---\n")
 
 	}
-
+	if len(serviceYml.Dbs) > 0 {
+		file = file[:len(file)-4]
+	}
+	var deployPorts []KubesPorts
+	var services []KubesService
 	for serviceName, serviceSpecs := range serviceYml.Services {
 
 		//gets ports to populate deployment and generates the required service(s)
-		deployPorts, services := handlePorts(serviceName, serviceSpecs)
+		deployPorts, services, nodePort = handlePorts(serviceName, serviceSpecs, nodePort)
 
 		deploy = KubesDeployment{ApiVersion: "extensions/v1beta1",
 			Kind:                        "Deployment",
@@ -120,7 +128,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 							{
 								Name:       serviceName,
 								Image:      serviceSpecs.Image,
-								Command:    serviceSpecs.Command,
+								Command:    serviceSpecs.Command.Command,
 								Ports:      deployPorts,
 								WorkingDir: serviceSpecs.WorkDir,
 								SecurityContext: SecurityContext{
@@ -167,7 +175,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 				deploy.Spec.Template.PodSpec.Containers[0].Env = append(deploy.Spec.Template.PodSpec.Containers[0].Env, env)
 			}
 		}
-		file = []byte(string(file) + "####### " + string(serviceName) + " #######" + "\n\n")
+		file = []byte(string(file) + "####### " + strings.ToUpper(string(serviceName)) + " #######" + "\n\n")
 		for _, service := range services {
 			fileServices, er := yaml.Marshal(service)
 			CheckError(er)

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"strconv"
 	"gopkg.in/yaml.v2"
+	"unicode"
 	"github.com/cloud66/starter/common"
 )
 
@@ -82,18 +83,24 @@ func getKeysValues(env_vars map[string]string) ([]interface{}, []interface{}) {
 	return keys, values
 }
 
-func generatePortsFromShortSyntax(shortSyntax string, clusterPorts []KubesPorts, nodePorts []KubesPorts) ([]KubesPorts, []KubesPorts, []KubesPorts) {
+func generatePortsFromShortSyntax(shortSyntax string, clusterPorts []KubesPorts, nodePorts []KubesPorts, nodePort int) ([]KubesPorts, []KubesPorts, []KubesPorts, int) {
 	var dPorts []KubesPorts
-	container := ""
-	http := ""
-	https := ""
+	containerStr := ""
+	httpStr := ""
+	httpsStr := ""
 	var i int
 
-	for i = 0; i < len(shortSyntax); i++ {
+	if shortSyntax[0] == '"' {
+		i = 1
+	} else {
+		i = 0
+	}
+
+	for ; i < len(shortSyntax); i++ {
 		if shortSyntax[i] == ':' {
 			break
 		} else {
-			container = string(append([]byte(container), shortSyntax[i]))
+			containerStr = string(append([]byte(containerStr), shortSyntax[i]))
 		}
 	}
 
@@ -101,7 +108,7 @@ func generatePortsFromShortSyntax(shortSyntax string, clusterPorts []KubesPorts,
 		if shortSyntax[i] == ':' {
 			break
 		} else {
-			http = string(append([]byte(http), shortSyntax[i]))
+			httpStr = string(append([]byte(httpStr), shortSyntax[i]))
 		}
 	}
 
@@ -109,86 +116,84 @@ func generatePortsFromShortSyntax(shortSyntax string, clusterPorts []KubesPorts,
 		if shortSyntax[i] == '"' || shortSyntax[i] == '\n' {
 			break
 		} else {
-			https = string(append([]byte(https), shortSyntax[i]))
+			httpsStr = string(append([]byte(httpsStr), shortSyntax[i]))
 		}
 	}
 
-	if http == "" && https == "" {
-		//crate new node of type ClusterIP
-		clusterPorts = appendNewPort(clusterPorts, container+"-expose", container, container, "", "")
-		dPorts = appendNewPort(dPorts, container+"-expose", "", "", "", container)
-	}
-	if http != "" {
-		nodePorts = appendNewPort(nodePorts, container+"-http", container, http, "tcp", "")
-		dPorts = appendNewPort(dPorts, container+"-http", "", "", "tcp", container)
-		//create new port with name "http" of type NodePort
-	}
-	if https != "" {
-		//create new port with name "https of type NodePort
-		nodePorts = appendNewPort(nodePorts, container+"-https", container, https, "tcp", "")
-		dPorts = appendNewPort(dPorts, container+"-https", "", "", "tcp", container)
-	}
+	container, err := strconv.Atoi(containerStr)
+	CheckError(err)
+	http, err := strconv.Atoi(httpsStr)
+	CheckError(err)
+	https, err := strconv.Atoi(httpsStr)
+	CheckError(err)
 
-	return dPorts, clusterPorts, nodePorts
+	if http == 0 && https == 0 {
+		//crate new node of type ClusterIP
+		clusterPorts= appendNewPortNoNodePort(clusterPorts, strconv.Itoa(container)+"-expose", container, container, "", 0)
+		dPorts = appendNewPortNoNodePort(dPorts, strconv.Itoa(container)+"-expose", 0, 0, "", container)
+	} else {
+		if http != 0 {
+			nodePorts, nodePort = appendNewPort(nodePorts, strconv.Itoa(container)+"-http", container, http, "TCP", 0, nodePort)
+			//create new port with name "http" of type NodePort
+		}
+		if https != 0 {
+			//create new port with name "https of type NodePort
+			nodePorts, nodePort = appendNewPort(nodePorts, strconv.Itoa(container)+"-https", container, https, "TCP", 0, nodePort)
+		}
+		dPorts = appendNewPortNoNodePort(dPorts, strconv.Itoa(container)+"-tcp", 0, 0, "TCP", container)
+
+	}
+	return dPorts, clusterPorts, nodePorts, nodePort
 }
 
-func generatePortsFromLongSyntax(longSyntax ServicePort, clusterPorts []KubesPorts, nodePorts []KubesPorts) ([]KubesPorts, []KubesPorts, []KubesPorts) {
+func generatePortsFromLongSyntax(longSyntax ServicePort, clusterPorts []KubesPorts, nodePorts []KubesPorts, nodePort int) ([]KubesPorts, []KubesPorts, []KubesPorts, int) {
 	var dPorts []KubesPorts
 
-	if longSyntax.Tcp == "" && longSyntax.Https == "" && longSyntax.Https == "" && longSyntax.Udp == "" {
+	container, http, https, tcp, udp := getIntFromServicePort(longSyntax)
+
+	if tcp == 0 && http == 0 && https == 0 && udp == 0 {
 		//type "ClusterIP"
-		clusterPorts = appendNewPort(clusterPorts, longSyntax.Container+"-expose", longSyntax.Container, longSyntax.Container, "", "")
-		dPorts = appendNewPort(dPorts, longSyntax.Container+"-expose", "", "", "", longSyntax.Container)
-	}
-	if longSyntax.Udp != "" {
-		nodePorts = appendNewPort(nodePorts, longSyntax.Container+"-udp", longSyntax.Container, longSyntax.Udp, "udp", "")
-		dPorts = appendNewPort(dPorts, longSyntax.Container+"-udp", "", "", "udp", longSyntax.Container)
-	}
-	if longSyntax.Tcp != "" {
-		nodePorts = appendNewPort(nodePorts, longSyntax.Container+"-tcp", longSyntax.Container, longSyntax.Tcp, "tcp", "")
-		dPorts = appendNewPort(dPorts, longSyntax.Container+"-tcp", "", "", "tcp", longSyntax.Container)
-	}
-	if longSyntax.Http != "" {
-		nodePorts = appendNewPort(nodePorts, longSyntax.Container+"-http", longSyntax.Container, longSyntax.Http, "tcp", "")
-		dPorts = appendNewPort(dPorts, longSyntax.Container+"-http", "", "", "tcp", longSyntax.Container)
-	}
-	if longSyntax.Https != "" {
-		nodePorts = appendNewPort(nodePorts, longSyntax.Container+"-https", longSyntax.Container, longSyntax.Https, "tcp", "")
-		dPorts = appendNewPort(dPorts, longSyntax.Container+"-https", "", "", "tcp", longSyntax.Container)
+		clusterPorts = appendNewPortNoNodePort(clusterPorts, strconv.Itoa(container)+"-expose", container, container, "", 0)
+		dPorts = appendNewPortNoNodePort(dPorts, strconv.Itoa(container)+"-expose", 0, 0, "", container)
+	} else if udp == 0 {
+		if tcp != 0 {
+			nodePorts, nodePort = appendNewPort(nodePorts, strconv.Itoa(container)+"-tcp", container, tcp, "TCP", 0, nodePort)
+		}
+		if http != 0 {
+			nodePorts, nodePort = appendNewPort(nodePorts, strconv.Itoa(container)+"-http", container, http, "TCP", 0, nodePort)
+		}
+		if https != 0 {
+			nodePorts, nodePort = appendNewPort(nodePorts, strconv.Itoa(container)+"-https", container, https, "TCP", 0, nodePort)
+		}
+		dPorts = appendNewPortNoNodePort(dPorts, strconv.Itoa(container)+"-tcp", 0, 0, "TCP", container)
+
+	} else if udp != 0 {
+		nodePorts, nodePort = appendNewPort(nodePorts, strconv.Itoa(container)+"-udp", container, udp, "UDP", 0, nodePort)
+		dPorts = appendNewPortNoNodePort(dPorts, strconv.Itoa(container)+"-udp", 0, 0, "UDP", container)
+
 	}
 
-	return dPorts, clusterPorts, nodePorts
+	return dPorts, clusterPorts, nodePorts, nodePort
 }
 
-func appendNewPort(ports []KubesPorts, name string, port string, targetPort string, protocol string, containerPort string) []KubesPorts {
-	ports = append(ports, KubesPorts{
-		Name:          name,
-		Port:          port,
-		TargetPort:    targetPort,
-		Protocol:      protocol,
-		ContainerPort: containerPort,
-	})
-	return ports
-}
-
-func handlePorts(serviceName string, serviceSpecs ServiceYMLService) ([]KubesPorts, []KubesService) {
+func handlePorts(serviceName string, serviceSpecs ServiceYMLService, nodePort int) ([]KubesPorts, []KubesService, int) {
 	services := []KubesService{}
 	var dPorts, cPorts, nPorts, clusterPorts, nodePorts, deployPorts []KubesPorts
 	for _, v := range serviceSpecs.Ports {
 		switch v.(type) {
 		case string:
 			shortSyntax := v.(string)
-			dPorts, cPorts, nPorts = generatePortsFromShortSyntax(shortSyntax, clusterPorts, nodePorts)
+			dPorts, cPorts, nPorts, nodePort = generatePortsFromShortSyntax(shortSyntax, clusterPorts, nodePorts, nodePort)
 		case int:
 			shortSyntax := strconv.Itoa(v.(int))
-			dPorts, cPorts, nPorts = generatePortsFromShortSyntax(shortSyntax, clusterPorts, nodePorts)
+			dPorts, cPorts, nPorts, nodePort = generatePortsFromShortSyntax(shortSyntax, clusterPorts, nodePorts, nodePort)
 		case map[interface{}]interface{}:
 			var longSyntaxPort ServicePort
 			temp, er := yaml.Marshal(v)
 			CheckError(er)
 			er = yaml.Unmarshal(temp, &longSyntaxPort)
 			CheckError(er)
-			dPorts, cPorts, nPorts = generatePortsFromLongSyntax(longSyntaxPort, clusterPorts, nodePorts)
+			dPorts, cPorts, nPorts, nodePort = generatePortsFromLongSyntax(longSyntaxPort, clusterPorts, nodePorts, nodePort)
 		}
 
 		for _, port := range dPorts {
@@ -208,19 +213,19 @@ func handlePorts(serviceName string, serviceSpecs ServiceYMLService) ([]KubesPor
 		services = append(services, clusterService)
 	}
 	if len(nodePorts) > 0 {
-		nodeService := generateService("NodePorts", serviceSpecs, serviceName, nodePorts)
+		nodeService := generateService("NodePort", serviceSpecs, serviceName, nodePorts)
 		services = append(services, nodeService)
 	}
 
-	return deployPorts, services
+	return deployPorts, services, nodePort
 }
 
 func generateService(serviceType string, serviceSpecs ServiceYMLService, serviceName string, ports []KubesPorts) KubesService {
 	service := KubesService{}
-	service = KubesService{ApiVersion: "extensions/v1beta1",
+	service = KubesService{ApiVersion: "v1",
 		Kind:                      "Service",
 		Metadata: Metadata{
-			Name:   serviceName + "-svc",
+			Name:   serviceName + "-sv" + strings.ToLower(serviceType[:1]),
 			Labels: serviceSpecs.Tags,
 		},
 		Spec: Spec{
@@ -237,7 +242,7 @@ func setDbDeploymentPorts(dbName string) []KubesPorts {
 	return ports
 }
 
-func setDbServicePorts(dbName string) []KubesPorts {
+func setDbServicePorts(dbName string) ([]KubesPorts) {
 	_, ports := getExposedPorts(dbName)
 	return ports
 }
@@ -248,38 +253,97 @@ func getExposedPorts(dbName string) ([]KubesPorts, []KubesPorts) {
 
 	switch dbName {
 	case "mysql":
-		dPorts = appendNewPort(dPorts, "mysql", "", "", "", "3306")
-		sPorts = appendNewPort(sPorts, "mysql", "3306", "3306", "", "")
+		dPorts = appendNewPortNoNodePort(dPorts, "mysql", 0, 0, "", 3306)
+		sPorts = appendNewPortNoNodePort(sPorts, "mysql", 3306, 3306, "", 0)
 	case "redis":
-		dPorts = appendNewPort(dPorts, "redis", "", "", "", "6379")
-		sPorts = appendNewPort(sPorts, "redis", "6379", "6379", "", "")
+		dPorts = appendNewPortNoNodePort(dPorts, "redis", 0, 0, "", 6379)
+		sPorts = appendNewPortNoNodePort(sPorts, "redis", 6379, 6379, "", 0)
 	case "postgresql":
-		dPorts = appendNewPort(dPorts, "postgresql", "", "", "", "5432")
-		sPorts = appendNewPort(sPorts, "postgresql", "5432", "5432", "", "")
+		dPorts = appendNewPortNoNodePort(dPorts, "postgresql", 0, 0, "", 5432)
+		sPorts = appendNewPortNoNodePort(sPorts, "postgresql", 5432, 5432, "", 0)
 	case "mongodb":
-		dPorts = appendNewPort(dPorts, "mongodb", "", "", "", "27017")
-		sPorts = appendNewPort(sPorts, "mongodb", "27017", "27017", "", "")
+		dPorts = appendNewPortNoNodePort(dPorts, "mongodb", 0, 0, "", 27017)
+		sPorts = appendNewPortNoNodePort(sPorts, "mongodb", 27017, 27017, "", 0)
 	case "elasticsearch":
-		dPorts = appendNewPort(dPorts, "elasticsearch", "", "", "", "9200")
-		sPorts = appendNewPort(sPorts, "elasticsearch", "9200", "9200", "", "")
-		dPorts = appendNewPort(dPorts, "elasticsearch", "", "", "", "9300")
-		sPorts = appendNewPort(sPorts, "elasticsearch", "9300", "9300", "", "")
+		dPorts = appendNewPortNoNodePort(dPorts, "elasticsearch", 0, 0, "", 9200)
+		sPorts = appendNewPortNoNodePort(sPorts, "elasticsearch", 9200, 9200, "", 0)
+		dPorts = appendNewPortNoNodePort(dPorts, "elasticsearch", 0, 0, "", 93000)
+		sPorts = appendNewPortNoNodePort(sPorts, "elasticsearch", 9300, 9300, "", 0)
 	case "glusterfs":
-		dPorts = appendNewPort(dPorts, "glusterfs", "", "", "tcp", "24007")
-		sPorts = appendNewPort(sPorts, "glusterfs", "24007", "24007", "tcp", "")
-		dPorts = appendNewPort(dPorts, "glusterfs", "", "", "udp", "24008")
-		sPorts = appendNewPort(sPorts, "glusterfs", "24008", "24008", "udp", "")
+		dPorts = appendNewPortNoNodePort(dPorts, "glusterfs", 0, 0, "TCP", 24007)
+		sPorts = appendNewPortNoNodePort(sPorts, "glusterfs", 24007, 24007, "TCP", 0)
+		dPorts = appendNewPortNoNodePort(dPorts, "glusterfs", 0, 0, "UDP", 24008)
+		sPorts = appendNewPortNoNodePort(sPorts, "glusterfs", 24008, 24008, "UDP", 0)
 	case "influxdb":
-		dPorts = appendNewPort(dPorts, "influxdb", "", "", "", "8086")
-		sPorts = appendNewPort(sPorts, "influxdb", "8086", "8086", "", "")
+		dPorts = appendNewPortNoNodePort(dPorts, "influxdb", 0, 0, "", 8086)
+		sPorts = appendNewPortNoNodePort(sPorts, "influxdb", 8086, 8086, "", 0)
 	case "rabbitmq":
-		dPorts = appendNewPort(dPorts, "rabbitmq", "", "", "", "15672")
-		sPorts = appendNewPort(sPorts, "rabbitmq", "15672", "15672", "", "")
+		dPorts = appendNewPortNoNodePort(dPorts, "rabbitmq", 0, 0, "", 15672)
+		sPorts = appendNewPortNoNodePort(sPorts, "rabbitmq", 15672, 15672, "", 0)
 	default:
 		common.PrintlnWarning("Not a recognized database.")
 	}
 
 	return dPorts, sPorts
+}
+
+func appendNewPort(ports []KubesPorts, name string, port int, targetPort int, protocol string, containerPort int, nodePort int) ([]KubesPorts, int) {
+	ports = append(ports, KubesPorts{
+		Name:          name,
+		Port:          port,
+		TargetPort:    targetPort,
+		Protocol:      protocol,
+		ContainerPort: containerPort,
+		NodePort:      nodePort,
+	})
+	nodePort++
+	return ports, nodePort
+}
+
+func appendNewPortNoNodePort(ports []KubesPorts, name string, port int, targetPort int, protocol string, containerPort int) ([]KubesPorts) {
+	ports = append(ports, KubesPorts{
+		Name:          name,
+		Port:          port,
+		TargetPort:    targetPort,
+		Protocol:      protocol,
+		ContainerPort: containerPort,
+	})
+	return ports
+}
+
+func getIntFromServicePort(longSyntax ServicePort) (int, int, int, int, int) {
+	var container, http, https, tcp, udp int
+
+	container = getIntFromVal(longSyntax.Container)
+	http = getIntFromVal(longSyntax.Http)
+	https = getIntFromVal(longSyntax.Https)
+	tcp = getIntFromVal(longSyntax.Tcp)
+	udp = getIntFromVal(longSyntax.Udp)
+
+	return container, http, https, tcp, udp
+}
+
+func getIntFromVal(value string) int {
+	var temp string
+	var i int
+	if len(value) > 0 {
+		if value[0] == '"' {
+			i = 1
+		} else {
+			i = 0
+		}
+		for ; i < len(value); i++ {
+			if !unicode.IsDigit(rune(value[i])) {
+				break
+			} else {
+				temp = string(append([]byte(temp), value[i]))
+			}
+		}
+		result, err := strconv.Atoi(temp)
+		CheckError(err)
+		return result
+	}
+	return 0
 }
 
 func CheckError(err error) {
