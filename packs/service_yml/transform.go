@@ -48,6 +48,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 
 	var file []byte
 	var deploy KubesDeployment
+	var deployments []KubesDeployment
 
 	//Each service needs an unique nodePort, so we hand-pick to start
 	//from 31111 and pray that it will not collide with other stuff.
@@ -56,21 +57,21 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 	file = []byte("# Generated with <3 by Cloud66\n\n")
 
 	for _, dbName := range serviceYml.Dbs {
-		file = []byte(string(file) + "####### " + strings.ToUpper(string(dbName)) + " #######" + "\n\n")
-
+		file = []byte(string(file) + "####### " + strings.ToUpper(string(dbName)) + " #######" + "\n")
+		tags:= make(map[string]string, 1)
+		tags["app"]=dbName
 		service := KubesService{
 			ApiVersion: "v1",
 			Kind:       "Service",
 			Metadata: Metadata{
 				Name:   dbName + "-svc",
-				Labels: map[string]string{},
 			},
 			Spec: Spec{
 				Type:  "ClusterIP",
 				Ports: setDbServicePorts(dbName),
 			},
 		}
-		deploy := KubesService{ApiVersion: "extensions/v1beta1",
+		deploy := KubesDeployment{ApiVersion: "extensions/v1beta1",
 			Kind:                      "Deployment",
 			Metadata: Metadata{
 				Name: dbName + "-deployment",
@@ -78,7 +79,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 			Spec: Spec{
 				Template: Template{
 					Metadata: Metadata{
-						Labels: service.Metadata.Labels,
+						Labels: tags,
 					},
 					PodSpec: PodSpec{
 						Containers: []Containers{
@@ -98,9 +99,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 		file = []byte(string(file) + string(handleEnvVarsFormat(fileServices)) + "---\n")
 
 		//write db deployment
-		fileDeployments, er := yaml.Marshal(deploy)
-		CheckError(er)
-		file = []byte(string(file) + string(handleEnvVarsFormat(fileDeployments)) + "---\n")
+		deployments = append(deployments, deploy)
 
 	}
 	if len(serviceYml.Dbs) > 0 {
@@ -109,9 +108,14 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 	var deployPorts []KubesPorts
 	var services []KubesService
 	for serviceName, serviceSpecs := range serviceYml.Services {
-
 		//gets ports to populate deployment and generates the required service(s)
 		deployPorts, services, nodePort = handlePorts(serviceName, serviceSpecs, nodePort)
+
+		//required by the kubes format
+		if serviceSpecs.Tags==nil{
+			serviceSpecs.Tags = make(map[string]string, 1)
+		}
+		serviceSpecs.Tags["app"] = serviceName
 
 		deploy = KubesDeployment{ApiVersion: "extensions/v1beta1",
 			Kind:                        "Deployment",
@@ -175,22 +179,25 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 				deploy.Spec.Template.PodSpec.Containers[0].Env = append(deploy.Spec.Template.PodSpec.Containers[0].Env, env)
 			}
 		}
-		file = []byte(string(file) + "####### " + strings.ToUpper(string(serviceName)) + " #######" + "\n\n")
+		file = []byte(string(file) + "####### " + strings.ToUpper(string(serviceName)) + " - Service #######" + "\n")
 		for _, service := range services {
 			fileServices, er := yaml.Marshal(service)
 			CheckError(er)
 			file = []byte(string(file) + string(handleEnvVarsFormat(fileServices)) + "---\n")
 		}
-
-		fileDeployments, er := yaml.Marshal(deploy)
-		CheckError(er)
-
-		file = []byte(string(file) + string(handleEnvVarsFormat(fileDeployments)) + "---\n")
+		deployments = append(deployments, deploy)
 
 		//delete the last row of "---"
 		if len(file) > 3 {
 			file = file[:len(file)-4]
 		}
+	}
+
+	//write deployments last in order to make sure kubectl takes them into consideration
+	for _, deploy := range deployments{
+		fileDeployments, err := yaml.Marshal(deploy)
+		CheckError(err)
+		file = []byte(string(file) + "####### " + strings.ToUpper(string(deploy.Metadata.Name)) + " #######\n" + string(handleEnvVarsFormat(fileDeployments)))
 	}
 
 	return file
