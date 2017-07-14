@@ -111,7 +111,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 
 
 		//gets ports to populate deployment and generates the required service(s)
-		deployPorts, services, nodePort = handlePorts(serviceName, serviceSpecs, nodePort)
+		deployPorts, services, nodePort = generateServicesRequiredByPorts(serviceName, serviceSpecs, nodePort)
 
 		//required by the kubes format
 		if serviceSpecs.Tags==nil{

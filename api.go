@@ -22,6 +22,7 @@ import (
 	"regexp"
 	"strconv"
 	"github.com/cloud66/starter/packs/docker_compose"
+	"github.com/cloud66/starter/packs/service_yml"
 )
 
 // API holds starter API
@@ -85,13 +86,13 @@ func (a *API) StartAPI() error {
 		common.PrintL0("Starting API on %s\n", a.config.APIURL)
 		common.PrintL1("API is now running...\n")
 
-		packs := []packs.Pack{new(docker_compose.Pack), new(ruby.Pack), new(node.Pack), new(php.Pack)}
+		packs := []packs.Pack{new(docker_compose.Pack), new(ruby.Pack), new(node.Pack), new(php.Pack), new(service_yml.Pack)}
 		for _, p := range packs {
 			support := Language{}
 			support.Name = p.Name()
 			support.Files = p.FilesToBeAnalysed()
 
-			if a.config.use_registry && p.Name()!="docker-compose"{
+			if a.config.use_registry && p.Name()!="docker-compose" && p.Name()!="service.yml"{
 				url := "https://registry-1.docker.io/"
 				username := "" // anonymous
 				password := "" // anonymous

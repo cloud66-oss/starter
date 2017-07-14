@@ -199,7 +199,7 @@ func generatePortsFromLongSyntax(longSyntax ServicePort, clusterPorts []KubesPor
 	return dPorts, clusterPorts, nodePorts, nodePort
 }
 
-func handlePorts(serviceName string, serviceSpecs ServiceYMLService, nodePort int) ([]KubesPorts, []KubesService, int) {
+func generateServicesRequiredByPorts(serviceName string, serviceSpecs ServiceYMLService, nodePort int) ([]KubesPorts, []KubesService, int) {
 	services := []KubesService{}
 	var dPorts, cPorts, nPorts, clusterPorts, nodePorts, deployPorts []KubesPorts
 	for _, v := range serviceSpecs.Ports {
