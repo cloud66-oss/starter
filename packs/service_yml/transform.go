@@ -60,6 +60,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 		file = []byte(string(file) + "####### " + strings.ToUpper(string(dbName)) + " #######" + "\n")
 		tags:= make(map[string]string, 1)
 		tags["app"]=dbName
+
 		service := KubesService{
 			ApiVersion: "v1",
 			Kind:       "Service",
@@ -102,12 +103,13 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 		deployments = append(deployments, deploy)
 
 	}
-	if len(serviceYml.Dbs) > 0 {
-		file = file[:len(file)-4]
-	}
 	var deployPorts []KubesPorts
 	var services []KubesService
 	for serviceName, serviceSpecs := range serviceYml.Services {
+
+		//if it has no image, output warning to user about the fact that each container needs one
+
+
 		//gets ports to populate deployment and generates the required service(s)
 		deployPorts, services, nodePort = handlePorts(serviceName, serviceSpecs, nodePort)
 
@@ -163,6 +165,11 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 			},
 		}
 
+		if serviceSpecs.Image==""{
+			deploy.Spec.Template.PodSpec.Containers[0].Image = "#INSERT REQUIRED IMAGE"
+			common.PrintlnWarning("The service \"%s\" has no image mentioned and each container needs one in Kubernetes format. Please add manually.", serviceName)
+		}
+
 		kubeVolumes := handleVolumes(serviceSpecs.Volumes)
 		deploy.Spec.Template.PodSpec.Containers[0].VolumeMounts = kubeVolumes
 
@@ -179,26 +186,29 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 				deploy.Spec.Template.PodSpec.Containers[0].Env = append(deploy.Spec.Template.PodSpec.Containers[0].Env, env)
 			}
 		}
-		file = []byte(string(file) + "####### " + strings.ToUpper(string(serviceName)) + " - Service #######" + "\n")
 		for _, service := range services {
+			//file = []byte(string(file) + "####### " + strings.ToUpper(string(serviceName)) + " - Service #######\n" + "\n")
 			fileServices, er := yaml.Marshal(service)
 			CheckError(er)
-			file = []byte(string(file) + string(handleEnvVarsFormat(fileServices)) + "---\n")
+			file = []byte(string(file)+ "####### " + strings.ToUpper(string(serviceName)) + " - Service #######\n" + "\n" + string(handleEnvVarsFormat(fileServices)) + "---\n")
 		}
 		deployments = append(deployments, deploy)
-
-		//delete the last row of "---"
-		if len(file) > 3 {
-			file = file[:len(file)-4]
-		}
 	}
 
+	//delete last ror of ---
+	if len(services)>0{
+		file = file[:len(file)-4]
+	}
 	//write deployments last in order to make sure kubectl takes them into consideration
 	for _, deploy := range deployments{
 		fileDeployments, err := yaml.Marshal(deploy)
 		CheckError(err)
-		file = []byte(string(file) + "####### " + strings.ToUpper(string(deploy.Metadata.Name)) + " #######\n" + string(handleEnvVarsFormat(fileDeployments)))
+		file = []byte(string(file) + "---\n####### " + strings.ToUpper(string(deploy.Metadata.Name)) + " #######\n" + string(handleEnvVarsFormat(fileDeployments)))
 	}
 
+	//delete last row of ---
+	if len(deployments)>0 {
+		file = file[:len(file)-4]
+	}
 	return file
 }

@@ -371,15 +371,21 @@ func analyze(
 				}
 			}
 			if pack == nil {
-				return nil, fmt.Errorf("Failed to detect service.yml")
+				return nil, fmt.Errorf("Failed to detect service.yml\n")
 			}
+		} else {
+			return nil, fmt.Errorf("Failed to detect service.yml\n")
 		}
 	} else {
+		common.PrintlnTitle("1 check")
 		pack, err = choosePack(detectedPacks, noPrompt)
+		if pack == nil {
+			return nil, fmt.Errorf("Failed to detect supported framework\n")
+		}
 	}
 	if err != nil {
 		pack = nil
-		return nil, fmt.Errorf("Failed to detect framework due to: %s", err.Error())
+		return nil, fmt.Errorf("Failed to detect framework due to: %s\n", err.Error())
 	}
 
 	// check for Dockerfile (before analysis to avoid wasting time)
