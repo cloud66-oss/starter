@@ -3,7 +3,7 @@ package service_yml
 type ServiceYMLService struct {
 	Image            string `yaml:"image,omitempty"`
 	Volumes          []string `yaml:"volumes,omitempty"`
-	StopGrace        string `yaml:"stop_grace,omitempty"`
+	StopGrace        int `yaml:"stop_grace,omitempty"`
 	Constraints      Constraints  `yaml:"constraints,omitempty"`
 	WorkDir          string `yaml:"work_dir,omitempty"`
 	Privileged       bool `yaml:"privileged,omitempty"`
@@ -11,8 +11,8 @@ type ServiceYMLService struct {
 	Command          Command `yaml:"command,omitempty"`
 	EnvVars          map[string]string `yaml:"env_vars,omitempty"`
 	Ports            []interface{} `yaml:"ports,omitempty"`
-	PreStopCommand   string `yaml:"pre_stop_command"`
-	PostStartCommand string `yaml:"post_start_command"`
+	PreStopCommand   PreStopCommand `yaml:"pre_stop_command"`
+	PostStartCommand PostStartCommand `yaml:"post_start_command"`
 
 	//add unsupported keys
 	GitUrl          GitUrl `yaml:"git_url,omitempty"`

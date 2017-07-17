@@ -10,7 +10,7 @@ import (
 	"github.com/cloud66/starter/common"
 )
 
-func handleEnvVarsFormat(file []byte) string {
+func finalFormat(file []byte) string {
 	finalFormat := ""
 
 	lines := strings.Split(string(file), "\n")
@@ -20,6 +20,18 @@ func handleEnvVarsFormat(file []byte) string {
 			for j := 0; j < len(lines[i])-4; j++ {
 				if lines[i][j] == '_' && lines[i][j+1] == 'e' && lines[i][j+2] == 'n' && lines[i][j+3] == 'v' {
 					lines[i] = lines[i][:j] + "$" + lines[i][j+4:]
+				}
+			}
+		}
+
+//32, 32, 32, 32, 32, 45, 32, 110, 97, 109, 101, 58, 32, 77, 89, 83, 81, 76, 95, 68, 65, 84, 65, 66, 65, 83, 69, 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 118, 97
+//32, 32, 32, 32, 118, 97, 108, 117, 101, 58, 32, 10, 32, 32, 32, 32, 32, 32, 32, 32, 45, 32, 110, 97, 109, 101, 58, 32, 77, 89, 83, 81, 76, 95, 65, 76, 76, 79, 87
+		// handle empty value for env_vars
+		if strings.Contains(lines[i], "value: ") && strings.Contains(lines[i], "\"\""){
+			for j:=0; j<len(lines[i]);j++{
+				if lines[i][j]=='"'{
+					lines[i]=lines[i][:j]
+					break
 				}
 			}
 		}
@@ -34,6 +46,7 @@ func handleEnvVarsFormat(file []byte) string {
 				}
 			}
 		}
+
 		finalFormat = finalFormat + lines[i] + "\n"
 	}
 
@@ -42,17 +55,24 @@ func handleEnvVarsFormat(file []byte) string {
 
 func handleVolumes(serviceVolumes []string) []VolumeMounts {
 	var kubeVolumes []VolumeMounts
+	var outputWarning, readOnly bool
 
 	for _, volume := range serviceVolumes {
 		name := ""
 		mountPath := ""
 		var i int
-		var readOnly bool
+		readOnly = false
+		outputWarning = false
+
 		if volume[0] == '"' {
 			i = 1
-		} else {
+		} else{
 			i = 0
 		}
+		if volume[i]!='/'{
+			outputWarning = true
+		}
+
 		for ; i < len(volume); i++ {
 			if volume[i] == ':' {
 				break
@@ -73,6 +93,11 @@ func handleVolumes(serviceVolumes []string) []VolumeMounts {
 				readOnly = true
 			}
 		}
+
+		if outputWarning==true{
+			common.PrintlnWarning("Path \"%s:%s\" not absolute! Please modify manually.", name,mountPath)
+		}
+
 		kubeVolume := VolumeMounts{
 			Name:      name,
 			MountPath: mountPath,
@@ -80,6 +105,7 @@ func handleVolumes(serviceVolumes []string) []VolumeMounts {
 		}
 		kubeVolumes = append(kubeVolumes, kubeVolume)
 	}
+
 
 	return kubeVolumes
 }

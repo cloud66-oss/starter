@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
-	//"strings"
 	"github.com/cloud66/starter/common"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -46,10 +45,16 @@ func runStarterWithProjectGeneratingOnlyDockerCompose(projectFixture string) (st
 	return output, err
 }
 
+func runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath string) (string, error) {
+	command := exec.Command(binPath, "-y", "-p", projectFixturePath+"/src", "-g", "service.yml")
+	command_out, err := command.Output()
+	output := string(command_out)
+	return output, err
+}
 
-func runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath string) (string, error){
-	command:=exec.Command(binPath, "-y", "-p",projectFixturePath+"/src", "-g", "service.yml")
-	command_out, err:= command.Output()
+func runStarterWithProjectGeneratingKubernetesYmlFromServiceYml(projectFixturePath string) (string, error) {
+	command := exec.Command(binPath, "-y", "-p", projectFixturePath+"/src","-g", "kubernetes")
+	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err
 }
@@ -589,39 +594,76 @@ var _ = Describe("Generating only a docker-compose.yml with Starter", func() {
 
 })
 
-var _ = Describe("Generating service.yml from docker-compose.yml", func(){
-	Context("using an empty project - just docker-compose.yml", func(){
-		var projectFixturePath string = "test/docker_compose/just_compose"
+var _ = Describe("Generating kubernetes.yml from service.yml", func(){
+	Context("using an empty project - service.yml populated with all possible keys", func(){
+		var projectFixturePath string = "test/service_yml/service_to_kubes_1"
 
 		BeforeEach(func(){
+			_, err := runStarterWithProjectGeneratingKubernetesYmlFromServiceYml(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+		/*AfterEach(func(){
+			os.Remove(projectFixturePath+"/src/kubernetes.yml")
+		})*/
+
+		It("should generate kubernetes.yml", func(){
+			kubernetes_expected, _ := ioutil.ReadFile(projectFixturePath+"/expected/kubernetes.yml")
+			kubernetes_generated, _ := ioutil.ReadFile(projectFixturePath+"/src/kubernetes.yml")
+			Expect(kubernetes_generated).To(Equal(kubernetes_expected))
+		})
+	})
+	Context("using an empty project - functional service.yml", func(){
+		var projectFixturePath string = "test/service_yml/service_to_kubes_2"
+
+		BeforeEach(func(){
+			_, err := runStarterWithProjectGeneratingKubernetesYmlFromServiceYml(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+		/*AfterEach(func(){
+			os.Remove(projectFixturePath+"/src/kubernetes.yml")
+		})*/
+
+		It("should generate kubernetes.yml", func(){
+			kubernetes_expected, _ := ioutil.ReadFile(projectFixturePath+"/expected/kubernetes.yml")
+			kubernetes_generated, _ := ioutil.ReadFile(projectFixturePath+"/src/kubernetes.yml")
+			Expect(kubernetes_generated).To(Equal(kubernetes_expected))
+		})
+	})
+})
+
+var _ = Describe("Generating service.yml from docker-compose.yml", func() {
+	Context("using an empty project - just docker-compose.yml", func() {
+		var projectFixturePath string = "test/docker_compose/just_compose"
+
+		BeforeEach(func() {
 			_, err := runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath)
 			Expect(err).NotTo(HaveOccurred())
 		})
 		AfterEach(func() {
-			os.Remove(projectFixturePath+"/src/service.yml")
+			os.Remove(projectFixturePath + "/src/service.yml")
 		})
 
-		It("should generate a service.yml", func(){
+		It("should generate a service.yml", func() {
 			service_yml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
-			service_yml_generated, _ := ioutil.ReadFile(projectFixturePath+"/src/service.yml")
+			service_yml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
 			service_yml_generated = convertServiceYaml(service_yml_generated)
 			Expect(service_yml_generated).To(Equal(service_yml_expected))
 		})
 	})
-	Context("using an empty project - just docker-compose.yml that calls .env files", func(){
+	Context("using an empty project - just docker-compose.yml that calls .env files", func() {
 		var projectFixturePath string = "test/docker_compose/just_compose_2"
 
-		BeforeEach(func(){
+		BeforeEach(func() {
 			_, err := runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath)
 			Expect(err).NotTo(HaveOccurred())
 		})
 		AfterEach(func() {
-			os.Remove(projectFixturePath+"/src/service.yml")
+			os.Remove(projectFixturePath + "/src/service.yml")
 		})
 
-		It("should generate a service.yml", func(){
+		It("should generate a service.yml", func() {
 			service_yml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
-			service_yml_generated, _ := ioutil.ReadFile(projectFixturePath+"/src/service.yml")
+			service_yml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
 			service_yml_generated = convertServiceYaml(service_yml_generated)
 			Expect(service_yml_generated).To(Equal(service_yml_expected))
 		})

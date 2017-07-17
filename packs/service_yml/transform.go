@@ -97,7 +97,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 		//write db service
 		fileServices, er := yaml.Marshal(service)
 		CheckError(er)
-		file = []byte(string(file) + string(handleEnvVarsFormat(fileServices)) + "---\n")
+		file = []byte(string(file) + string(finalFormat(fileServices)) + "---\n")
 
 		//write db deployment
 		deployments = append(deployments, deploy)
@@ -130,6 +130,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 						Labels: serviceSpecs.Tags,
 					},
 					PodSpec: PodSpec{
+						TerminationGracePeriodSeconds: serviceSpecs.StopGrace,
 						Containers: []Containers{
 							{
 								Name:       serviceName,
@@ -143,12 +144,12 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 								Lifecycle: Lifecycle{
 									PostStart: Handler{
 										Exec: Exec{
-											Command: serviceSpecs.PostStartCommand,
+											Command: serviceSpecs.PostStartCommand.PostStartCommand,
 										},
 									},
 									PreStop: Handler{
 										Exec: Exec{
-											Command: serviceSpecs.PreStopCommand,
+											Command: serviceSpecs.PreStopCommand.PreStopCommand,
 										},
 									},
 								},
@@ -190,7 +191,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 			//file = []byte(string(file) + "####### " + strings.ToUpper(string(serviceName)) + " - Service #######\n" + "\n")
 			fileServices, er := yaml.Marshal(service)
 			CheckError(er)
-			file = []byte(string(file)+ "####### " + strings.ToUpper(string(serviceName)) + " - Service #######\n" + "\n" + string(handleEnvVarsFormat(fileServices)) + "---\n")
+			file = []byte(string(file)+ "####### " + strings.ToUpper(string(serviceName)) + " - Service #######\n" + "\n" + string(finalFormat(fileServices)) + "---\n")
 		}
 		deployments = append(deployments, deploy)
 	}
@@ -203,7 +204,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 	for _, deploy := range deployments{
 		fileDeployments, err := yaml.Marshal(deploy)
 		CheckError(err)
-		file = []byte(string(file) + "---\n####### " + strings.ToUpper(string(deploy.Metadata.Name)) + " #######\n" + string(handleEnvVarsFormat(fileDeployments)))
+		file = []byte(string(file) + "---\n####### " + strings.ToUpper(string(deploy.Metadata.Name)) + " #######\n" + string(finalFormat(fileDeployments)))
 	}
 
 	//delete last row of ---

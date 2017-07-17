@@ -1,0 +1,197 @@
+# Generated with <3 by Cloud66
+
+####### REDIS #######
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-svc
+spec:
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  type: ClusterIP
+
+---
+####### INFLUXDB #######
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb-svc
+spec:
+  ports:
+  - name: influxdb
+    port: 8086
+    targetPort: 8086
+  type: ClusterIP
+
+---
+####### LARAVEL - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: laravel-svc
+spec:
+  ports:
+  - name: 7437-expose
+    port: 7437
+    targetPort: 7437
+  type: ClusterIP
+
+---
+####### LARAVEL - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: laravel-svn
+spec:
+  ports:
+  - name: 443-http-31111
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+    nodePort: 31111
+  - name: 80-http-31112
+    port: 80
+    protocol: TCP
+    targetPort: 4000
+    nodePort: 31112
+  - name: 8000-http-31113
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+    nodePort: 31113
+  type: NodePort
+
+---
+####### MYSQL - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-svn
+spec:
+  ports:
+  - name: 1-http-31114
+    port: 1
+    protocol: TCP
+    targetPort: 2
+    nodePort: 31114
+  - name: 1-https-31115
+    port: 1
+    protocol: TCP
+    targetPort: 3
+    nodePort: 31115
+  - name: 100-http-31116
+    port: 100
+    protocol: TCP
+    targetPort: 1000
+    nodePort: 31116
+  type: NodePort
+
+---
+####### REDIS-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        ports:
+        - name: redis
+          containerPort: 6379
+
+---
+####### INFLUXDB-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: influxdb-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: influxdb:latest
+        ports:
+        - name: influxdb
+          containerPort: 8086
+
+---
+####### LARAVEL-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: laravel-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: laravel
+    spec:
+      containers:
+      - name: laravel
+        command:
+        - cp something meh woah
+        image:  #INSERT REQUIRED IMAGE
+        workingDir: ./lib/
+        ports:
+        - name: 8000-tcp
+          protocol: TCP
+          containerPort: 8000
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - cp bin
+          preStop:
+            exec:
+              command:
+              - cat log.file
+      terminationGracePeriodSeconds: 10
+
+---
+####### MYSQL-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.6.36
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: db_data
+          readOnly: true
+        - mountPath: /var/lib/mysql
+          name: /db_data
+          readOnly: true
+        env:
+        - name: MYSQL_ALLOW_EMPTY_PASSWORD
+          value: "yes"
+        - name: MYSQL_DATABASE
+          value: laravel
+        - name: MYSQL_ROOT_PASSWORD
+          value:
+        ports:
+        - name: 100-tcp
+          protocol: TCP
+          containerPort: 1

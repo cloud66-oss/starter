@@ -1,0 +1,292 @@
+# Generated with <3 by Cloud66
+
+####### HAPROXY - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: haproxy-svc
+spec:
+  ports:
+  - name: 8443-expose
+    port: 8443
+    targetPort: 8443
+  type: ClusterIP
+
+---
+####### HAPROXY - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: haproxy-svn
+spec:
+  ports:
+  - name: 90-http-31111
+    port: 90
+    protocol: TCP
+    targetPort: 8000
+    nodePort: 31111
+  - name: 80-http-31112
+    port: 80
+    protocol: TCP
+    targetPort: 80
+    nodePort: 31112
+  - name: 3080-http-31113
+    port: 3080
+    protocol: TCP
+    targetPort: 8080
+    nodePort: 31113
+  type: NodePort
+
+---
+####### MEMCACHE - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: memcache-svc
+spec:
+  ports:
+  - name: 23-expose
+    port: 23
+    targetPort: 23
+  type: ClusterIP
+
+---
+####### PROXY - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy-svn
+spec:
+  ports:
+  - name: 9000-http-31114
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+    nodePort: 31114
+  type: NodePort
+
+---
+####### CLIENT - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-svn
+  labels:
+    app: client
+    this_is_a_label: first
+spec:
+  ports:
+  - name: 9000-http-31115
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+    nodePort: 31115
+  type: NodePort
+
+---
+####### FOREMAN - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: foreman-svc
+spec:
+  ports:
+  - name: 4480-expose
+    port: 4480
+    targetPort: 4480
+  type: ClusterIP
+
+---
+####### FOREMAN-INIT - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: foreman-init-svn
+spec:
+  ports:
+  - name: 123-http-31116
+    port: 123
+    protocol: TCP
+    targetPort: 345
+    nodePort: 31116
+  - name: 123-https-31117
+    port: 123
+    protocol: TCP
+    targetPort: 567
+    nodePort: 31117
+  type: NodePort
+
+---
+####### HAPROXY-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: haproxy-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: haproxy
+    spec:
+      containers:
+      - name: haproxy
+        image: dockercloud/haproxy
+        volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: /var/run/docker.sock
+        ports:
+        - name: 3080-tcp
+          protocol: TCP
+          containerPort: 3080
+
+---
+####### MEMCACHE-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: memcache-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: memcache
+    spec:
+      containers:
+      - name: memcache
+        image: memcached
+        ports:
+        - name: 23-expose
+          containerPort: 23
+
+---
+####### PROXY-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: proxy-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      containers:
+      - name: proxy
+        command:
+        - /usr/src/app/bin/smart-proxy
+        image:  #INSERT REQUIRED IMAGE
+        ports:
+        - name: 9000-tcp
+          protocol: TCP
+          containerPort: 9000
+
+---
+####### CLIENT-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: client-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: client
+        this_is_a_label: first
+    spec:
+      containers:
+      - name: client
+        image:  #INSERT REQUIRED IMAGE
+        env:
+        - name: FOREMAN_URL
+          value: http://haproxy
+        ports:
+        - name: 9000-tcp
+          protocol: TCP
+          containerPort: 9000
+
+---
+####### DB-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: db-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+      - name: db
+        image: postgres:9.5
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data/pgdata
+          name: /pgdata
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+
+---
+####### FOREMAN-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: foreman-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: foreman
+    spec:
+      containers:
+      - name: foreman
+        command:
+        - rails server -p 80 -b 0.0.0.0
+        image:  #INSERT REQUIRED IMAGE
+        volumeMounts:
+        - mountPath: /usr/src/app/public/assets
+          name: /assets
+        - mountPath: /usr/src/app/public/webpack
+          name: /webpack
+        - mountPath: /data1
+          name: /mydata1
+        - mountPath: /data3
+          name: /mydata3
+        ports:
+        - name: 4480-expose
+          containerPort: 4480
+
+---
+####### FOREMAN-INIT-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: foreman-init-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: foreman-init
+    spec:
+      containers:
+      - name: foreman-init
+        command:
+        - bundle exec rake db:migrate db:seed assets:clean assets:precompile webpack:compile
+          apipie:cache:index
+        image:  #INSERT REQUIRED IMAGE
+        volumeMounts:
+        - mountPath: /usr/src/app/public/assets
+          name: /assets
+        - mountPath: /usr/src/app/public/webpack
+          name: /webpack
+        ports:
+        - name: 123-tcp
+          protocol: TCP
+          containerPort: 1

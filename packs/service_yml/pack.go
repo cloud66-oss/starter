@@ -59,7 +59,7 @@ func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool, gi
 
 func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPrompt bool) error {
 
-	common.PrintlnWarning("You can not generate a Dockerfile using this pack. Nothing to do.")
+	//common.PrintlnWarning("You can not generate a Dockerfile using this pack. Nothing to do.")
 	return nil
 }
 

@@ -1,0 +1,38 @@
+# Generated with <3 by Cloud66
+
+services:
+  laravel:
+    git_url: http://github.com/cloud66-samples/php-docker.git
+    git_branch: master
+    pre_stop_command: cat log.file
+    post_start_command: cp bin
+    work_dir: ./lib/
+    stop_grace: 10
+    command: cp something meh woah
+    constrains:
+            resources:
+                    memory: 100000m
+                    cpu: 512
+    priviliged: true
+    requires:
+    - mysql
+    ports:
+    - 443:8443
+    - 80:4000
+    - 7437
+    - 8000:8000
+  mysql:
+    image: mysql:5.6.36
+    ports:
+    - 1:2:3
+    - 100:1000
+    volumes:
+    - db_data:/var/lib/mysql:ro
+    - /db_data:/var/lib/mysql:ro
+    env_vars:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: ""
+databases:
+        - redis
+        - influxdb

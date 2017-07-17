@@ -1,0 +1,68 @@
+# Generated with <3 by Cloud66
+
+services:
+  client:
+    git_url: http://github.com/saada/docker-compose-php-mysql.git
+    git_branch: master
+    build_root: client
+    requires:
+    - haproxy
+    ports:
+    - 9000:9000
+    tags:
+      this_is_a_label: first
+    env_vars:
+      FOREMAN_URL: http://haproxy
+  db:
+    image: postgres:9.5
+    volumes:
+    - /pgdata:/var/lib/postgresql/data/pgdata:z
+    env_vars:
+      PGDATA: /var/lib/postgresql/data/pgdata
+  foreman:
+    git_url: http://github.com/saada/docker-compose-php-mysql.git
+    git_branch: master
+    build_root: ./somewhere
+    volumes:
+    - /assets:/usr/src/app/public/assets:z
+    - /webpack:/usr/src/app/public/webpack:z
+    - /mydata1:/data1
+    - /mydata3:/data3
+    dockerfile_path: ./here
+    command: rails server -p 80 -b 0.0.0.0
+    ports:
+    - "4480"
+  foreman-init:
+    git_url: http://github.com/saada/docker-compose-php-mysql.git
+    git_branch: master
+    build_root: foreman
+    requires:
+    - db
+    ports:
+    - 123:345:567
+    volumes:
+    - /assets:/usr/src/app/public/assets
+    - /webpack:/usr/src/app/public/webpack
+    command: bundle exec rake db:migrate db:seed assets:clean assets:precompile webpack:compile
+      apipie:cache:index
+  haproxy:
+    image: dockercloud/haproxy
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+    - "8443"
+    - 90:8000
+    - 80:80
+    - container: "3080"
+      http: "8080"
+  memcache:
+    image: memcached
+    ports:
+    - 23
+  proxy:
+    git_url: http://github.com/saada/docker-compose-php-mysql.git
+    git_branch: master
+    build_root: proxy
+    command: /usr/src/app/bin/smart-proxy
+    ports:
+    - 9000:9000

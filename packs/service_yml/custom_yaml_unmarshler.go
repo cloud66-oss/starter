@@ -44,6 +44,32 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+func (com *PostStartCommand) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	var single string
+	err := unmarshal(&single)
+	if err!=nil{
+		return err
+	}
+	com.PostStartCommand = make([]string,1)
+	com.PostStartCommand[0] = single
+
+	return nil
+}
+
+func (com *PreStopCommand) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	var single string
+	err := unmarshal(&single)
+	if err!=nil{
+		return err
+	}
+	com.PreStopCommand = make([]string, 1)
+	com.PreStopCommand[0] = single
+
+	return nil
+}
+
 func (c *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var multi []string
 	err := unmarshal(&multi)
