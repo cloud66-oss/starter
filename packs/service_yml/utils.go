@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"unicode"
 	"github.com/cloud66/starter/common"
+	"sort"
 )
 
 func finalFormat(file []byte) string {
@@ -405,6 +406,59 @@ func getIntFromVal(value string) int {
 	}
 	return 0
 }
+
+func composeWriter (file []byte, deployments []KubesDeployment, kubesServices []KubesService) []byte{
+	var keys []string
+	for _, k := range kubesServices {
+		keys = append(keys, k.Metadata.Name)
+	}
+	sort.Strings(keys)
+	indexPort := 31111
+
+
+
+	for _, k := range keys {
+		for i := 0; i < len(kubesServices); i++ {
+			if kubesServices[i].Metadata.Name == k {
+				if len(kubesServices[i].Spec.Ports) > 0 {
+					for v, port := range kubesServices[i].Spec.Ports {
+						if port.NodePort != 0 {
+							port.NodePort = indexPort
+							port.Name = port.Name[:len(port.Name)-5] + strconv.Itoa(indexPort)
+							indexPort++
+							kubesServices[i].Spec.Ports[v] = port
+						}
+					}
+				}
+				fileServices, err := yaml.Marshal(kubesServices[i])
+				CheckError(err)
+				file = []byte(string(file) + "####### " + strings.ToUpper(string(kubesServices[i].Metadata.Name)) + " - Service #######\n" + "\n" + string(finalFormat(fileServices)) + "---\n")
+				break
+			}
+		}
+	}
+
+
+
+	keys = []string{}
+	for _, k := range deployments {
+		keys = append(keys, k.Metadata.Name)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		for i := 0; i < len(deployments); i++ {
+			if deployments[i].Metadata.Name == k {
+				fileDeployments, err := yaml.Marshal(deployments[i])
+				CheckError(err)
+				file = []byte(string(file) + "---\n####### " + strings.ToUpper(string(deployments[i].Metadata.Name)) + " #######\n" + string(finalFormat(fileDeployments)))
+				break
+			}
+		}
+	}
+	return file
+}
+
 
 func CheckError(err error) {
 	if err != nil {

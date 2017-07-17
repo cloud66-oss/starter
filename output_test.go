@@ -53,7 +53,7 @@ func runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePa
 }
 
 func runStarterWithProjectGeneratingKubernetesYmlFromServiceYml(projectFixturePath string) (string, error) {
-	command := exec.Command(binPath, "-y", "-p", projectFixturePath+"/src","-g", "kubernetes")
+	command := exec.Command(binPath, "-y", "-p", projectFixturePath+"/src", "-g", "kubernetes")
 	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err
@@ -594,38 +594,38 @@ var _ = Describe("Generating only a docker-compose.yml with Starter", func() {
 
 })
 
-var _ = Describe("Generating kubernetes.yml from service.yml", func(){
-	Context("using an empty project - service.yml populated with all possible keys", func(){
+var _ = Describe("Generating kubernetes.yml from service.yml", func() {
+	Context("using an empty project - service.yml populated with all possible keys", func() {
 		var projectFixturePath string = "test/service_yml/service_to_kubes_1"
 
-		BeforeEach(func(){
+		BeforeEach(func() {
 			_, err := runStarterWithProjectGeneratingKubernetesYmlFromServiceYml(projectFixturePath)
 			Expect(err).NotTo(HaveOccurred())
 		})
-		/*AfterEach(func(){
-			os.Remove(projectFixturePath+"/src/kubernetes.yml")
-		})*/
+		AfterEach(func() {
+			os.Remove(projectFixturePath + "/src/kubernetes.yml")
+		})
 
-		It("should generate kubernetes.yml", func(){
-			kubernetes_expected, _ := ioutil.ReadFile(projectFixturePath+"/expected/kubernetes.yml")
-			kubernetes_generated, _ := ioutil.ReadFile(projectFixturePath+"/src/kubernetes.yml")
+		It("should generate kubernetes.yml", func() {
+			kubernetes_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/kubernetes.yml")
+			kubernetes_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/kubernetes.yml")
 			Expect(kubernetes_generated).To(Equal(kubernetes_expected))
 		})
 	})
-	Context("using an empty project - functional service.yml", func(){
+	Context("using an empty project - functional service.yml", func() {
 		var projectFixturePath string = "test/service_yml/service_to_kubes_2"
 
-		BeforeEach(func(){
+		BeforeEach(func() {
 			_, err := runStarterWithProjectGeneratingKubernetesYmlFromServiceYml(projectFixturePath)
 			Expect(err).NotTo(HaveOccurred())
 		})
-		/*AfterEach(func(){
-			os.Remove(projectFixturePath+"/src/kubernetes.yml")
-		})*/
+		AfterEach(func() {
+			os.Remove(projectFixturePath + "/src/kubernetes.yml")
+		})
 
-		It("should generate kubernetes.yml", func(){
-			kubernetes_expected, _ := ioutil.ReadFile(projectFixturePath+"/expected/kubernetes.yml")
-			kubernetes_generated, _ := ioutil.ReadFile(projectFixturePath+"/src/kubernetes.yml")
+		It("should generate kubernetes.yml", func() {
+			kubernetes_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/kubernetes.yml")
+			kubernetes_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/kubernetes.yml")
 			Expect(kubernetes_generated).To(Equal(kubernetes_expected))
 		})
 	})

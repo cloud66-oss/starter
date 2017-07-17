@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 	"fmt"
-	"strings"
 )
 
 func Transformer(filename string, formatTarget string) error {
@@ -49,6 +48,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 	var file []byte
 	var deploy KubesDeployment
 	var deployments []KubesDeployment
+	var kubesServices []KubesService
 
 	//Each service needs an unique nodePort, so we hand-pick to start
 	//from 31111 and pray that it will not collide with other stuff.
@@ -57,15 +57,14 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 	file = []byte("# Generated with <3 by Cloud66\n\n")
 
 	for _, dbName := range serviceYml.Dbs {
-		file = []byte(string(file) + "####### " + strings.ToUpper(string(dbName)) + " #######" + "\n")
-		tags:= make(map[string]string, 1)
-		tags["app"]=dbName
+		tags := make(map[string]string, 1)
+		tags["app"] = dbName
 
 		service := KubesService{
 			ApiVersion: "v1",
 			Kind:       "Service",
 			Metadata: Metadata{
-				Name:   dbName + "-svc",
+				Name: dbName + "-svc",
 			},
 			Spec: Spec{
 				Type:  "ClusterIP",
@@ -73,7 +72,7 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 			},
 		}
 		deploy := KubesDeployment{ApiVersion: "extensions/v1beta1",
-			Kind:                      "Deployment",
+			Kind:                         "Deployment",
 			Metadata: Metadata{
 				Name: dbName + "-deployment",
 			},
@@ -94,27 +93,19 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 				},
 			},
 		}
-		//write db service
-		fileServices, er := yaml.Marshal(service)
-		CheckError(er)
-		file = []byte(string(file) + string(finalFormat(fileServices)) + "---\n")
 
-		//write db deployment
+		kubesServices = append(kubesServices, service)
 		deployments = append(deployments, deploy)
-
 	}
 	var deployPorts []KubesPorts
 	var services []KubesService
 	for serviceName, serviceSpecs := range serviceYml.Services {
 
-		//if it has no image, output warning to user about the fact that each container needs one
-
-
 		//gets ports to populate deployment and generates the required service(s)
 		deployPorts, services, nodePort = generateServicesRequiredByPorts(serviceName, serviceSpecs, nodePort)
 
 		//required by the kubes format
-		if serviceSpecs.Tags==nil{
+		if serviceSpecs.Tags == nil {
 			serviceSpecs.Tags = make(map[string]string, 1)
 		}
 		serviceSpecs.Tags["app"] = serviceName
@@ -166,7 +157,8 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 			},
 		}
 
-		if serviceSpecs.Image==""{
+		//if it has no image, output warning to user about the fact that each container needs one
+		if serviceSpecs.Image == "" {
 			deploy.Spec.Template.PodSpec.Containers[0].Image = "#INSERT REQUIRED IMAGE"
 			common.PrintlnWarning("The service \"%s\" has no image mentioned and each container needs one in Kubernetes format. Please add manually.", serviceName)
 		}
@@ -188,27 +180,14 @@ func copyToKubes(serviceYml ServiceYml) []byte {
 			}
 		}
 		for _, service := range services {
-			//file = []byte(string(file) + "####### " + strings.ToUpper(string(serviceName)) + " - Service #######\n" + "\n")
-			fileServices, er := yaml.Marshal(service)
-			CheckError(er)
-			file = []byte(string(file)+ "####### " + strings.ToUpper(string(serviceName)) + " - Service #######\n" + "\n" + string(finalFormat(fileServices)) + "---\n")
+			kubesServices = append(kubesServices, service)
 		}
 		deployments = append(deployments, deploy)
 	}
-
-	//delete last ror of ---
-	if len(services)>0{
-		file = file[:len(file)-4]
-	}
-	//write deployments last in order to make sure kubectl takes them into consideration
-	for _, deploy := range deployments{
-		fileDeployments, err := yaml.Marshal(deploy)
-		CheckError(err)
-		file = []byte(string(file) + "---\n####### " + strings.ToUpper(string(deploy.Metadata.Name)) + " #######\n" + string(finalFormat(fileDeployments)))
-	}
+	file = composeWriter(file, deployments, kubesServices)
 
 	//delete last row of ---
-	if len(deployments)>0 {
+	if len(deployments) > 0 {
 		file = file[:len(file)-4]
 	}
 	return file

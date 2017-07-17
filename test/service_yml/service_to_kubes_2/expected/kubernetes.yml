@@ -1,76 +1,6 @@
 # Generated with <3 by Cloud66
 
-####### HAPROXY - Service #######
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: haproxy-svc
-spec:
-  ports:
-  - name: 8443-expose
-    port: 8443
-    targetPort: 8443
-  type: ClusterIP
-
----
-####### HAPROXY - Service #######
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: haproxy-svn
-spec:
-  ports:
-  - name: 90-http-31111
-    port: 90
-    protocol: TCP
-    targetPort: 8000
-    nodePort: 31111
-  - name: 80-http-31112
-    port: 80
-    protocol: TCP
-    targetPort: 80
-    nodePort: 31112
-  - name: 3080-http-31113
-    port: 3080
-    protocol: TCP
-    targetPort: 8080
-    nodePort: 31113
-  type: NodePort
-
----
-####### MEMCACHE - Service #######
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: memcache-svc
-spec:
-  ports:
-  - name: 23-expose
-    port: 23
-    targetPort: 23
-  type: ClusterIP
-
----
-####### PROXY - Service #######
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: proxy-svn
-spec:
-  ports:
-  - name: 9000-http-31114
-    port: 9000
-    protocol: TCP
-    targetPort: 9000
-    nodePort: 31114
-  type: NodePort
-
----
-####### CLIENT - Service #######
+####### CLIENT-SVN - Service #######
 
 apiVersion: v1
 kind: Service
@@ -81,15 +11,36 @@ metadata:
     this_is_a_label: first
 spec:
   ports:
-  - name: 9000-http-31115
+  - name: 9000-http-31111
     port: 9000
     protocol: TCP
     targetPort: 9000
-    nodePort: 31115
+    nodePort: 31111
   type: NodePort
 
 ---
-####### FOREMAN - Service #######
+####### FOREMAN-INIT-SVN - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: foreman-init-svn
+spec:
+  ports:
+  - name: 123-http-31112
+    port: 123
+    protocol: TCP
+    targetPort: 345
+    nodePort: 31112
+  - name: 123-https-31113
+    port: 123
+    protocol: TCP
+    targetPort: 567
+    nodePort: 31113
+  type: NodePort
+
+---
+####### FOREMAN-SVC - Service #######
 
 apiVersion: v1
 kind: Service
@@ -103,90 +54,76 @@ spec:
   type: ClusterIP
 
 ---
-####### FOREMAN-INIT - Service #######
+####### HAPROXY-SVC - Service #######
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: foreman-init-svn
+  name: haproxy-svc
 spec:
   ports:
-  - name: 123-http-31116
-    port: 123
+  - name: 8443-expose
+    port: 8443
+    targetPort: 8443
+  type: ClusterIP
+
+---
+####### HAPROXY-SVN - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: haproxy-svn
+spec:
+  ports:
+  - name: 90-http-31114
+    port: 90
     protocol: TCP
-    targetPort: 345
+    targetPort: 8000
+    nodePort: 31114
+  - name: 80-http-31115
+    port: 80
+    protocol: TCP
+    targetPort: 80
+    nodePort: 31115
+  - name: 3080-http-31116
+    port: 3080
+    protocol: TCP
+    targetPort: 8080
     nodePort: 31116
-  - name: 123-https-31117
-    port: 123
+  type: NodePort
+
+---
+####### MEMCACHE-SVC - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: memcache-svc
+spec:
+  ports:
+  - name: 23-expose
+    port: 23
+    targetPort: 23
+  type: ClusterIP
+
+---
+####### PROXY-SVN - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy-svn
+spec:
+  ports:
+  - name: 9000-http-31117
+    port: 9000
     protocol: TCP
-    targetPort: 567
+    targetPort: 9000
     nodePort: 31117
   type: NodePort
 
 ---
-####### HAPROXY-DEPLOYMENT #######
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: haproxy-deployment
-spec:
-  template:
-    metadata:
-      labels:
-        app: haproxy
-    spec:
-      containers:
-      - name: haproxy
-        image: dockercloud/haproxy
-        volumeMounts:
-        - mountPath: /var/run/docker.sock
-          name: /var/run/docker.sock
-        ports:
-        - name: 3080-tcp
-          protocol: TCP
-          containerPort: 3080
-
----
-####### MEMCACHE-DEPLOYMENT #######
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: memcache-deployment
-spec:
-  template:
-    metadata:
-      labels:
-        app: memcache
-    spec:
-      containers:
-      - name: memcache
-        image: memcached
-        ports:
-        - name: 23-expose
-          containerPort: 23
-
----
-####### PROXY-DEPLOYMENT #######
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: proxy-deployment
-spec:
-  template:
-    metadata:
-      labels:
-        app: proxy
-    spec:
-      containers:
-      - name: proxy
-        command:
-        - /usr/src/app/bin/smart-proxy
-        image:  #INSERT REQUIRED IMAGE
-        ports:
-        - name: 9000-tcp
-          protocol: TCP
-          containerPort: 9000
-
 ---
 ####### CLIENT-DEPLOYMENT #######
 apiVersion: extensions/v1beta1
@@ -289,4 +226,68 @@ spec:
         ports:
         - name: 123-tcp
           protocol: TCP
-          containerPort: 1
+          containerPort: 123
+
+---
+####### HAPROXY-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: haproxy-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: haproxy
+    spec:
+      containers:
+      - name: haproxy
+        image: dockercloud/haproxy
+        volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: /var/run/docker.sock
+        ports:
+        - name: 3080-tcp
+          protocol: TCP
+          containerPort: 3080
+
+---
+####### MEMCACHE-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: memcache-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: memcache
+    spec:
+      containers:
+      - name: memcache
+        image: memcached
+        ports:
+        - name: 23-expose
+          containerPort: 23
+
+---
+####### PROXY-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: proxy-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      containers:
+      - name: proxy
+        command:
+        - /usr/src/app/bin/smart-proxy
+        image:  #INSERT REQUIRED IMAGE
+        ports:
+        - name: 9000-tcp
+          protocol: TCP
+          containerPort: 90

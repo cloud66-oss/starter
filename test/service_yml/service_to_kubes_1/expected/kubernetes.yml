@@ -1,19 +1,7 @@
 # Generated with <3 by Cloud66
 
-####### REDIS #######
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis-svc
-spec:
-  ports:
-  - name: redis
-    port: 6379
-    targetPort: 6379
-  type: ClusterIP
+####### INFLUXDB-SVC - Service #######
 
----
-####### INFLUXDB #######
 apiVersion: v1
 kind: Service
 metadata:
@@ -26,7 +14,7 @@ spec:
   type: ClusterIP
 
 ---
-####### LARAVEL - Service #######
+####### LARAVEL-SVC - Service #######
 
 apiVersion: v1
 kind: Service
@@ -40,7 +28,7 @@ spec:
   type: ClusterIP
 
 ---
-####### LARAVEL - Service #######
+####### LARAVEL-SVN - Service #######
 
 apiVersion: v1
 kind: Service
@@ -66,7 +54,7 @@ spec:
   type: NodePort
 
 ---
-####### MYSQL - Service #######
+####### MYSQL-SVN - Service #######
 
 apiVersion: v1
 kind: Service
@@ -92,24 +80,20 @@ spec:
   type: NodePort
 
 ---
-####### REDIS-DEPLOYMENT #######
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: redis-deployment
-spec:
-  template:
-    metadata:
-      labels:
-        app: redis
-    spec:
-      containers:
-      - name: redis
-        image: redis:latest
-        ports:
-        - name: redis
-          containerPort: 6379
+####### REDIS-SVC - Service #######
 
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-svc
+spec:
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  type: ClusterIP
+
+---
 ---
 ####### INFLUXDB-DEPLOYMENT #######
 apiVersion: extensions/v1beta1
@@ -190,8 +174,27 @@ spec:
         - name: MYSQL_DATABASE
           value: laravel
         - name: MYSQL_ROOT_PASSWORD
-          value:
+          value: 
         ports:
         - name: 100-tcp
           protocol: TCP
-          containerPort: 1
+          containerPort: 100
+
+---
+####### REDIS-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        ports:
+        - name: redis
+          containerPort: 63
