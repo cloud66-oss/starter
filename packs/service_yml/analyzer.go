@@ -7,22 +7,15 @@ import (
 
 type Analyzer struct{
 	packs.AnalyzerBase
-	DockerCompose string
+	ServiceYml string
 }
 
-
 func (a *Analyzer) Analyze() (*Analysis, error) {
-	a.DockerCompose = filepath.Join(a.RootDir, "service.yml")
+	a.ServiceYml = filepath.Join(a.RootDir, "service.yml")
 	gitURL, gitBranch, _, err := a.ProjectMetadata()
 	if err != nil {
 		return nil, err
 	}
-
-
-	if err != nil {
-		return nil, err
-	}
-
 	analysis := &Analysis{
 		AnalysisBase: packs.AnalysisBase{
 			PackName:  a.GetPack().Name(),

@@ -66,6 +66,23 @@ func Transformer(filename string, formatTarget string, gitURL string, gitBranch 
 		return err
 	}
 
+	type Child struct{
+		Little string
+	}
+	type Parent struct{
+		Children []Child
+	}
+	parent := Parent{}
+	parent.Children = append(parent.Children, Child{"1"})
+	parent.Children = append(parent.Children, Child{"2"})
+	parent.Children = append(parent.Children, Child{"3"})
+
+	file, err = yaml.Marshal(parent)
+
+	err = ioutil.WriteFile(formatTarget, file, 0644)
+	if err != nil {
+		return err
+	}
 	return nil
 
 }

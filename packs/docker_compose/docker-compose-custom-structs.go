@@ -1,29 +1,27 @@
 package docker_compose
 
-
 type BuildCommand struct {
-	Build         Build `yaml:"dockerfile,omitempty"`
+	Build     Build `yaml:"dockerfile,omitempty"`
 	BuildRoot string `yaml:"build,omitempty"`
 }
 
 type Build struct {
-	Context	string `yaml:"context,omitempty"`
+	Context    string `yaml:"context,omitempty"`
 	Dockerfile string `yaml:"dockerfile,omitempty"`
 }
 
 type Deploy struct {
 	Resources DockerResources`yaml:"resources,omitempty"`
-	Labels map[string]string `yaml:"labels,omitempty"`
+	Labels    map[string]string `yaml:"labels,omitempty"`
 }
 
-type DockerResources struct{
-	Limits CpusMem `yaml:"limits,omitempty"`
+type DockerResources struct {
+	Limits       CpusMem `yaml:"limits,omitempty"`
 	Reservations CpusMem `yaml:reservations",omitempty"`
-
 }
 
-type CpusMem struct{
-	Cpus string `yaml:"cpus,omitempty"`
+type CpusMem struct {
+	Cpus   string `yaml:"cpus,omitempty"`
 	Memory string `yaml:"memory,omitempty"`
 }
 
@@ -31,16 +29,15 @@ type Command struct {
 	Command string `yaml:"command,omitempty"`
 }
 
-
 type Volumes struct {
-	Volumes []string `yaml:"volumes,omitempty"`
-	LongSyntax	[]LongSyntaxVolume
+	Volumes    []string `yaml:"volumes,omitempty"`
+	LongSyntax []LongSyntaxVolume
 }
 
-type LongSyntaxVolume struct{
-	Type	string `yaml:"type,omitempty"`
-	Source	string `yaml:"source,omitempty"`
-	Target	string `yaml:"target,omitempty"`
+type LongSyntaxVolume struct {
+	Type     string `yaml:"type,omitempty"`
+	Source   string `yaml:"source,omitempty"`
+	Target   string `yaml:"target,omitempty"`
 	ReadOnly bool `yaml:"read_only,omitempty"`
 }
 
