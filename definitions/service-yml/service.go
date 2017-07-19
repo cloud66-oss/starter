@@ -10,7 +10,7 @@ type Service struct {
 	Tags             map[string]string `yaml:"tags,omitempty"`
 	Command          string `yaml:"command,omitempty"`
 	EnvVars          map[string]string `yaml:"env_vars,omitempty"`
-	Ports            []interface{} `yaml:"ports,omitempty"`
+	Ports            []Port `yaml:"ports,omitempty"`
 	PreStopCommand   string `yaml:"pre_stop_command"`
 	PostStartCommand string `yaml:"post_start_command"`
 	DeployCommand    string `yaml:"deploy_command,omitempty"`
