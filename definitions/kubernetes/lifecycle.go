@@ -1,4 +1,4 @@
-package service_yml
+package kubernetes
 
 type Lifecycle struct{
 	PostStart Handler `yaml:"postStart,omitempty"`

@@ -1,4 +1,4 @@
-package service_yml
+package kubernetes
 
 type Template struct{
 	Metadata Metadata `yaml:"metadata,omitempty"`

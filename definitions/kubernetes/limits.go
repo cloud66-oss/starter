@@ -1,4 +1,4 @@
-package service_yml
+package kubernetes
 
 type Limits struct{
 	Cpu int `yaml:"cpu,omitempty"`

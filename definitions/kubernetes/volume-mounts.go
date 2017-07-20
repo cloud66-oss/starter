@@ -1,4 +1,4 @@
-package service_yml
+package kubernetes
 
 type VolumeMounts struct {
 	MountPath string `yaml:"mountPath,omitempty"`

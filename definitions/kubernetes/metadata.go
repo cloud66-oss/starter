@@ -1,4 +1,4 @@
-package service_yml
+package kubernetes
 
 type Metadata struct {
 	Name string `yaml:"name,omitempty"`

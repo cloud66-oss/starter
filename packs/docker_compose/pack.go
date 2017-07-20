@@ -1,6 +1,5 @@
 package docker_compose
 
-import ()
 import (
 	"github.com/cloud66/starter/packs"
 	"github.com/cloud66/starter/common"

@@ -1,4 +1,4 @@
-package service_yml
+package kubernetes
 
 type Spec struct {
 	Ports []KubesPorts `yaml:"ports,omitempty"`

@@ -1,4 +1,4 @@
-package service_yml
+package kubernetes
 
 type EnvVar struct{
 	Name interface{} `yaml:"name,omitempty"`

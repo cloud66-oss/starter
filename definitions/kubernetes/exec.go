@@ -1,4 +1,4 @@
-package service_yml
+package kubernetes
 
 type Exec struct {
 	Command []string `yaml:"command,omitempty"`

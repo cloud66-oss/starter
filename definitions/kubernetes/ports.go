@@ -1,4 +1,4 @@
-package service_yml
+package kubernetes
 
 type Ports struct {
 	Name string `yaml:"name,omitempty"`
