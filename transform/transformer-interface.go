@@ -11,4 +11,3 @@ type Transformer interface{
 	ToDockerCompose() docker_compose.DockerCompose
 	ToKubernetes() kubernetes.Kubernetes
 }
-
