@@ -203,6 +203,7 @@ func getKeyValue(line string) (string, string) {
 
 	return key, value
 }
+
 func isCommentLine(line string) bool {
 	var i int
 	for i = 0; i < len(line); i++ {

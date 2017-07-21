@@ -13,7 +13,7 @@ type Service struct {
 	Working_dir       string `yaml:"working_dir,omitempty"`
 	Privileged        bool `yaml:"privileged,omitempty"`
 	Labels            map[string]string `yaml:"labels,omitempty"`
-	Expose            []string `yaml:"expose,omitempty"`
+	Expose            []int `yaml:"expose,omitempty"`
 	EnvFile           EnvFile `yaml:"env_file,omitempty"`
 	CpuShares         int `yaml:"cpu_shares,omitempty"`
 	MemLimit          string `yaml:"mem_limit,omitempty"`

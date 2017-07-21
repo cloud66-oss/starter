@@ -9,10 +9,10 @@ import (
 
 type DockerCompose struct {
 	Services map[string]Service
-	Version string
+	Version  string
 }
 
-func (d DockerCompose) UnmarshalFromFile(path string) error{
+func (d DockerCompose) UnmarshalFromFile(path string) error {
 	var err error
 	_, err = os.Stat(path)
 	CheckError(err)
@@ -28,13 +28,18 @@ func (d DockerCompose) UnmarshalFromFile(path string) error{
 		fmt.Println(err.Error())
 	}
 
+	if len(dockerCompose.Services) == 0 {
+		err = yaml.Unmarshal([]byte(yamlFile), &dockerCompose.Services)
+		CheckError(err)
+	}
+
 	d.Services = dockerCompose.Services
-	d.Version = d.Version
+	d.Version = dockerCompose.Version
 
 	return nil
 }
 
-func (d DockerCompose) MarshalToFile(path string) error{
+func (d DockerCompose) MarshalToFile(path string) error {
 	file, err := yaml.Marshal(d)
 	file = []byte("# Generated with <3 by Cloud66\n\n" + string(file))
 
@@ -45,5 +50,3 @@ func (d DockerCompose) MarshalToFile(path string) error{
 
 	return nil
 }
-
-

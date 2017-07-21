@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"bufio"
 )
 
 func getKeyValue(line string) (string, string) {
@@ -123,6 +124,7 @@ func shortVolumeToLong(str string) Volume {
 	}
 	return volume
 }
+
 
 func CheckError(err error) {
 	if err != nil {
