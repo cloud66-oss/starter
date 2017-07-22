@@ -3,6 +3,8 @@ package docker_compose
 import (
 	"github.com/cloud66/starter/packs"
 	"github.com/cloud66/starter/common"
+	"github.com/cloud66/starter/definitions/docker-compose"
+	"github.com/cloud66/starter/transform"
 )
 
 type Pack struct {
@@ -64,9 +66,17 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 
 func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldPrompt bool) error {
 
-	err := Transformer(outputDir+"/docker-compose.yml", outputDir+"/service.yml", p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt)
+	/*err := Transformer(outputDir+"/docker-compose.yml", outputDir+"/service.yml", p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt)
+	CheckError(err)*/
+	dockerBase:=docker_compose.DockerCompose{}
+	dockerBase.UnmarshalFromFile("docker-compose.yml")
 
-	CheckError(err)
+	d := transform.DockerComposeTransformer{
+		Base: dockerBase,
+	}
+
+	serviceYml := d.ToServiceYml(p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt, "docker-compose.yml")
+	serviceYml.MarshalToFile("service.yml")
 
 	return nil
 }

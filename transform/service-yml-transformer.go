@@ -15,7 +15,7 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 }
 
 func (s *ServiceYmlTransformer) ToServiceYml() service_yml.ServiceYml {
-	return service_yml.ServiceYml{}
+	return s.Base
 }
 
 func (s *ServiceYmlTransformer) ToDockerCompose() docker_compose.DockerCompose {

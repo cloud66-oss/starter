@@ -11,8 +11,8 @@ type Service struct {
 	Command          string `yaml:"command,omitempty"`
 	EnvVars          map[string]string `yaml:"env_vars,omitempty"`
 	Ports            []Port `yaml:"ports,omitempty"`
-	PreStopCommand   string `yaml:"pre_stop_command"`
-	PostStartCommand string `yaml:"post_start_command"`
+	PreStopCommand   string `yaml:"pre_stop_command,omitempty"`
+	PostStartCommand string `yaml:"post_start_command,omitempty"`
 	DeployCommand    string `yaml:"deploy_command,omitempty"`
 	GitUrl           string `yaml:"git_url,omitempty"`
 	GitBranch        string `yaml:"git_branch,omitempty"`

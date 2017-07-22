@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 	"fmt"
+	"github.com/cloud66/starter/common"
 )
 
 type DockerCompose struct {
@@ -12,7 +13,7 @@ type DockerCompose struct {
 	Version  string
 }
 
-func (d DockerCompose) UnmarshalFromFile(path string) error {
+func (d *DockerCompose) UnmarshalFromFile(path string) error {
 	var err error
 	_, err = os.Stat(path)
 	CheckError(err)
@@ -23,8 +24,10 @@ func (d DockerCompose) UnmarshalFromFile(path string) error {
 		Services: make(map[string]Service),
 		Version:  "",
 	}
+	common.PrintlnTitle("check - in the unmarshal from file!")
 
 	if err := yaml.Unmarshal([]byte(yamlFile), &dockerCompose); err != nil {
+
 		fmt.Println(err.Error())
 	}
 

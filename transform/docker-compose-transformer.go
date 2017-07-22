@@ -25,7 +25,6 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 
 	for k, v := range d.Base.Services {
 		var buildRoot string
-
 		var gitPath string
 		gitPath, err = common.GitRootDir("/")
 		if err != nil {
@@ -89,6 +88,9 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 				lines = readEnv_file(path + v.EnvFile[i])
 				for j, w := range lines {
 					if j != "" {
+						if len(serviceYamlService.EnvVars)==0{
+							serviceYamlService.EnvVars = make(map[string]string,1)
+						}
 						serviceYamlService.EnvVars[j] = w
 					}
 				}
@@ -100,6 +102,7 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 			serviceYamlService.GitBranch = ""
 			serviceYamlService.BuildRoot = ""
 		}
+		serviceYamlService = dockerToServiceEnvVarFormat(serviceYamlService)
 		serviceYaml.Services[k] = serviceYamlService
 	}
 
@@ -107,5 +110,5 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 }
 
 func (d *DockerComposeTransformer) ToDockerCompose() docker_compose.DockerCompose {
-	return docker_compose.DockerCompose{}
+	return d.Base
 }

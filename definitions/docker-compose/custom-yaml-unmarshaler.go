@@ -7,20 +7,20 @@ import (
 )
 
 func (b *Build) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var single string
 	err := unmarshal(&single)
+
 	if err != nil {
-		var build Build
-		err := unmarshal(&build)
+		var bd BuildAux
+		err := unmarshal(&bd)
 		if err != nil {
 			return err
 		}
-		b.Context = build.Context
-		b.Dockerfile = build.Dockerfile
-		b.Args = build.Args
-		b.CacheFrom = build.CacheFrom
-		b.Labels = build.Labels
+		b.Context = bd.Context
+		b.Dockerfile = bd.Dockerfile
+		b.Args = bd.Args
+		b.CacheFrom = bd.CacheFrom
+		b.Labels = bd.Labels
 	}
 	b.Context = single
 
@@ -28,8 +28,8 @@ func (b *Build) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (ef *EnvFile) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var multi *EnvFile
-	err := unmarshal(multi)
+	var multi []string
+	err := unmarshal(&multi)
 	if err != nil {
 		var single string
 		err := unmarshal(&single)
@@ -38,14 +38,14 @@ func (ef *EnvFile) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 		ef = &EnvFile{single}
 	} else {
-		ef = multi
+		*ef = multi
 	}
 	return nil
 }
 
 func (c *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var multi *Command
-	err := unmarshal(multi)
+	var multi []string
+	err := unmarshal(&multi)
 	if err != nil {
 		var single string
 		err := unmarshal(&single)
@@ -54,13 +54,13 @@ func (c *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 		c = &Command{single}
 	} else {
-		c = multi
+		*c = multi
 	}
 	return nil
 }
 
 func (c *Dns) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var multi *Dns
+	var multi []string
 	err := unmarshal(multi)
 	if err != nil {
 		var single string
@@ -70,13 +70,13 @@ func (c *Dns) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 		c = &Dns{single}
 	} else {
-		c = multi
+		*c = multi
 	}
 	return nil
 }
 
 func (c *DnsSearch) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var multi *DnsSearch
+	var multi []string
 	err := unmarshal(multi)
 	if err != nil {
 		var single string
@@ -86,13 +86,13 @@ func (c *DnsSearch) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 		c = &DnsSearch{single}
 	} else {
-		c = multi
+		*c = multi
 	}
 	return nil
 }
 
 func (c *Tmpfs) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var multi *Tmpfs
+	var multi []string
 	err := unmarshal(multi)
 	if err != nil {
 		var single string
@@ -102,13 +102,13 @@ func (c *Tmpfs) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 		c = &Tmpfs{single}
 	} else {
-		c = multi
+		*c = multi
 	}
 	return nil
 }
 
 func (c *Entrypoint) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var multi *Entrypoint
+	var multi []string
 	err := unmarshal(multi)
 	if err != nil {
 		var single string
@@ -118,13 +118,12 @@ func (c *Entrypoint) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 		c = &Entrypoint{single}
 	} else {
-		c = multi
+		*c = multi
 	}
 	return nil
 }
 
 func (e *Environment) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var env_vars map[string]string
 	var key, value string
 	env_vars = make(map[string]string, 1)
@@ -146,7 +145,6 @@ func (e *Environment) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var ports interface{}
 
 	err := unmarshal(&ports)
@@ -178,9 +176,7 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 	default:
 		log.Fatal("Failed to unmarshal")
-
 	}
-
 	return nil
 }
 
@@ -214,17 +210,13 @@ func (s *Secrets) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 	default:
 		log.Fatal("Failed to unmarshal")
-
 	}
-
 	return nil
 }
 
 
 func (v *Volumes) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
 	var volumes interface{}
-
 	err := unmarshal(&volumes)
 	if err != nil {
 		log.Fatalf("yaml.Unmarshal: %v", err)
@@ -251,9 +243,7 @@ func (v *Volumes) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 	default:
 		log.Fatal("Failed to unmarshal")
-
 	}
-
 	return nil
 }
 

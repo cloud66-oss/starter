@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 	"github.com/cloud66/starter/common"
+	"gopkg.in/yaml.v2"
 )
 
 func readEnv_file(path string) map[string]string {
@@ -41,19 +42,24 @@ func getKeyValue(line string) (string, string) {
 	var key, value string
 	var k int
 	for k = 0; k < len(line); k++ {
-		if !unicode.IsSpace(rune(line[k])) {
+		if !unicode.IsSpace(rune(line[k])) && line[k] != '"' {
 			break
 		}
 	}
 	for ; k < len(line); k++ {
-		if line[k] == '=' {
+		if line[k] == '=' || line[k] == '"' {
 			break
 		} else {
 			key = string(append([]byte(key), line[k]))
 		}
 	}
+	if line[k+1] == '=' && line[k+2] == '"' {
+		k = k + 2
+	} else if (line[k+1] == '=' && line[k+2] != '"') || (line[k+1] == '"') {
+		k = k + 1
+	}
 	for k = k + 1; k < len(line); k++ {
-		if line[k] == '\n' {
+		if line[k] == '\n' || line[k] == '"' {
 			break
 		} else {
 			value = string(append([]byte(value), line[k]))
@@ -88,6 +94,7 @@ func dockerToServicePorts(exposed []int, dockerPorts docker_compose.Ports, shoul
 	}
 	for _, port := range dockerPorts {
 		var servicePort service_yml.Port
+		servicePort.Container = port.Target
 		if port.Protocol == "tcp" {
 			if shouldPrompt == true {
 				reader := bufio.NewReader(os.Stdin)
@@ -126,7 +133,7 @@ func dockerToServiceVolumes(dockerVolumes docker_compose.Volumes) []string {
 			if volume.ReadOnly == true {
 				temp = temp + ":ro"
 			}
-			if temp[0] != '/' {
+			if temp[0] != '/' && temp[0]!='$' {
 				common.PrintlnWarning("Service.yml format does only support absolute path for volumes. Please modify for \"%s\"", temp)
 				temp = "/" + temp
 			}
@@ -134,6 +141,27 @@ func dockerToServiceVolumes(dockerVolumes docker_compose.Volumes) []string {
 		serviceVolumes = append(serviceVolumes, temp)
 	}
 	return serviceVolumes
+}
+
+func dockerToServiceEnvVarFormat(service service_yml.Service) service_yml.Service {
+
+	str, err := yaml.Marshal(service)
+	service_yml.CheckError(err)
+	for i := 0; i < len(str); i++ {
+		if str[i] == '{' && str[i-1] == '$'{
+			str = []byte(string(str[:i-1])+"_env("+string(str[i+1:]))
+			for ;i<len(str);i++{
+				if str[i]=='}'{
+					str[i]=')'
+					break
+				}
+			}
+		}
+	}
+	err=yaml.Unmarshal(str, &service)
+	service_yml.CheckError(err)
+
+	return service
 }
 
 func getDockerToServiceWarnings(service docker_compose.Service) {
@@ -182,19 +210,19 @@ func getDockerToServiceWarnings(service docker_compose.Service) {
 	if service.Ulimits.Nproc.Soft != 0 || service.Ulimits.Nproc.Hard != 0 || service.Ulimits.Nofile.Soft != 0 || service.Ulimits.Nofile.Hard != 0 {
 		common.PrintlnWarning("Service.yml format does not support \"ulimits\" at the moment")
 	}
-	if service.Healthcheck.Interval!="" || service.Healthcheck.Test!=nil || service.Healthcheck.Timeout!="" || service.Healthcheck.Disable == true{
+	if service.Healthcheck.Interval != "" || service.Healthcheck.Test != nil || service.Healthcheck.Timeout != "" || service.Healthcheck.Disable == true {
 		common.PrintlnWarning("Service.yml format does not support \"healthcheck\" at the moment")
 	}
-	if service.Logging.Driver!= "" ||service.Logging.Options!=nil{
+	if service.Logging.Driver != "" || service.Logging.Options != nil {
 		common.PrintlnWarning("Service.yml format does not support \"logging\" at the moment")
 	}
-	if service.Deploy.Resources.Limits.Cpus!="" || service.Deploy.Resources.Limits.Memory!=""{
+	if service.Deploy.Resources.Limits.Cpus != "" || service.Deploy.Resources.Limits.Memory != "" {
 		common.PrintlnWarning("Service.yml format does not support \"resources limitations and reservations\" for deploy at the moment, try using \"cpu_shares\" and \"mem_limit\" instead. ")
 	}
-	if service.Deploy.UpdateConfig.Delay !=""||service.Deploy.UpdateConfig.Parallelism!=0{
+	if service.Deploy.UpdateConfig.Delay != "" || service.Deploy.UpdateConfig.Parallelism != 0 {
 		common.PrintlnWarning("Service.yml format does not support \"update_config\" at the moment")
 	}
-	if service.Deploy.Placement.Constraints!=nil{
+	if service.Deploy.Placement.Constraints != nil {
 		common.PrintlnWarning("Service.yml format does not support \"placement constraints\" at the moment")
 	}
 }

@@ -6,26 +6,30 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"bufio"
 )
 
 func getKeyValue(line string) (string, string) {
 	var key, value string
 	var k int
 	for k = 0; k < len(line); k++ {
-		if !unicode.IsSpace(rune(line[k])) {
+		if !unicode.IsSpace(rune(line[k])) && line[k] != '"' {
 			break
 		}
 	}
 	for ; k < len(line); k++ {
-		if line[k] == '=' {
+		if line[k] == '=' || line[k] == '"' {
 			break
 		} else {
 			key = string(append([]byte(key), line[k]))
 		}
 	}
+	if line[k+1] == '=' && line[k+2] == '"' {
+		k = k + 2
+	} else if (line[k+1] == '=' && line[k+2] != '"') || (line[k+1] == '"') {
+		k = k + 1
+	}
 	for k = k + 1; k < len(line); k++ {
-		if line[k] == '\n' {
+		if line[k] == '\n' || line[k] == '"' {
 			break
 		} else {
 			value = string(append([]byte(value), line[k]))
@@ -45,31 +49,36 @@ func shortPortToLong(str string) Port {
 		i = 0
 	}
 	for ; i < len(str); i++ {
-		if unicode.IsDigit(rune(str[i])) {
+		if !unicode.IsDigit(rune(str[i])) {
 			break
 		} else {
 			host = string(append([]byte(host), str[i]))
 		}
 	}
-	for i = i + 1; i < len(str); i++ {
+	for i=i+1; i < len(str); i++ {
 		if !unicode.IsDigit(rune(str[i])) {
 			break
 		} else {
 			container = string(append([]byte(container), str[i]))
 		}
 	}
-
 	protocol = "tcp"
-	if i<len(str)-1{
-		if strings.Contains(str[i:], "udp"){
-			protocol="udp"
+	if i < len(str)-1 {
+		if strings.Contains(str[i:], "udp") {
+			protocol = "udp"
 		}
 	}
+	var target, published int
+	var err error
 
-	target, err := strconv.Atoi(container)
-	CheckError(err)
-	published, err := strconv.Atoi(host)
-	CheckError(err)
+	if container != "" {
+		target, err = strconv.Atoi(container)
+		CheckError(err)
+	}
+	if host != "" {
+		published, err = strconv.Atoi(host)
+		CheckError(err)
+	}
 
 	port = Port{
 		Protocol:  protocol,
@@ -124,7 +133,6 @@ func shortVolumeToLong(str string) Volume {
 	}
 	return volume
 }
-
 
 func CheckError(err error) {
 	if err != nil {

@@ -377,7 +377,6 @@ func analyze(
 			return nil, fmt.Errorf("Failed to detect service.yml\n")
 		}
 	} else {
-		common.PrintlnTitle("1 check")
 		pack, err = choosePack(detectedPacks, noPrompt)
 		if pack == nil {
 			return nil, fmt.Errorf("Failed to detect supported framework\n")

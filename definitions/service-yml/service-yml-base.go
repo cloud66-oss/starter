@@ -2,21 +2,21 @@ package service_yml
 
 import (
 	"os"
-	"github.com/cloud66/starter/packs/service_yml"
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 	"fmt"
+	"github.com/cloud66/starter/packs/service_yml"
 )
 
 type ServiceYml struct {
-	Services  map[string]Service
-	Databases []string
+	Services  map[string]Service `yaml:"services,omitempty"`
+	Databases []string `yaml:"databases,omitempty"`
 }
 
 func (s ServiceYml) UnmarshalFromFile(path string) error {
 	var err error
 	_, err = os.Stat(path)
-	service_yml.CheckError(err)
+	CheckError(err)
 
 	yamlFile, err := ioutil.ReadFile(path)
 
@@ -34,7 +34,7 @@ func (s ServiceYml) UnmarshalFromFile(path string) error {
 func (s ServiceYml) MarshalToFile(path string) error {
 	file, err := yaml.Marshal(s)
 
-	file = []byte("# Generated with <3 by Cloud66\n\n" + string(s))
+	file = []byte("# Generated with <3 by Cloud66\n\n" + string(file))
 
 	err = ioutil.WriteFile(path, file, 0644)
 	service_yml.CheckError(err)
