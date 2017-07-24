@@ -22,45 +22,47 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 	nodePort := 31111
 
 	for _, dbName := range s.Base.Databases {
-		tags := make(map[string]string, 1)
-		tags["app"] = dbName
+		if dbName != "" {
+			tags := make(map[string]string, 1)
+			tags["app"] = dbName
 
-		service := kubernetes.KubesService{
-			ApiVersion: "v1",
-			Kind:       "Service",
-			Metadata: kubernetes.Metadata{
-				Name: dbName + "-svc",
-			},
-			Spec: kubernetes.Spec{
-				Type:  "ClusterIP",
-				Ports: setDbServicePorts(dbName),
-			},
-		}
-		deploy := kubernetes.KubesDeployment{ApiVersion: "extensions/v1beta1",
-			Kind:                                    "Deployment",
-			Metadata: kubernetes.Metadata{
-				Name: dbName + "-deployment",
-			},
-			Spec: kubernetes.Spec{
-				Template: kubernetes.Template{
-					Metadata: kubernetes.Metadata{
-						Labels: tags,
-					},
-					PodSpec: kubernetes.PodSpec{
-						Containers: []kubernetes.Containers{
-							{
-								Name:  dbName,
-								Image: dbName + ":latest",
-								Ports: setDbDeploymentPorts(dbName),
+			service := kubernetes.KubesService{
+				ApiVersion: "v1",
+				Kind:       "Service",
+				Metadata: kubernetes.Metadata{
+					Name: dbName + "-svc",
+				},
+				Spec: kubernetes.Spec{
+					Type:  "ClusterIP",
+					Ports: setDbServicePorts(dbName),
+				},
+			}
+			deploy := kubernetes.KubesDeployment{ApiVersion: "extensions/v1beta1",
+				Kind:                                    "Deployment",
+				Metadata: kubernetes.Metadata{
+					Name: dbName + "-deployment",
+				},
+				Spec: kubernetes.Spec{
+					Template: kubernetes.Template{
+						Metadata: kubernetes.Metadata{
+							Labels: tags,
+						},
+						PodSpec: kubernetes.PodSpec{
+							Containers: []kubernetes.Containers{
+								{
+									Name:  dbName,
+									Image: dbName + ":latest",
+									Ports: setDbDeploymentPorts(dbName),
+								},
 							},
 						},
 					},
 				},
-			},
-		}
+			}
 
-		kubesServices = append(kubesServices, service)
-		deployments = append(deployments, deploy)
+			kubesServices = append(kubesServices, service)
+			deployments = append(deployments, deploy)
+		}
 	}
 	var deployPorts []kubernetes.Port
 	var services []kubernetes.KubesService
@@ -92,7 +94,7 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 							{
 								Name:       serviceName,
 								Image:      serviceSpecs.Image,
-								Command:    []string{serviceSpecs.Command},
+								Command:    serviceToKubesCommand(serviceSpecs.Command),
 								Ports:      deployPorts,
 								WorkingDir: serviceSpecs.WorkDir,
 								SecurityContext: kubernetes.SecurityContext{
@@ -101,12 +103,12 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 								Lifecycle: kubernetes.Lifecycle{
 									PostStart: kubernetes.Handler{
 										Exec: kubernetes.Exec{
-											Command: []string{serviceSpecs.PostStartCommand},
+											Command: serviceToKubesCommand(serviceSpecs.PostStartCommand),
 										},
 									},
 									PreStop: kubernetes.Handler{
 										Exec: kubernetes.Exec{
-											Command: []string{serviceSpecs.PreStopCommand},
+											Command: serviceToKubesCommand(serviceSpecs.PreStopCommand),
 										},
 									},
 								},
@@ -152,7 +154,7 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 	}
 
 	return kubernetes.Kubernetes{
-		Services:kubesServices,
+		Services:    kubesServices,
 		Deployments: deployments,
 	}
 }

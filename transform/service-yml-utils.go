@@ -6,7 +6,6 @@ import (
 	"strings"
 	"strconv"
 	"gopkg.in/yaml.v2"
-	"unicode"
 	"github.com/cloud66/starter/common"
 	"sort"
 	"github.com/cloud66/starter/definitions/kubernetes"
@@ -220,6 +219,14 @@ func setDbServicePorts(dbName string) ([]kubernetes.Port) {
 	return ports
 }
 
+func serviceToKubesCommand(command string) []string{
+	if command!=""{
+		return []string{command}
+	}else{
+		return nil
+	}
+}
+
 func getExposedPorts(dbName string) ([]kubernetes.Port, []kubernetes.Port) {
 	dPorts := []kubernetes.Port{}
 	sPorts := []kubernetes.Port{}
@@ -253,6 +260,7 @@ func getExposedPorts(dbName string) ([]kubernetes.Port, []kubernetes.Port) {
 	case "rabbitmq":
 		dPorts = appendNewPortNoNodePort(dPorts, "rabbitmq", 0, 0, "", 15672)
 		sPorts = appendNewPortNoNodePort(sPorts, "rabbitmq", 15672, 15672, "", 0)
+	case "":
 	default:
 		common.PrintlnWarning("Not a recognized database.")
 	}
@@ -296,32 +304,9 @@ func getIntFromServicePort(longSyntax service_yml.Port) (int, int, int, int, int
 	return container, http, https, tcp, udp
 }
 
-func getIntFromVal(value string) int {
-	var temp string
-	var i int
-	if len(value) > 0 {
-		if value[0] == '"' {
-			i = 1
-		} else {
-			i = 0
-		}
-		for ; i < len(value); i++ {
-			if !unicode.IsDigit(rune(value[i])) {
-				break
-			} else {
-				temp = string(append([]byte(temp), value[i]))
-			}
-		}
-		if temp != "" {
-			result, err := strconv.Atoi(temp)
-			CheckError(err)
-			return result
-		}
-	}
-	return 0
-}
+func (k KubesTransformer) ComposeWriter(file []byte, deployments []kubernetes.KubesDeployment, kubesServices []kubernetes.KubesService) []byte {
+	file = []byte("# Generated with <3 by Cloud66")
 
-func composeWriter(file []byte, deployments []kubernetes.KubesDeployment, kubesServices []kubernetes.KubesService) []byte {
 	var keys []string
 	for _, k := range kubesServices {
 		keys = append(keys, k.Metadata.Name)
@@ -349,7 +334,6 @@ func composeWriter(file []byte, deployments []kubernetes.KubesDeployment, kubesS
 			}
 		}
 	}
-
 	keys = []string{}
 	for _, k := range deployments {
 		keys = append(keys, k.Metadata.Name)
@@ -366,6 +350,7 @@ func composeWriter(file []byte, deployments []kubernetes.KubesDeployment, kubesS
 			}
 		}
 	}
+
 	return file
 }
 

@@ -1,9 +1,10 @@
 package service_yml
 
-
 import (
 	"github.com/cloud66/starter/packs"
 	"github.com/cloud66/starter/common"
+	"github.com/cloud66/starter/definitions/service-yml"
+	"github.com/cloud66/starter/transform"
 )
 
 type Pack struct {
@@ -64,8 +65,15 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 }
 
 func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
-	err := Transformer(outputDir+"/service.yml", outputDir+"/kubernetes.yml")
-	CheckError(err)
+
+	serviceYmlBase := service_yml.ServiceYml{}
+	serviceYmlBase.UnmarshalFromFile("service.yml")
+
+	s := transform.ServiceYmlTransformer{Base: serviceYmlBase}
+
+	kubernetes := s.ToKubernetes()
+	kubernetes.MarshalToFile("kubernetes.yml")
+
 	return nil
 }
 
