@@ -1,5 +1,5 @@
 package kubernetes
 
-type KubesResources struct{
+type Resources struct{
 	Limits Limits `yaml:"limits,omitempty"`
 }

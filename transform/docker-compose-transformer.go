@@ -1,11 +1,12 @@
 package transform
 
 import (
+	"strings"
+
 	"github.com/cloud66/starter/definitions/docker-compose"
 	"github.com/cloud66/starter/definitions/kubernetes"
 	"github.com/cloud66/starter/definitions/service-yml"
 	"github.com/cloud66/starter/common"
-	"strings"
 )
 
 type DockerComposeTransformer struct {
@@ -63,7 +64,7 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 		serviceYamlService.Requires = v.Depends_on
 		serviceYamlService.Volumes = dockerToServiceVolumes(v.Volumes)
 		serviceYamlService.Ports = dockerToServicePorts(v.Expose, v.Ports, shouldPrompt)
-		serviceYamlService.StopGrace = v.Stop_grace_period
+		serviceYamlService.StopGrace = dockerToServiceStopGrace(v.Stop_grace_period)
 		serviceYamlService.WorkDir = v.Working_dir
 		serviceYamlService.EnvVars = v.Environment
 		serviceYamlService.Tags = v.Labels

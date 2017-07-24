@@ -1,4 +1,4 @@
-package service_yml
+package transform
 
 import (
 	"fmt"
@@ -9,6 +9,8 @@ import (
 	"unicode"
 	"github.com/cloud66/starter/common"
 	"sort"
+	"github.com/cloud66/starter/definitions/kubernetes"
+	"github.com/cloud66/starter/definitions/service-yml"
 )
 
 func finalFormat(file []byte) string {
@@ -26,10 +28,10 @@ func finalFormat(file []byte) string {
 		}
 
 		// handle empty value for env_vars
-		if strings.Contains(lines[i], "value: ") && strings.Contains(lines[i], "\"\""){
-			for j:=0; j<len(lines[i]);j++{
-				if lines[i][j]=='"'{
-					lines[i]=lines[i][:j]
+		if strings.Contains(lines[i], "value: ") && strings.Contains(lines[i], "\"\"") {
+			for j := 0; j < len(lines[i]); j++ {
+				if lines[i][j] == '"' {
+					lines[i] = lines[i][:j]
 					break
 				}
 			}
@@ -52,8 +54,8 @@ func finalFormat(file []byte) string {
 	return finalFormat
 }
 
-func handleVolumes(serviceVolumes []string) []VolumeMounts {
-	var kubeVolumes []VolumeMounts
+func handleVolumes(serviceVolumes []string) []kubernetes.VolumeMounts {
+	var kubeVolumes []kubernetes.VolumeMounts
 	var outputWarning, readOnly bool
 
 	for _, volume := range serviceVolumes {
@@ -65,10 +67,10 @@ func handleVolumes(serviceVolumes []string) []VolumeMounts {
 
 		if volume[0] == '"' {
 			i = 1
-		} else{
+		} else {
 			i = 0
 		}
-		if volume[i]!='/'{
+		if volume[i] != '/' {
 			outputWarning = true
 		}
 
@@ -93,18 +95,17 @@ func handleVolumes(serviceVolumes []string) []VolumeMounts {
 			}
 		}
 
-		if outputWarning==true{
-			common.PrintlnWarning("Path \"%s:%s\" not absolute! Please modify manually.", name,mountPath)
+		if outputWarning == true {
+			common.PrintlnWarning("Path \"%s:%s\" not absolute! Please modify manually.", name, mountPath)
 		}
 
-		kubeVolume := VolumeMounts{
+		kubeVolume := kubernetes.VolumeMounts{
 			Name:      name,
 			MountPath: mountPath,
 			ReadOnly:  readOnly,
 		}
 		kubeVolumes = append(kubeVolumes, kubeVolume)
 	}
-
 
 	return kubeVolumes
 }
@@ -119,84 +120,8 @@ func getKeysValues(env_vars map[string]string) ([]interface{}, []interface{}) {
 	return keys, values
 }
 
-func generatePortsFromShortSyntax(shortSyntax string, clusterPorts []KubesPorts, nodePorts []KubesPorts, nodePort int) ([]KubesPorts, []KubesPorts, []KubesPorts, int) {
-	var dPorts []KubesPorts
-	containerStr := ""
-	httpStr := ""
-	httpsStr := ""
-	var i int
-
-	if shortSyntax[0] == '"' {
-		i = 1
-	} else {
-		i = 0
-	}
-
-	for ; i < len(shortSyntax); i++ {
-		if shortSyntax[i] == ':' {
-			break
-		} else {
-			containerStr = string(append([]byte(containerStr), shortSyntax[i]))
-		}
-	}
-
-	for i = i + 1; i < len(shortSyntax); i++ {
-		if shortSyntax[i] == ':' {
-			break
-		} else {
-			httpStr = string(append([]byte(httpStr), shortSyntax[i]))
-		}
-	}
-
-	for i = i + 1; i < len(shortSyntax); i++ {
-		if shortSyntax[i] == '"' || shortSyntax[i] == '\n' {
-			break
-		} else {
-			httpsStr = string(append([]byte(httpsStr), shortSyntax[i]))
-		}
-	}
-
-	var container, http, https int
-	var err error
-	if containerStr != "" {
-		container, err = strconv.Atoi(containerStr)
-		CheckError(err)
-	} else {
-		container = 0
-	}
-	if httpStr != "" {
-		http, err = strconv.Atoi(httpStr)
-		CheckError(err)
-	} else {
-		http = 0
-	}
-	if httpsStr != "" {
-		https, err = strconv.Atoi(httpsStr)
-		CheckError(err)
-	} else {
-		https = 0
-	}
-	if http == 0 && https == 0 {
-		//crate new node of type ClusterIP
-		clusterPorts = appendNewPortNoNodePort(clusterPorts, strconv.Itoa(container)+"-expose", container, container, "", 0)
-		dPorts = appendNewPortNoNodePort(dPorts, strconv.Itoa(container)+"-expose", 0, 0, "", container)
-	} else {
-		if http != 0 {
-			nodePorts, nodePort = appendNewPort(nodePorts, strconv.Itoa(container)+"-http", container, http, "TCP", 0, nodePort)
-			//create new port with name "http" of type NodePort
-		}
-		if https != 0 {
-			//create new port with name "https of type NodePort
-			nodePorts, nodePort = appendNewPort(nodePorts, strconv.Itoa(container)+"-https", container, https, "TCP", 0, nodePort)
-		}
-		dPorts = appendNewPortNoNodePort(dPorts, strconv.Itoa(container)+"-tcp", 0, 0, "TCP", container)
-
-	}
-	return dPorts, clusterPorts, nodePorts, nodePort
-}
-
-func generatePortsFromLongSyntax(longSyntax ServicePort, clusterPorts []KubesPorts, nodePorts []KubesPorts, nodePort int) ([]KubesPorts, []KubesPorts, []KubesPorts, int) {
-	var dPorts []KubesPorts
+func generatePortsFromLongSyntax(longSyntax service_yml.Port, clusterPorts []kubernetes.Port, nodePorts []kubernetes.Port, nodePort int) ([]kubernetes.Port, []kubernetes.Port, []kubernetes.Port, int) {
+	var dPorts []kubernetes.Port
 
 	container, http, https, tcp, udp := getIntFromServicePort(longSyntax)
 
@@ -224,28 +149,19 @@ func generatePortsFromLongSyntax(longSyntax ServicePort, clusterPorts []KubesPor
 	return dPorts, clusterPorts, nodePorts, nodePort
 }
 
-func generateServicesRequiredByPorts(serviceName string, serviceSpecs ServiceYMLService, nodePort int) ([]KubesPorts, []KubesService, int) {
-	services := []KubesService{}
-	var dPorts, cPorts, nPorts, clusterPorts, nodePorts, deployPorts []KubesPorts
+func generateServicesRequiredByPorts(serviceName string, serviceSpecs service_yml.Service, nodePort int) ([]kubernetes.Port, []kubernetes.KubesService, int) {
+	services := []kubernetes.KubesService{}
+	var dPorts, cPorts, nPorts, clusterPorts, nodePorts, deployPorts []kubernetes.Port
 	for _, v := range serviceSpecs.Ports {
-		nPorts = []KubesPorts{}
-		dPorts = []KubesPorts{}
-		cPorts = []KubesPorts{}
-		switch v.(type) {
-		case map[interface{}]interface{}:
-			var longSyntaxPort ServicePort
-			temp, er := yaml.Marshal(v)
-			CheckError(er)
-			er = yaml.Unmarshal(temp, &longSyntaxPort)
-			CheckError(er)
-			deployPorts, clusterPorts, nodePorts, nodePort = generatePortsFromLongSyntax(longSyntaxPort, clusterPorts, nodePorts, nodePort)
-		case string:
-			shortSyntax := v.(string)
-			deployPorts, clusterPorts, nodePorts, nodePort = generatePortsFromShortSyntax(shortSyntax, clusterPorts, nodePorts, nodePort)
-		case int:
-			shortSyntax := strconv.Itoa(v.(int))
-			deployPorts, clusterPorts, nodePorts, nodePort = generatePortsFromShortSyntax(shortSyntax, clusterPorts, nodePorts, nodePort)
-		}
+		nPorts = []kubernetes.Port{}
+		dPorts = []kubernetes.Port{}
+		cPorts = []kubernetes.Port{}
+		var longSyntaxPort service_yml.Port
+		temp, er := yaml.Marshal(v)
+		CheckError(er)
+		er = yaml.Unmarshal(temp, &longSyntaxPort)
+		CheckError(er)
+		deployPorts, clusterPorts, nodePorts, nodePort = generatePortsFromLongSyntax(longSyntaxPort, clusterPorts, nodePorts, nodePort)
 
 		for _, port := range dPorts {
 			deployPorts = append(deployPorts, port)
@@ -276,16 +192,16 @@ func generateServicesRequiredByPorts(serviceName string, serviceSpecs ServiceYML
 	return deployPorts, services, nodePort
 }
 
-func generateService(serviceType string, serviceSpecs ServiceYMLService, serviceName string, ports []KubesPorts) KubesService {
-	service := KubesService{}
+func generateService(serviceType string, serviceSpecs service_yml.Service, serviceName string, ports []kubernetes.Port) kubernetes.KubesService {
+	service := kubernetes.KubesService{}
 
-	service = KubesService{ApiVersion: "v1",
-		Kind:                      "Service",
-		Metadata: Metadata{
+	service = kubernetes.KubesService{ApiVersion: "v1",
+		Kind:                                 "Service",
+		Metadata: kubernetes.Metadata{
 			Name:   serviceName + "-sv" + strings.ToLower(serviceType[:1]),
 			Labels: serviceSpecs.Tags,
 		},
-		Spec: Spec{
+		Spec: kubernetes.Spec{
 			Type:  serviceType,
 			Ports: ports,
 		},
@@ -294,19 +210,19 @@ func generateService(serviceType string, serviceSpecs ServiceYMLService, service
 	return service
 }
 
-func setDbDeploymentPorts(dbName string) []KubesPorts {
+func setDbDeploymentPorts(dbName string) []kubernetes.Port {
 	ports, _ := getExposedPorts(dbName)
 	return ports
 }
 
-func setDbServicePorts(dbName string) ([]KubesPorts) {
+func setDbServicePorts(dbName string) ([]kubernetes.Port) {
 	_, ports := getExposedPorts(dbName)
 	return ports
 }
 
-func getExposedPorts(dbName string) ([]KubesPorts, []KubesPorts) {
-	dPorts := []KubesPorts{}
-	sPorts := []KubesPorts{}
+func getExposedPorts(dbName string) ([]kubernetes.Port, []kubernetes.Port) {
+	dPorts := []kubernetes.Port{}
+	sPorts := []kubernetes.Port{}
 
 	switch dbName {
 	case "mysql":
@@ -344,8 +260,8 @@ func getExposedPorts(dbName string) ([]KubesPorts, []KubesPorts) {
 	return dPorts, sPorts
 }
 
-func appendNewPort(ports []KubesPorts, name string, port int, targetPort int, protocol string, containerPort int, nodePort int) ([]KubesPorts, int) {
-	ports = append(ports, KubesPorts{
+func appendNewPort(ports []kubernetes.Port, name string, port int, targetPort int, protocol string, containerPort int, nodePort int) ([]kubernetes.Port, int) {
+	ports = append(ports, kubernetes.Port{
 		Name:          name + "-" + strconv.Itoa(nodePort),
 		Port:          port,
 		TargetPort:    targetPort,
@@ -357,8 +273,8 @@ func appendNewPort(ports []KubesPorts, name string, port int, targetPort int, pr
 	return ports, nodePort
 }
 
-func appendNewPortNoNodePort(ports []KubesPorts, name string, port int, targetPort int, protocol string, containerPort int) ([]KubesPorts) {
-	ports = append(ports, KubesPorts{
+func appendNewPortNoNodePort(ports []kubernetes.Port, name string, port int, targetPort int, protocol string, containerPort int) ([]kubernetes.Port) {
+	ports = append(ports, kubernetes.Port{
 		Name:          name,
 		Port:          port,
 		TargetPort:    targetPort,
@@ -368,14 +284,14 @@ func appendNewPortNoNodePort(ports []KubesPorts, name string, port int, targetPo
 	return ports
 }
 
-func getIntFromServicePort(longSyntax ServicePort) (int, int, int, int, int) {
+func getIntFromServicePort(longSyntax service_yml.Port) (int, int, int, int, int) {
 	var container, http, https, tcp, udp int
 
-	container = getIntFromVal(longSyntax.Container)
-	http = getIntFromVal(longSyntax.Http)
-	https = getIntFromVal(longSyntax.Https)
-	tcp = getIntFromVal(longSyntax.Tcp)
-	udp = getIntFromVal(longSyntax.Udp)
+	container = longSyntax.Container
+	http = longSyntax.Http
+	https = longSyntax.Https
+	tcp = longSyntax.Tcp
+	udp = longSyntax.Udp
 
 	return container, http, https, tcp, udp
 }
@@ -405,15 +321,13 @@ func getIntFromVal(value string) int {
 	return 0
 }
 
-func composeWriter (file []byte, deployments []KubesDeployment, kubesServices []KubesService) []byte{
+func composeWriter(file []byte, deployments []kubernetes.KubesDeployment, kubesServices []kubernetes.KubesService) []byte {
 	var keys []string
 	for _, k := range kubesServices {
 		keys = append(keys, k.Metadata.Name)
 	}
 	sort.Strings(keys)
 	indexPort := 31111
-
-
 
 	for _, k := range keys {
 		for i := 0; i < len(kubesServices); i++ {
@@ -436,8 +350,6 @@ func composeWriter (file []byte, deployments []KubesDeployment, kubesServices []
 		}
 	}
 
-
-
 	keys = []string{}
 	for _, k := range deployments {
 		keys = append(keys, k.Metadata.Name)
@@ -456,7 +368,6 @@ func composeWriter (file []byte, deployments []KubesDeployment, kubesServices []
 	}
 	return file
 }
-
 
 func CheckError(err error) {
 	if err != nil {

@@ -1,15 +1,17 @@
 package transform
 
 import (
+	"fmt"
+	"strings"
 	"os"
 	"bufio"
 	"unicode"
+
 	"github.com/cloud66/starter/definitions/docker-compose"
 	"github.com/cloud66/starter/definitions/service-yml"
-	"fmt"
-	"strings"
 	"github.com/cloud66/starter/common"
 	"gopkg.in/yaml.v2"
+	"strconv"
 )
 
 func readEnv_file(path string) map[string]string {
@@ -133,7 +135,7 @@ func dockerToServiceVolumes(dockerVolumes docker_compose.Volumes) []string {
 			if volume.ReadOnly == true {
 				temp = temp + ":ro"
 			}
-			if temp[0] != '/' && temp[0]!='$' {
+			if temp[0] != '/' && temp[0] != '$' {
 				common.PrintlnWarning("Service.yml format does only support absolute path for volumes. Please modify for \"%s\"", temp)
 				temp = "/" + temp
 			}
@@ -148,20 +150,41 @@ func dockerToServiceEnvVarFormat(service service_yml.Service) service_yml.Servic
 	str, err := yaml.Marshal(service)
 	service_yml.CheckError(err)
 	for i := 0; i < len(str); i++ {
-		if str[i] == '{' && str[i-1] == '$'{
-			str = []byte(string(str[:i-1])+"_env("+string(str[i+1:]))
-			for ;i<len(str);i++{
-				if str[i]=='}'{
-					str[i]=')'
+		if str[i] == '{' && str[i-1] == '$' {
+			str = []byte(string(str[:i-1]) + "_env(" + string(str[i+1:]))
+			for ; i < len(str); i++ {
+				if str[i] == '}' {
+					str[i] = ')'
 					break
 				}
 			}
 		}
 	}
-	err=yaml.Unmarshal(str, &service)
+	err = yaml.Unmarshal(str, &service)
 	service_yml.CheckError(err)
 
 	return service
+}
+
+func dockerToServiceStopGrace(str string) int {
+	if str != "" {
+		var stopInt int
+		var err error
+		if !unicode.IsDigit(rune(str[len(str)-1])) {
+			stopInt, err = strconv.Atoi(str[:len(str)-1])
+			if err != nil{
+				stopInt = 30 //usual used number in case the user needs a stop grace - can be modified afterwards
+			}
+			return stopInt
+		}else {
+			stopInt, err = strconv.Atoi(str)
+			if err!=nil{
+				stopInt = 30 //usual used number in case the user needs a stop grace - can be modified afterwards
+			}
+			return stopInt
+		}
+	}
+	return 0
 }
 
 func getDockerToServiceWarnings(service docker_compose.Service) {
