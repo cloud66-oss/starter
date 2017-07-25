@@ -51,7 +51,7 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 							Containers: []kubernetes.Containers{
 								{
 									Name:  dbName,
-									Image: dbName + ":latest",
+									Image: getDbImage(dbName),
 									Ports: setDbDeploymentPorts(dbName),
 								},
 							},

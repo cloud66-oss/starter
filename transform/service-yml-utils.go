@@ -354,6 +354,20 @@ func (k KubesTransformer) ComposeWriter(file []byte, deployments []kubernetes.Ku
 	return file
 }
 
+func getDbImage(dbName string) string{
+	var image string
+
+	switch dbName{
+	case "mongodb":
+		dbName = "mongo"
+	case "postgresql":
+		dbName = "postgres"
+
+	}
+	image = dbName+":latest"
+	return image
+}
+
 func getServiceToKubesWarnings(s service_yml.Service){
 	if s.GitUrl != "" {
 		common.PrintlnWarning("Kubernetes format does not support \"git_repo\" at the moment")
