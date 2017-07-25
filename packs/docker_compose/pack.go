@@ -67,12 +67,12 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldPrompt bool) error {
 
 	dockerBase := docker_compose.DockerCompose{}
-	dockerBase.UnmarshalFromFile("docker-compose.yml")
+	dockerBase.UnmarshalFromFile(outputDir+"/docker-compose.yml")
 
 	d := transform.DockerComposeTransformer{Base: dockerBase}
 
-	serviceYml := d.ToServiceYml(p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt, "docker-compose.yml")
-	serviceYml.MarshalToFile("service.yml")
+	serviceYml := d.ToServiceYml(p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt, outputDir+"/docker-compose.yml")
+	serviceYml.MarshalToFile(outputDir+"/service.yml")
 
 	return nil
 }

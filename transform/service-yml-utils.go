@@ -354,6 +354,54 @@ func (k KubesTransformer) ComposeWriter(file []byte, deployments []kubernetes.Ku
 	return file
 }
 
+func getServiceToKubesWarnings(s service_yml.Service){
+	if s.GitUrl != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"git_repo\" at the moment")
+	}
+	if s.GitBranch != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"git_branch\" at the moment")
+	}
+	if s.DockerfilePath != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"dockerfile_path\" at the moment")
+	}
+	if s.Requires != nil {
+		common.PrintlnWarning("Kubernetes format does not support \"requires\" at the moment")
+	}
+	if s.BuildCommand != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"build_command\" at the moment")
+	}
+	if s.BuildRoot != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"build_root\" at the moment")
+	}
+	if s.LogFolder != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"log_folder\" at the moment")
+	}
+	if s.DnsBehaviour != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"dns_behaviour\" at the moment")
+	}
+	if s.UseHabitus != false {
+		common.PrintlnWarning("Kubernetes format does not support \"use_habitus\" at the moment")
+	}
+	if s.UseHabitusStep != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"use_habitus_step\" at the moment")
+	}
+	if s.Health != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"health\" at the moment")
+	}
+	if s.PreStartSignal != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"pre_start_signal\" at the moment")
+	}
+	if s.PreStopSequence != "" {
+		common.PrintlnWarning("Kubernetes format does not support \"pre_stop_sequence\" at the moment")
+	}
+	if s.RestartOnDeploy != false {
+		common.PrintlnWarning("Kubernetes format does not support \"restart_on_deploy\" at the moment")
+	}
+	if s.TrafficMatches != nil {
+		common.PrintlnWarning("Kubernetes format does not support \"traffic_matches\" at the moment")
+	}
+}
+
 func CheckError(err error) {
 	if err != nil {
 		fmt.Println(err.Error())

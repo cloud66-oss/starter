@@ -67,12 +67,12 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 
 	serviceYmlBase := service_yml.ServiceYml{}
-	serviceYmlBase.UnmarshalFromFile("service.yml")
+	serviceYmlBase.UnmarshalFromFile(outputDir+"/service.yml")
 
 	s := transform.ServiceYmlTransformer{Base: serviceYmlBase}
 
 	kubernetes := s.ToKubernetes()
-	kubernetes.MarshalToFile("kubernetes.yml")
+	kubernetes.MarshalToFile(outputDir+"/kubernetes.yml")
 
 	return nil
 }

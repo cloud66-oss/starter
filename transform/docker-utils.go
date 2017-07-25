@@ -55,10 +55,12 @@ func getKeyValue(line string) (string, string) {
 			key = string(append([]byte(key), line[k]))
 		}
 	}
-	if line[k+1] == '=' && line[k+2] == '"' {
-		k = k + 2
-	} else if (line[k+1] == '=' && line[k+2] != '"') || (line[k+1] == '"') {
-		k = k + 1
+	if k < len(line)-2 {
+		if line[k+1] == '=' && line[k+2] == '"' {
+			k = k + 2
+		} else if (line[k+1] == '=' && line[k+2] != '"') || (line[k+1] == '"') {
+			k = k + 1
+		}
 	}
 	for k = k + 1; k < len(line); k++ {
 		if line[k] == '\n' || line[k] == '"' {
@@ -138,8 +140,8 @@ func dockerToServiceVolumes(dockerVolumes docker_compose.Volumes) []string {
 				common.PrintlnWarning("Service.yml format does only support absolute path for volumes. Please modify for \"%s\"", temp)
 				temp = "/" + temp
 			}
+			serviceVolumes = append(serviceVolumes, temp)
 		}
-		serviceVolumes = append(serviceVolumes, temp)
 	}
 	return serviceVolumes
 }
@@ -172,13 +174,13 @@ func dockerToServiceStopGrace(str string) int {
 		var err error
 		if !unicode.IsDigit(rune(str[len(str)-1])) {
 			stopInt, err = strconv.Atoi(str[:len(str)-1])
-			if err != nil{
+			if err != nil {
 				stopInt = 30 //usual used number in case the user needs a stop grace - can be modified afterwards
 			}
 			return stopInt
-		}else {
+		} else {
 			stopInt, err = strconv.Atoi(str)
-			if err!=nil{
+			if err != nil {
 				stopInt = 30 //usual used number in case the user needs a stop grace - can be modified afterwards
 			}
 			return stopInt

@@ -67,7 +67,7 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 	var deployPorts []kubernetes.Port
 	var services []kubernetes.KubesService
 	for serviceName, serviceSpecs := range s.Base.Services {
-
+		getServiceToKubesWarnings(serviceSpecs)
 		//gets ports to populate deployment and generates the required service(s)
 		deployPorts, services, nodePort = generateServicesRequiredByPorts(serviceName, serviceSpecs, nodePort)
 

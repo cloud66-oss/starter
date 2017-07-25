@@ -32,9 +32,7 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 
 		}
 		hasGit := common.HasGit(gitPath)
-
 		getDockerToServiceWarnings(v)
-
 		if hasGit {
 			buildRoot, err = common.PathRelativeToGitRoot(gitPath)
 		}
