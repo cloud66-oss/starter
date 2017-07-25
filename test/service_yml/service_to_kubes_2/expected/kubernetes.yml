@@ -290,4 +290,5 @@ spec:
         ports:
         - name: 9000-tcp
           protocol: TCP
-          containerPort: 90
+          containerPort: 9000
+

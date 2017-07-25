@@ -9,3 +9,11 @@ type Port struct {
 	Tcp       int `yaml:"tcp,omitempty"`
 	Udp       int `yaml:"udp,omitempty"`
 }
+
+type tempPort struct {
+	Container string `yaml:"container,omitempty"`
+	Http      string `yaml:"http,omitempty"`
+	Https     string `yaml:"https,omitempty"`
+	Tcp       string `yaml:"tcp,omitempty"`
+	Udp       string `yaml:"udp,omitempty"`
+}

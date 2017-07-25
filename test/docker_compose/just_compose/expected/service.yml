@@ -2,7 +2,7 @@
 
 services:
   client:
-    git_url: http://github.com/cloud66-samples/php-docker.git
+    git_url: git@github.com:cloud66/starter.git
     git_branch: master
     build_root: client
     requires:
@@ -18,7 +18,7 @@ services:
     volumes:
     - /./pgdata:/var/lib/postgresql/data/pgdata
   foreman:
-    git_url: http://github.com/cloud66-samples/php-docker.git
+    git_url: git@github.com:cloud66/starter.git
     git_branch: master
     dockerfile_path: ./here
     ports:
@@ -29,7 +29,7 @@ services:
     - /mydata3:/data3
     - /./webpack:/usr/src/app/public/webpack
   foreman-init:
-    git_url: http://github.com/cloud66-samples/php-docker.git
+    git_url: git@github.com:cloud66/starter.git
     git_branch: master
     build_root: foreman
     requires:
@@ -52,7 +52,7 @@ services:
   memcache:
     image: memcached
   proxy:
-    git_url: http://github.com/cloud66-samples/php-docker.git
+    git_url: git@github.com:cloud66/starter.git
     git_branch: master
     build_root: proxy
     ports:

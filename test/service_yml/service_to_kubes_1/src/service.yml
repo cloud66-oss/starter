@@ -1,38 +1,29 @@
 # Generated with <3 by Cloud66
 
 services:
-  laravel:
-    git_url: http://github.com/cloud66-samples/php-docker.git
+  cakephp:
+    volumes:
+    - /.:/var/www/html/
+    - _env(WIERD_ENV_VAR):/somewhere
+    - /somewhere:other-place:ro
+    env_vars:
+      MYSQL_PASSWORD: root
+    ports:
+    - container: 3000
+    - container: 80
+      http: 8000
+    - container: 3000
+      http: 330
+    - container: 443
+      http: 8443
+    git_url: http://github.com/saada/docker-compose-php-mysql.git
     git_branch: master
-    pre_stop_command: cat log.file
-    post_start_command: cp bin
-    work_dir: ./lib/
-    stop_grace: 10
-    command: cp something meh woah
-    constrains:
-            resources:
-                    memory: 100000m
-                    cpu: 512
-    priviliged: true
+    dockerfile_path: Dockerfile
     requires:
     - mysql
-    ports:
-    - 443:8443
-    - 80:4000
-    - 7437
-    - 8000:8000
   mysql:
-    image: mysql:5.6.36
-    ports:
-    - 1:2:3
-    - 100:1000
+    image: mysql:5.6
     volumes:
-    - db_data:/var/lib/mysql:ro
-    - /db_data:/var/lib/mysql:ro
+    - /mysql-data:/var/lib/mysql
     env_vars:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: laravel
-      MYSQL_ROOT_PASSWORD: ""
-databases:
-        - redis
-        - influxdb
+      ENV: some value

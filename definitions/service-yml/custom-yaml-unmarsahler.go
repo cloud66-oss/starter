@@ -42,10 +42,12 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 				vvi := strconv.Itoa(vv)
 				*p = append(*p, shortPortToLong(vvi))
 			case map[interface{}]interface{}:
+				var longSyntaxStringPort tempPort
 				var longSyntaxPort Port
 				temp, er := yaml.Marshal(vv)
 				CheckError(er)
-				er = yaml.Unmarshal(temp, &longSyntaxPort)
+				er = yaml.Unmarshal(temp, &longSyntaxStringPort)
+				longSyntaxPort = stringToInt(longSyntaxStringPort)
 				CheckError(er)
 				*p = append(*p, longSyntaxPort)
 			default:
