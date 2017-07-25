@@ -121,7 +121,6 @@ func dockerToServicePorts(exposed []int, dockerPorts docker_compose.Ports, shoul
 		}
 		servicePorts = append(servicePorts, servicePort)
 	}
-
 	return servicePorts
 }
 
@@ -160,10 +159,11 @@ func dockerToServiceEnvVarFormat(service service_yml.Service) service_yml.Servic
 			}
 		}
 	}
-	err = yaml.Unmarshal(str, &service)
+	var newService service_yml.Service
+	err = yaml.Unmarshal(str, &newService)
 	service_yml.CheckError(err)
 
-	return service
+	return newService
 }
 
 func dockerToServiceStopGrace(str string) int {

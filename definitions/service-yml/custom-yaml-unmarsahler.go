@@ -30,7 +30,6 @@ func (p *Ports) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err != nil {
 		log.Fatalf("yaml.Unmarshal: %v", err)
 	}
-
 	switch ports := ports.(type) {
 	case string:
 		*p = append(*p, shortPortToLong(ports))

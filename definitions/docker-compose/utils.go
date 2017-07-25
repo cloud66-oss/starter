@@ -23,16 +23,18 @@ func getKeyValue(line string) (string, string) {
 			key = string(append([]byte(key), line[k]))
 		}
 	}
-	if line[k+1] == '=' && line[k+2] == '"' {
-		k = k + 2
-	} else if (line[k+1] == '=' && line[k+2] != '"') || (line[k+1] == '"') {
-		k = k + 1
-	}
-	for k = k + 1; k < len(line); k++ {
-		if line[k] == '\n' || line[k] == '"' {
-			break
-		} else {
-			value = string(append([]byte(value), line[k]))
+	if k < len(line)-2 {
+		if line[k+1] == '=' && line[k+2] == '"' {
+			k = k + 2
+		} else if (line[k+1] == '=' && line[k+2] != '"') || (line[k+1] == '"') {
+			k = k + 1
+		}
+		for k = k + 1; k < len(line); k++ {
+			if line[k] == '\n' || line[k] == '"' {
+				break
+			} else {
+				value = string(append([]byte(value), line[k]))
+			}
 		}
 	}
 
@@ -55,7 +57,7 @@ func shortPortToLong(str string) Port {
 			host = string(append([]byte(host), str[i]))
 		}
 	}
-	for i=i+1; i < len(str); i++ {
+	for i = i + 1; i < len(str); i++ {
 		if !unicode.IsDigit(rune(str[i])) {
 			break
 		} else {

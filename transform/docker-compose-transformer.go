@@ -64,6 +64,8 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 		serviceYamlService.Requires = v.Depends_on
 		serviceYamlService.Volumes = dockerToServiceVolumes(v.Volumes)
 		serviceYamlService.Ports = dockerToServicePorts(v.Expose, v.Ports, shouldPrompt)
+
+
 		serviceYamlService.StopGrace = dockerToServiceStopGrace(v.Stop_grace_period)
 		serviceYamlService.WorkDir = v.Working_dir
 		serviceYamlService.EnvVars = v.Environment
