@@ -10,14 +10,14 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"regexp"
+	"strings"
 
 	"github.com/cloud66/starter/common"
-	"github.com/heroku/docker-registry-client/registry"
-	"github.com/mitchellh/go-homedir"
 	"github.com/cloud66/starter/packs"
 	"github.com/getsentry/raven-go"
+	"github.com/heroku/docker-registry-client/registry"
+	"github.com/mitchellh/go-homedir"
 	"runtime"
 )
 
@@ -360,33 +360,53 @@ func analyze(
 	detectedPacks, err := Detect(path)
 	var pack packs.Pack
 
-	pack, err = choosePack(detectedPacks, noPrompt)
-
+	// Added so that it will be easier to call the pack directly using the API.
+	// Also, with this, avoids looking for other packs than "service_yml" one
+	// if the generator flags requires the kubernetes format.
+	if strings.Contains(generator, "kube") {
+		if len(detectedPacks) > 0 {
+			for i := 0; i < len(detectedPacks); i++ {
+				if detectedPacks[i].Name() == "service.yml" {
+					pack = detectedPacks[i]
+				}
+			}
+			if pack == nil {
+				return nil, fmt.Errorf("Failed to detect service.yml\n")
+			}
+		} else {
+			return nil, fmt.Errorf("Failed to detect service.yml\n")
+		}
+	} else {
+		pack, err = choosePack(detectedPacks, noPrompt)
+		if pack == nil {
+			return nil, fmt.Errorf("Failed to detect supported framework\n")
+		}
+	}
 	if err != nil {
 		pack = nil
-		fmt.Errorf("Failed to detect framework due to: %s", err.Error())
+		return nil, fmt.Errorf("Failed to detect framework due to: %s\n", err.Error())
 	}
 
 	// check for Dockerfile (before analysis to avoid wasting time)
 	dockerfilePath := filepath.Join(path, "Dockerfile")
-	if _, err := os.Stat(dockerfilePath); err == nil {
+	if _, err := os.Stat(dockerfilePath); err == nil && pack.Name() != "docker-compose" && pack.Name() != "service.yml" {
 		// file exists. should we overwrite?
 		if !overwrite {
 			return nil, errors.New("Dockerfile already exists. Use overwrite flag to overwrite it")
 		}
 	}
-
-	serviceYAMLPath := filepath.Join(path, "service.yml")
-	if _, err := os.Stat(serviceYAMLPath); err == nil {
-		// file exists. should we overwrite?
-		if !overwrite {
-			return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
+	if pack.Name() != "service.yml" {
+		serviceYAMLPath := filepath.Join(path, "service.yml")
+		if _, err := os.Stat(serviceYAMLPath); err == nil {
+			// file exists. should we overwrite?
+			if !overwrite {
+				return nil, errors.New("service.yml already exists. Use overwrite flag to overwrite it")
+			}
 		}
 	}
 
-
 	//get all the support language versions
-	if use_registry && pack.Name()!="docker-compose" {
+	if use_registry && pack.Name() != "docker-compose" && pack.Name() != "service.yml" {
 		url := "https://registry-1.docker.io/"
 		username := "" // anonymous
 		password := "" // anonymous
@@ -406,7 +426,6 @@ func analyze(
 
 		pack.SetSupportedLanguageVersions(tags)
 	}
-	//if pack != nil {
 
 	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
 	if err != nil {
@@ -432,6 +451,18 @@ func analyze(
 		}
 	}
 
+	if strings.Contains(generator, "kube") {
+		_, err = os.Stat("kubernetes.yml")
+		if err == nil && !overwrite {
+			return nil, fmt.Errorf("kubernetes.yml already exists. Use flag to overwrite.")
+		}
+		err = pack.WriteKubesConfig(path, !noPrompt)
+
+		if err != nil {
+			return nil, fmt.Errorf("Failed to write kubes configuration file due to: %s", err.Error())
+		}
+	}
+
 	if len(pack.GetMessages()) > 0 {
 		for _, warning := range pack.GetMessages() {
 			result.Warnings = append(result.Warnings, warning)
@@ -448,11 +479,9 @@ func analyze(
 	result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
 	result.BuildCommands = []string{}
 	result.DeployCommands = []string{}
-	//}
+
 	return result, nil
 }
-
-
 
 func recoverPanic() {
 	if VERSION != "dev" {

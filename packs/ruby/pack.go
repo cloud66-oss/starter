@@ -2,6 +2,7 @@ package ruby
 
 import (
 	"github.com/cloud66/starter/packs"
+	"github.com/cloud66/starter/common"
 )
 
 type Pack struct {
@@ -86,6 +87,11 @@ func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shou
 				OutputDir:    outputDir,
 				ShouldPrompt: shouldPrompt}}}
 	return w.Write(p.Analysis.DockerComposeYAMLContext)
+}
+
+func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
+	common.PrintlnWarning("You can not generate a Kubernetes configuration file using this pack. Nothing to do.")
+	return nil
 }
 
 func (p *Pack) GetMessages() []string {

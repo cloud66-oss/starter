@@ -1,0 +1,29 @@
+# Generated with <3 by Cloud66
+
+services:
+  cakephp:
+    volumes:
+    - /.:/var/www/html/
+    - _env(WIERD_ENV_VAR):/somewhere
+    - /somewhere:other-place:ro
+    env_vars:
+      MYSQL_PASSWORD: root
+    ports:
+    - container: 3000
+    - container: 80
+      http: 8000
+    - container: 3000
+      http: 330
+    - container: 443
+      http: 8443
+    git_url: http://github.com/saada/docker-compose-php-mysql.git
+    git_branch: master
+    dockerfile_path: Dockerfile
+    requires:
+    - mysql
+  mysql:
+    image: mysql:5.6
+    volumes:
+    - /mysql-data:/var/lib/mysql
+    env_vars:
+      ENV: some value

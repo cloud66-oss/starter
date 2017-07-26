@@ -29,7 +29,7 @@ var _ = Describe("Running Starter in daemon mode", func() {
 		It("should respond with all the supported files", func() {
 			resp, err := resty.R().Get("http://127.0.0.1:9090/analyze/supported")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(resp.Body())).To(Equal(`{"Languages":[{"Name":"docker-compose","Files":["docker-compose.yml"],"SupportedVersion":null},{"Name":"ruby","Files":["Gemfile","Procfile","config/database.yml"],"SupportedVersion":null},{"Name":"node","Files":["package.json","Procfile",".meteor/release"],"SupportedVersion":["4.6"]},{"Name":"php","Files":["composer.json"],"SupportedVersion":null}]}`))
+			Expect(string(resp.Body())).To(Equal(`{"Languages":[{"Name":"docker-compose","Files":["docker-compose.yml"],"SupportedVersion":null},{"Name":"ruby","Files":["Gemfile","Procfile","config/database.yml"],"SupportedVersion":null},{"Name":"node","Files":["package.json","Procfile",".meteor/release"],"SupportedVersion":["4.6"]},{"Name":"php","Files":["composer.json"],"SupportedVersion":null},{"Name":"service.yml","Files":["service.yml"],"SupportedVersion":null}]}`))
 		})
 	})
 
