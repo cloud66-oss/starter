@@ -1,6 +1,6 @@
 # use the alpine base image
-FROM alpine:3.3
-MAINTAINER Daniel van Gils
+FROM alpine:3.6
+MAINTAINER Cloud 66
 
 RUN apk --update upgrade && apk add curl ca-certificates && rm -rf /var/cache/apk/*
 
