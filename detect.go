@@ -6,20 +6,20 @@ import (
 	"github.com/cloud66/starter/packs/node"
 	"github.com/cloud66/starter/packs/php"
 	"github.com/cloud66/starter/packs/ruby"
-	"github.com/cloud66/starter/packs/docker_compose"
+	"github.com/cloud66/starter/packs/compose-to-service-yml"
 	"fmt"
 	"strings"
 	"bufio"
 	"os"
-	"github.com/cloud66/starter/packs/service_yml"
+	"github.com/cloud66/starter/packs/service-yml-to-kubes"
 )
 
 func Detect(rootDir string) ([]packs.Pack, error) {
 	ruby := ruby.Pack{}
 	node := node.Pack{}
 	php := php.Pack{}
-	dockercompose := docker_compose.Pack{}
-	serviceyml := service_yml.Pack{}
+	dockercompose := compose_to_service_yml.Pack{}
+	serviceyml := service_yml_to_kubes.Pack{}
 	detectors := []packs.Detector{dockercompose.Detector(), ruby.Detector(), node.Detector(), php.Detector(), serviceyml.Detector()}
 	var packs []packs.Pack
 

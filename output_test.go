@@ -53,7 +53,7 @@ func runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePa
 }
 
 func runStarterWithProjectGeneratingKubernetesYmlFromServiceYml(projectFixturePath string) (string, error) {
-	command := exec.Command(binPath, "-y", "-p", projectFixturePath+"/src", "-g", "kubernetes", "-overwrite")
+	command := exec.Command(binPath, "-y", "-p", projectFixturePath+"/src", "-g", "kubernetes")
 	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err

@@ -68,13 +68,20 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 		serviceYamlService.WorkDir = v.Working_dir
 		serviceYamlService.EnvVars = v.Environment
 		serviceYamlService.Tags = v.Labels
-		serviceYamlService.DockerfilePath = v.Build.Dockerfile
 		serviceYamlService.Privileged = v.Privileged
 		serviceYamlService.Constraints = service_yml.Constraints{
 			Resources: service_yml.Resources{
 				Memory: v.MemLimit,
 				Cpu:    v.CpuShares,
 			},
+		}
+
+		if v.Build.Dockerfile!=""{
+			if v.Build.Context!="" && v.Build.Context!="."{
+				serviceYamlService.DockerfilePath = v.Build.Context+"/"+v.Build.Dockerfile
+			}else{
+				serviceYamlService.DockerfilePath = v.Build.Dockerfile
+			}
 		}
 
 		serviceYamlService.Tags = make(map[string]string, 1)

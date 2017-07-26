@@ -1,4 +1,4 @@
-package service_yml
+package service_yml_to_kubes
 
 import "github.com/cloud66/starter/packs"
 
