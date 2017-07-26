@@ -18,10 +18,11 @@ ENV HOME /home/$USER
 ENV PATH $PATH:$HOME/.meteor
 
 # install meteor (for building distribution)
-RUN curl -sL https://install.meteor.com | /bin/sh
+RUN curl -sL https://install.meteor.com/?release=1.5 | /bin/sh
 
 # setup temp dir for building meteor distribution
 USER root
+RUN cp "/home/node/.meteor/packages/meteor-tool/1.5.0/mt-os.linux.x86_64/scripts/admin/launch-meteor" /usr/bin/meteor
 
 #install required packages (magick)
 RUN apt-get update 
@@ -54,7 +55,7 @@ RUN tar -xf build/tmp.tar.gz --strip-components=1 -C $APP_HOME
 
 # install NPM packages
 WORKDIR $APP_HOME
-RUN cd programs/server
+
 RUN npm install
 {{else}}
 FROM node:{{.Version}}
