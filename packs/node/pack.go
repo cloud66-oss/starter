@@ -68,6 +68,7 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 				TemplateDir:  templateDir,
 				OutputDir:    outputDir,
 				ShouldPrompt: shouldPrompt}}}
+	p.Analysis.DockerfileContext.FrameworkVersion = p.Analysis.FrameworkVersion
 	return w.Write(p.Analysis.DockerfileContext)
 }
 

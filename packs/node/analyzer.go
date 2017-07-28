@@ -22,6 +22,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.MeteorRelease = filepath.Join(a.RootDir, ".meteor/release")
 
 
+
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
 	if err != nil {
 		return nil, err
