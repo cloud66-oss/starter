@@ -12,14 +12,12 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
 	"github.com/cloud66/starter/common"
 	"github.com/cloud66/starter/packs"
 	"github.com/getsentry/raven-go"
 	"github.com/heroku/docker-registry-client/registry"
-	"github.com/mitchellh/go-homedir"
 	"runtime"
-	"github.com/getsentry/raven-go"
+	"github.com/mitchellh/go-homedir"
 )
 
 type downloadFile struct {
