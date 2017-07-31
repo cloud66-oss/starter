@@ -21,8 +21,6 @@ import (
 	"text/template"
 	"regexp"
 	"strconv"
-	"github.com/cloud66/starter/packs/compose-to-service-yml"
-	"github.com/cloud66/starter/packs/service-yml-to-kubes"
 )
 
 // API holds starter API
