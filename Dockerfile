@@ -1,6 +1,6 @@
 #use the golang base image
 FROM golang:1.7
-MAINTAINER Daniel van Gils
+MAINTAINER Cloud 66
 
 #get all the go crosscompile stuff
 RUN go get github.com/mitchellh/gox
