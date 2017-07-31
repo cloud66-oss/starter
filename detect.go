@@ -21,6 +21,7 @@ func Detect(rootDir string) ([]packs.Pack, error) {
 	dockercompose := compose_to_service_yml.Pack{}
 	serviceyml := service_yml_to_kubes.Pack{}
 	detectors := []packs.Detector{ dockercompose.Detector(), ruby.Detector(), node.Detector(), php.Detector(), serviceyml.Detector() }
+
 	var packs []packs.Pack
 
 	for _, d := range detectors {

@@ -19,6 +19,7 @@ import (
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
 	"runtime"
+	"github.com/cloud66/starter/vendor/github.com/getsentry/raven-go"
 )
 
 type downloadFile struct {
@@ -99,7 +100,8 @@ func init() {
 	-g dockerfile: only the Dockerfile
 	-g docker-compose: only the docker-compose.yml + Dockerfile
 	-g service: only the service.yml + Dockerfile (cloud 66 specific)
-	-g dockerfile,service,docker-compose (all files)`)
+	-g dockerfile,service,docker-compose (all files)
+	-g kube: starter will generate a kubernetes deployment from service.yml`)
 
 	//sentry DSN setup
 	raven.SetDSN("https://b67185420a71409d900c7affe3a4287d:c5402650974e4a179227591ef8c4fd75@sentry.io/187937")
