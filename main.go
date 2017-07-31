@@ -19,7 +19,7 @@ import (
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
 	"runtime"
-	"github.com/cloud66/starter/vendor/github.com/getsentry/raven-go"
+	"github.com/getsentry/raven-go"
 )
 
 type downloadFile struct {
