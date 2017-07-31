@@ -1,0 +1,95 @@
+# Generated with <3 by Cloud66
+
+####### CAKEPHP-SVC - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cakephp-svc
+spec:
+  ports:
+  - name: 3000-expose
+    port: 3000
+    targetPort: 3000
+  type: ClusterIP
+
+---
+####### CAKEPHP-SVN - Service #######
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cakephp-svn
+spec:
+  ports:
+  - name: 80-http-31111
+    port: 80
+    protocol: TCP
+    targetPort: 8000
+    nodePort: 31111
+  - name: 3000-http-31112
+    port: 3000
+    protocol: TCP
+    targetPort: 330
+    nodePort: 31112
+  - name: 443-http-31113
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+    nodePort: 31113
+  type: NodePort
+
+---
+---
+####### CAKEPHP-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cakephp-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: cakephp
+    spec:
+      containers:
+      - name: cakephp
+        image:  #INSERT REQUIRED IMAGE
+        volumeMounts:
+        - mountPath: /var/www/html/
+          name: /.
+        - mountPath: /somewhere
+          name: $(WIERD_ENV_VAR)
+        - mountPath: other-place
+          name: /somewhere
+          readOnly: true
+        env:
+        - name: MYSQL_PASSWORD
+          value: root
+        ports:
+        - name: 443-tcp
+          protocol: TCP
+          containerPort: 443
+
+---
+####### MYSQL-DEPLOYMENT #######
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.6
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: /mysql-data
+        env:
+        - name: ENV
+          value: some value
+

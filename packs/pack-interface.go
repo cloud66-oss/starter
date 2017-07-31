@@ -11,6 +11,7 @@ type Pack interface {
 	WriteDockerfile(templateDir string, outputDir string, shouldNotPrompt bool) error
 	WriteServiceYAML(templateDir string, outputDir string, shouldNotPrompt bool) error
 	WriteDockerComposeYAML(templateDir string, outputDir string, shouldNotPrompt bool) error
+	WriteKubesConfig(outputDir string, shouldNotPrompt bool) error
 	GetMessages() []string
 	GetDatabases() []string
 	GetStartCommands() []string

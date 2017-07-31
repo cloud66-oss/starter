@@ -1,6 +1,9 @@
 package php
 
-import "github.com/cloud66/starter/packs"
+import (
+	"github.com/cloud66/starter/packs"
+	"github.com/cloud66/starter/common"
+)
 
 type Pack struct {
 	packs.PackBase
@@ -12,13 +15,12 @@ func (p *Pack) Name() string {
 }
 
 func (p *Pack) FilesToBeAnalysed() []string {
-	return []string{ "composer.json" }
+	return []string{"composer.json" }
 }
 
 func (p *Pack) LanguageVersion() string {
 	return "x"
 }
-
 
 func (p *Pack) Framework() string {
 	return p.Analysis.Framework
@@ -85,14 +87,19 @@ func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shou
 	return w.Write(p.Analysis.DockerComposeYAMLContext)
 }
 
+func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
+	common.PrintlnWarning("You can not generate a Kubernetes configuration file using this pack. Nothing to do.")
+	return nil
+}
+
 func (p *Pack) GetMessages() []string {
 	return p.Analysis.Messages.Items
 }
 
 func (p *Pack) GetDatabases() []string {
-	return []string {}
+	return []string{}
 }
 
 func (p *Pack) GetStartCommands() []string {
-	return  p.Analysis.ListOfStartCommands
+	return p.Analysis.ListOfStartCommands
 }

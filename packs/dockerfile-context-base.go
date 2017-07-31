@@ -6,4 +6,5 @@ type DockerfileContextBase struct {
 	Version  string
 	Framework string
 	Packages *common.Lister
+	FrameworkVersion string
 }

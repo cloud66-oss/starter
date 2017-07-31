@@ -68,6 +68,7 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 				TemplateDir:  templateDir,
 				OutputDir:    outputDir,
 				ShouldPrompt: shouldPrompt}}}
+	p.Analysis.DockerfileContext.FrameworkVersion = p.Analysis.FrameworkVersion
 	return w.Write(p.Analysis.DockerfileContext)
 }
 
@@ -91,6 +92,12 @@ func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shou
 				OutputDir:    outputDir,
 				ShouldPrompt: shouldPrompt}}}
 	return w.Write(p.Analysis.DockerComposeYAMLContext)
+}
+
+
+func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
+	common.PrintlnWarning("You can not generate a Kubernetes configuration file using this pack. Nothing to do.")
+	return nil
 }
 
 func (p *Pack) GetMessages() []string {

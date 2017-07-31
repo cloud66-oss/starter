@@ -18,13 +18,13 @@ ENV HOME /home/$USER
 ENV PATH $PATH:$HOME/.meteor
 
 # install meteor (for building distribution)
-RUN curl -sL https://install.meteor.com | /bin/sh
+RUN curl -sL https://install.meteor.com/?release={{.FrameworkVersion}} | /bin/sh
 
 # setup temp dir for building meteor distribution
 USER root
 
 #install required packages (magick)
-RUN apt-get update 
+RUN apt-get update
 RUN apt-get install apt-utils -y
 RUN apt-get install imagemagick libmagick++-dev  libmagick++-6.q16-dev -y
 ENV PATH /usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16:$PATH
@@ -41,7 +41,7 @@ ENV NPM_CONFIG_LOGLEVEL warn
 ENV ROOT_URL http://www.example.com
 
 # ADD CUSTOM REGISTRY HERE IF REQUIRED
-# ENV CUSTOM_REGISTRY https://registry.npmjs.org/ 
+# ENV CUSTOM_REGISTRY https://registry.npmjs.org/
 # RUN npm config set strict-ssl false
 # RUN npm config set registry $CUSTOM_REGISTRY
 
@@ -54,8 +54,7 @@ RUN tar -xf build/tmp.tar.gz --strip-components=1 -C $APP_HOME
 
 # install NPM packages
 WORKDIR $APP_HOME
-RUN cd programs/server
-RUN npm install
+RUN cd programs/server && npm install
 {{else}}
 FROM node:{{.Version}}
 
