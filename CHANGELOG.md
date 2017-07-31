@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## V1.3.1
+
+Disable docker-compose and kubernetes packs for API mode.
+
 ## V1.3.0
 
 This release will support the direct convertion from a `service.yml` to the `kubernetes.yml` format. This give you the option to run a Cloud 66 service definition on your local Kubernetes cluster (for example minikube). The `kubernetes` pack will be available to be used both through the API and the CLI tool.
