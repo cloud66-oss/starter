@@ -21,8 +21,6 @@ import (
 	"text/template"
 	"regexp"
 	"strconv"
-	"github.com/cloud66/starter/packs/compose-to-service-yml"
-	"github.com/cloud66/starter/packs/service-yml-to-kubes"
 )
 
 // API holds starter API
@@ -86,7 +84,8 @@ func (a *API) StartAPI() error {
 		common.PrintL0("Starting API on %s\n", a.config.APIURL)
 		common.PrintL1("API is now running...\n")
 
-		packs := []packs.Pack{new(compose_to_service_yml.Pack), new(ruby.Pack), new(node.Pack), new(php.Pack), new(service_yml_to_kubes.Pack)}
+		packs := []packs.Pack{/*new(compose_to_service_yml.Pack),*/ new(ruby.Pack), new(node.Pack), new(php.Pack)/*, new(service_yml_to_kubes.Pack)*/}
+
 		for _, p := range packs {
 			support := Language{}
 			support.Name = p.Name()
