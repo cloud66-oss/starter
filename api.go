@@ -308,7 +308,7 @@ func analyze_sourcecode(config *Config, path string, generate string, git_repo s
 		generate,
 		git_repo,
 		git_branch,
-		false)
+		true)
 
 	if err != nil {
 		common.PrintL0("%v", err.Error())
@@ -347,43 +347,63 @@ func analyze_sourcecode(config *Config, path string, generate string, git_repo s
 	}
 	return result
 }
+func unzip(src, dest string) error {
 
-func unzip(archive, target string) error {
-	reader, err := zip.OpenReader(archive)
+	var filenames []string
+
+	r, err := zip.OpenReader(src)
 	if err != nil {
 		return err
 	}
+	defer r.Close()
 
-	if err := os.MkdirAll(target, 0755); err != nil {
-		return err
-	}
+	for _, f := range r.File {
 
-	for _, file := range reader.File {
-		path := filepath.Join(target, file.Name)
-		if file.FileInfo().IsDir() {
-			os.MkdirAll(path, file.Mode())
-			continue
-		}
-
-		fileReader, err := file.Open()
+		rc, err := f.Open()
 		if err != nil {
 			return err
 		}
-		defer fileReader.Close()
+		defer rc.Close()
 
-		targetFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
-		if err != nil {
-			return err
-		}
-		defer targetFile.Close()
+		// Store filename/path for returning and using later on
+		fpath := filepath.Join(dest, f.Name)
+		filenames = append(filenames, fpath)
 
-		if _, err := io.Copy(targetFile, fileReader); err != nil {
-			return err
+		if f.FileInfo().IsDir() {
+
+			// Make Folder
+			os.MkdirAll(fpath, os.ModePerm)
+
+		} else {
+
+			// Make File
+			var fdir string
+			if lastIndex := strings.LastIndex(fpath, string(os.PathSeparator)); lastIndex > -1 {
+				fdir = fpath[:lastIndex]
+			}
+
+			err = os.MkdirAll(fdir, os.ModePerm)
+			if err != nil {
+				log.Fatal(err)
+				return err
+			}
+			f, err := os.OpenFile(
+				fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return err
+			}
+
 		}
 	}
-
 	return nil
 }
+
 
 func Filter(vs []string, f func(string) bool) []string {
 	vsf := make([]string, 0)
