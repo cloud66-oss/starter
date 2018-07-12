@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cloud66/starter/common"
-	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/packs/python/webservers"
+	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/packs"
+	"github.com/cloud66-oss/starter/packs/python/webservers"
 )
 
 type Analyzer struct {

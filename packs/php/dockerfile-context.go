@@ -1,6 +1,6 @@
 package php
 
-import "github.com/cloud66/starter/packs"
+import "github.com/cloud66-oss/starter/packs"
 
 type DockerfileContext struct {
 	packs.DockerfileContextBase

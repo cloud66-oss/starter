@@ -9,7 +9,7 @@ Starter can also generate the `service.yml` file, which is a Cloud 66 service de
 ![Logo Starter an open source dockerfile generator](http://blog.cloud66.com/content/images/2016/08/Starter-open-source-dockerfile-generator-on-github.png) 
 
 - Website: http://www.startwithdocker.com/ 
-- Download Starter: https://github.com/cloud66/starter/releases/
+- Download Starter: https://github.com/cloud66-oss/starter/releases/
 - Articles: http://blog.cloud66.com/tag/starter/
 
 
@@ -58,7 +58,7 @@ Just run the install script on macOS or Linux!
 
 `curl -sSL https://raw.githubusercontent.com/cloud66/starter/master/install.sh | bash`
 
-Or [download](https://github.com/cloud66/starter/releases?utm_source=Githubdownload&utm_medium=GHDpage&utm_campaign=starter) Starter straight from this repo. Starter can run on Linux, Windows and macOS. Copy the Starter application into `/usr/local/bin/starter` and check if it has the executable flags, if not run `chmod a+x /usr/local/bin/starter`. Containerize your first application with Starter now:
+Or [download](https://github.com/cloud66-oss/starter/releases?utm_source=Githubdownload&utm_medium=GHDpage&utm_campaign=starter) Starter straight from this repo. Starter can run on Linux, Windows and macOS. Copy the Starter application into `/usr/local/bin/starter` and check if it has the executable flags, if not run `chmod a+x /usr/local/bin/starter`. Containerize your first application with Starter now:
 
 
     $ cd /my/project

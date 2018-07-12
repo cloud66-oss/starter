@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloud66/starter/common"
+	"github.com/cloud66-oss/starter/common"
 )
 
 func fetch(url string, mod *time.Time) (io.ReadCloser, error) {

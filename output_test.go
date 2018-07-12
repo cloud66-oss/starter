@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
-	"github.com/cloud66/starter/common"
+	"github.com/cloud66-oss/starter/common"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"os/exec"

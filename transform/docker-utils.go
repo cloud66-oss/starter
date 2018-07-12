@@ -7,9 +7,9 @@ import (
 	"bufio"
 	"unicode"
 
-	"github.com/cloud66/starter/definitions/docker-compose"
-	"github.com/cloud66/starter/definitions/service-yml"
-	"github.com/cloud66/starter/common"
+	"github.com/cloud66-oss/starter/definitions/docker-compose"
+	"github.com/cloud66-oss/starter/definitions/service-yml"
+	"github.com/cloud66-oss/starter/common"
 	"gopkg.in/yaml.v2"
 	"strconv"
 )

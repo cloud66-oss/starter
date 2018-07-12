@@ -44,9 +44,6 @@ type recorderResponseWriter struct {
 // Record the status code.
 func (w *recorderResponseWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
-	if w.wroteHeader {
-		return
-	}
 	w.statusCode = code
 	w.wroteHeader = true
 }

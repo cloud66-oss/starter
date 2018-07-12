@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/cloud66/starter/common"
+	"github.com/cloud66-oss/starter/common"
 )
 
 type DockerComposeYAMLWriterBase struct {

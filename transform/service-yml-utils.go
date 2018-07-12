@@ -6,10 +6,10 @@ import (
 	"strings"
 	"strconv"
 	"gopkg.in/yaml.v2"
-	"github.com/cloud66/starter/common"
+	"github.com/cloud66-oss/starter/common"
 	"sort"
-	"github.com/cloud66/starter/definitions/kubernetes"
-	"github.com/cloud66/starter/definitions/service-yml"
+	"github.com/cloud66-oss/starter/definitions/kubernetes"
+	"github.com/cloud66-oss/starter/definitions/service-yml"
 )
 
 func finalFormat(file []byte) string {

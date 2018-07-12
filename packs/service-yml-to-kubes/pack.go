@@ -1,10 +1,10 @@
 package service_yml_to_kubes
 
 import (
-	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/common"
-	"github.com/cloud66/starter/definitions/service-yml"
-	"github.com/cloud66/starter/transform"
+	"github.com/cloud66-oss/starter/packs"
+	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/definitions/service-yml"
+	"github.com/cloud66-oss/starter/transform"
 )
 
 type Pack struct {

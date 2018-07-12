@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"fmt"
 
-	"github.com/cloud66/starter/definitions/docker-compose"
+	"github.com/cloud66-oss/starter/definitions/docker-compose"
 )
 
 type Kubernetes struct {

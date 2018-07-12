@@ -1,17 +1,17 @@
 package main
 
 import (
-	"github.com/cloud66/starter/common"
-	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/packs/node"
-	"github.com/cloud66/starter/packs/php"
-	"github.com/cloud66/starter/packs/ruby"
+	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/packs"
+	"github.com/cloud66-oss/starter/packs/node"
+	"github.com/cloud66-oss/starter/packs/php"
+	"github.com/cloud66-oss/starter/packs/ruby"
 	"fmt"
 	"strings"
 	"bufio"
 	"os"
-	"github.com/cloud66/starter/packs/service-yml-to-kubes"
-	"github.com/cloud66/starter/packs/compose-to-service-yml"
+	"github.com/cloud66-oss/starter/packs/service-yml-to-kubes"
+	"github.com/cloud66-oss/starter/packs/compose-to-service-yml"
 )
 
 func Detect(rootDir string) ([]packs.Pack, error) {

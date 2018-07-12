@@ -44,20 +44,20 @@ do_install() {
   if is_os "darwin"; then
     e_info "Downloading Starter for macOS..."
     `rm -f /tmp/starter &> /dev/null`
-    `curl -L --progress-bar -o /tmp/starter https://github.com/cloud66/starter/releases/download/$version/starter_darwin_amd64`
+    `curl -L --progress-bar -o /tmp/starter https://github.com/cloud66-oss/starter/releases/download/$version/starter_darwin_amd64`
   elif is_os "linux"; then
     if [[ is_64 ]]; then
 	  e_info "Downloading Starter for Linux x64..."
 	  `rm -f /tmp/starter &> /dev/null`
-	  `curl -L --progress-bar -o /tmp/starter https://github.com/cloud66/starter/releases/download/$version/starter_linux_amd64`
+	  `curl -L --progress-bar -o /tmp/starter https://github.com/cloud66-oss/starter/releases/download/$version/starter_linux_amd64`
     else
 	  e_info "Downloading Starter for Linux x32..."
 	  `rm -f /tmp/starter &> /dev/null`
-	  `curl -L --progress-bar -o /tmp/starter https://github.com/cloud66/starter/releases/download/$version/starter_linux_386`
+	  `curl -L --progress-bar -o /tmp/starter https://github.com/cloud66-oss/starter/releases/download/$version/starter_linux_386`
     fi
   else
   	e_error "Aborted: Unable to detect your operating system and architecture!"
-  	e_warning "Please download Starter manually from: https://github.com/cloud66/starter/releases"
+  	e_warning "Please download Starter manually from: https://github.com/cloud66-oss/starter/releases"
   	exit 1
   fi
   # extract the archive to local home

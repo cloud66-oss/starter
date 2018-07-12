@@ -88,9 +88,7 @@ func (authService *authService) Request(username, password string) (*http.Reques
 
 	q := url.Query()
 	q.Set("service", authService.Service)
-	if authService.Scope != "" {
-		q.Set("scope", authService.Scope)
-	}
+	q.Set("scope", authService.Scope)
 	url.RawQuery = q.Encode()
 
 	request, err := http.NewRequest("GET", url.String(), nil)

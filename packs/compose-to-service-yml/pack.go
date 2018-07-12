@@ -1,10 +1,10 @@
 package compose_to_service_yml
 
 import (
-	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/common"
-	"github.com/cloud66/starter/definitions/docker-compose"
-	"github.com/cloud66/starter/transform"
+	"github.com/cloud66-oss/starter/packs"
+	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/definitions/docker-compose"
+	"github.com/cloud66-oss/starter/transform"
 )
 
 type Pack struct {

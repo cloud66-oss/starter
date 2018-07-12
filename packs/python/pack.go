@@ -1,8 +1,8 @@
 package python
 
 import (
-	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/common"
+	"github.com/cloud66-oss/starter/packs"
+	"github.com/cloud66-oss/starter/common"
 )
 
 type Pack struct {

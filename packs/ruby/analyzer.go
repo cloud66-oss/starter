@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/cloud66/starter/common"
-	"github.com/cloud66/starter/packs"
-	"github.com/cloud66/starter/packs/ruby/webservers"
+	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/packs"
+	"github.com/cloud66-oss/starter/packs/ruby/webservers"
 )
 
 type Analyzer struct {

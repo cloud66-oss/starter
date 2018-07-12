@@ -1,6 +1,6 @@
 package packs
 
-import "github.com/cloud66/starter/common"
+import "github.com/cloud66-oss/starter/common"
 
 type AnalysisBase struct {
 	PackName string

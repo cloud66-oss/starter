@@ -5,13 +5,13 @@ build:
       name: crosscompile
       dockerfile: Dockerfile.crosscompile
       artifacts:
-        - /usr/local/go/src/github.com/cloud66/starter/compiled/starter_darwin_386:./artifacts/compiled
-        - /usr/local/go/src/github.com/cloud66/starter/compiled/starter_darwin_amd64:./artifacts/compiled
-        - /usr/local/go/src/github.com/cloud66/starter/compiled/starter_windows_386.exe:./artifacts/compiled
-        - /usr/local/go/src/github.com/cloud66/starter/compiled/starter_windows_amd64.exe:./artifacts/compiled
-        - /usr/local/go/src/github.com/cloud66/starter/compiled/starter_linux_386:./artifacts/compiled
-        - /usr/local/go/src/github.com/cloud66/starter/compiled/starter_linux_amd64:./artifacts/compiled
-        - /usr/local/go/src/github.com/cloud66/starter/compiled/starter:./artifacts/compiled
+        - /usr/local/go/src/github.com/cloud66-oss/starter/compiled/starter_darwin_386:./artifacts/compiled
+        - /usr/local/go/src/github.com/cloud66-oss/starter/compiled/starter_darwin_amd64:./artifacts/compiled
+        - /usr/local/go/src/github.com/cloud66-oss/starter/compiled/starter_windows_386.exe:./artifacts/compiled
+        - /usr/local/go/src/github.com/cloud66-oss/starter/compiled/starter_windows_amd64.exe:./artifacts/compiled
+        - /usr/local/go/src/github.com/cloud66-oss/starter/compiled/starter_linux_386:./artifacts/compiled
+        - /usr/local/go/src/github.com/cloud66-oss/starter/compiled/starter_linux_amd64:./artifacts/compiled
+        - /usr/local/go/src/github.com/cloud66-oss/starter/compiled/starter:./artifacts/compiled
     runtime:
       name: runtime
       depends_on:

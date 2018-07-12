@@ -1,10 +1,10 @@
 package transform
 
 import (
-	"github.com/cloud66/starter/definitions/service-yml"
-	"github.com/cloud66/starter/definitions/kubernetes"
-	"github.com/cloud66/starter/definitions/docker-compose"
-	"github.com/cloud66/starter/common"
+	"github.com/cloud66-oss/starter/definitions/service-yml"
+	"github.com/cloud66-oss/starter/definitions/kubernetes"
+	"github.com/cloud66-oss/starter/definitions/docker-compose"
+	"github.com/cloud66-oss/starter/common"
 )
 
 type ServiceYmlTransformer struct {

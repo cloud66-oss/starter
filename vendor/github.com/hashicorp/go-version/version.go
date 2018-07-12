@@ -14,8 +14,8 @@ var versionRegexp *regexp.Regexp
 
 // The raw regular expression string used for testing the validity
 // of a version.
-const VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
-	`(-?([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?` +
+const VersionRegexpRaw string = `([0-9]+(\.[0-9]+){0,2})` +
+	`(-([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?` +
 	`(\+([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?` +
 	`?`
 
@@ -23,7 +23,7 @@ const VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
 type Version struct {
 	metadata string
 	pre      string
-	segments []int64
+	segments []int
 	si       int
 }
 
@@ -38,23 +38,20 @@ func NewVersion(v string) (*Version, error) {
 	if matches == nil {
 		return nil, fmt.Errorf("Malformed version: %s", v)
 	}
+
 	segmentsStr := strings.Split(matches[1], ".")
-	segments := make([]int64, len(segmentsStr))
+	segments := make([]int, len(segmentsStr), 3)
 	si := 0
 	for i, str := range segmentsStr {
-		val, err := strconv.ParseInt(str, 10, 64)
+		val, err := strconv.ParseInt(str, 10, 32)
 		if err != nil {
 			return nil, fmt.Errorf(
 				"Error parsing version: %s", err)
 		}
 
-		segments[i] = int64(val)
-		si++
+		segments[i] = int(val)
+		si += 1
 	}
-
-	// Even though we could support more than three segments, if we
-	// got less than three, pad it with 0s. This is to cover the basic
-	// default usecase of semver, which is MAJOR.MINOR.PATCH at the minimum
 	for i := len(segments); i < 3; i++ {
 		segments = append(segments, 0)
 	}
@@ -65,16 +62,6 @@ func NewVersion(v string) (*Version, error) {
 		segments: segments,
 		si:       si,
 	}, nil
-}
-
-// Must is a helper that wraps a call to a function returning (*Version, error)
-// and panics if error is non-nil.
-func Must(v *Version, err error) *Version {
-	if err != nil {
-		panic(err)
-	}
-
-	return v
 }
 
 // Compare compares this version to another version. This
@@ -89,8 +76,8 @@ func (v *Version) Compare(other *Version) int {
 		return 0
 	}
 
-	segmentsSelf := v.Segments64()
-	segmentsOther := other.Segments64()
+	segmentsSelf := v.Segments()
+	segmentsOther := other.Segments()
 
 	// If the segments are the same, we must compare on prerelease info
 	if reflect.DeepEqual(segmentsSelf, segmentsOther) {
@@ -109,56 +96,21 @@ func (v *Version) Compare(other *Version) int {
 		return comparePrereleases(preSelf, preOther)
 	}
 
-	// Get the highest specificity (hS), or if they're equal, just use segmentSelf length
-	lenSelf := len(segmentsSelf)
-	lenOther := len(segmentsOther)
-	hS := lenSelf
-	if lenSelf < lenOther {
-		hS = lenOther
-	}
 	// Compare the segments
-	// Because a constraint could have more/less specificity than the version it's
-	// checking, we need to account for a lopsided or jagged comparison
-	for i := 0; i < hS; i++ {
-		if i > lenSelf-1 {
-			// This means Self had the lower specificity
-			// Check to see if the remaining segments in Other are all zeros
-			if !allZero(segmentsOther[i:]) {
-				// if not, it means that Other has to be greater than Self
-				return -1
-			}
-			break
-		} else if i > lenOther-1 {
-			// this means Other had the lower specificity
-			// Check to see if the remaining segments in Self are all zeros -
-			if !allZero(segmentsSelf[i:]) {
-				//if not, it means that Self has to be greater than Other
-				return 1
-			}
-			break
-		}
+	for i := 0; i < len(segmentsSelf); i++ {
 		lhs := segmentsSelf[i]
 		rhs := segmentsOther[i]
+
 		if lhs == rhs {
 			continue
 		} else if lhs < rhs {
 			return -1
-		}
-		// Otherwis, rhs was > lhs, they're not equal
-		return 1
-	}
-
-	// if we got this far, they're equal
-	return 0
-}
-
-func allZero(segs []int64) bool {
-	for _, s := range segs {
-		if s != 0 {
-			return false
+		} else {
+			return 1
 		}
 	}
-	return true
+
+	panic("should not be reached")
 }
 
 func comparePart(preSelf string, preOther string) int {
@@ -166,38 +118,24 @@ func comparePart(preSelf string, preOther string) int {
 		return 0
 	}
 
-	selfNumeric := true
-	_, err := strconv.ParseInt(preSelf, 10, 64)
-	if err != nil {
-		selfNumeric = false
-	}
-
-	otherNumeric := true
-	_, err = strconv.ParseInt(preOther, 10, 64)
-	if err != nil {
-		otherNumeric = false
-	}
-
 	// if a part is empty, we use the other to decide
 	if preSelf == "" {
-		if otherNumeric {
+		_, notIsNumeric := strconv.ParseInt(preOther, 10, 64)
+		if notIsNumeric == nil {
 			return -1
 		}
 		return 1
 	}
 
 	if preOther == "" {
-		if selfNumeric {
+		_, notIsNumeric := strconv.ParseInt(preSelf, 10, 64)
+		if notIsNumeric == nil {
 			return 1
 		}
 		return -1
 	}
 
-	if selfNumeric && !otherNumeric {
-		return -1
-	} else if !selfNumeric && otherNumeric {
-		return 1
-	} else if preSelf > preOther {
+	if preSelf > preOther {
 		return 1
 	}
 
@@ -278,25 +216,12 @@ func (v *Version) Prerelease() string {
 	return v.pre
 }
 
-// Segments returns the numeric segments of the version as a slice of ints.
+// Segments returns the numeric segments of the version as a slice.
 //
 // This excludes any metadata or pre-release information. For example,
 // for a version "1.2.3-beta", segments will return a slice of
 // 1, 2, 3.
 func (v *Version) Segments() []int {
-	segmentSlice := make([]int, len(v.segments))
-	for i, v := range v.segments {
-		segmentSlice[i] = int(v)
-	}
-	return segmentSlice
-}
-
-// Segments64 returns the numeric segments of the version as a slice of int64s.
-//
-// This excludes any metadata or pre-release information. For example,
-// for a version "1.2.3-beta", segments will return a slice of
-// 1, 2, 3.
-func (v *Version) Segments64() []int64 {
 	return v.segments
 }
 
@@ -304,13 +229,7 @@ func (v *Version) Segments64() []int64 {
 // and metadata information.
 func (v *Version) String() string {
 	var buf bytes.Buffer
-	fmtParts := make([]string, len(v.segments))
-	for i, s := range v.segments {
-		// We can ignore err here since we've pre-parsed the values in segments
-		str := strconv.FormatInt(s, 10)
-		fmtParts[i] = str
-	}
-	fmt.Fprintf(&buf, strings.Join(fmtParts, "."))
+	fmt.Fprintf(&buf, "%d.%d.%d", v.segments[0], v.segments[1], v.segments[2])
 	if v.pre != "" {
 		fmt.Fprintf(&buf, "-%s", v.pre)
 	}
