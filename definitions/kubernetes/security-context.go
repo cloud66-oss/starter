@@ -1,5 +1,5 @@
 package kubernetes
 
-type SecurityContext struct{
+type SecurityContext struct {
 	Priviliged bool `yaml:"priviliged,omitempty"`
 }

@@ -1,10 +1,10 @@
 package docker_compose
 
 import (
-	"os"
-	"io/ioutil"
-	"gopkg.in/yaml.v2"
 	"fmt"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
 )
 
 type DockerCompose struct {

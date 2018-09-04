@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 )
+
 func HasGit(dir string) bool {
 	_, err := GitRootDir(dir)
 	if err != nil {

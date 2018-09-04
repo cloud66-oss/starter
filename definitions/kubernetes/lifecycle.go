@@ -1,6 +1,6 @@
 package kubernetes
 
-type Lifecycle struct{
+type Lifecycle struct {
 	PostStart Handler `yaml:"postStart,omitempty"`
-	PreStop Handler `yaml:"preStop,omitempty"`
+	PreStop   Handler `yaml:"preStop,omitempty"`
 }

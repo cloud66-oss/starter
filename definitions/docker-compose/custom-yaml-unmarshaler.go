@@ -1,9 +1,9 @@
 package docker_compose
 
 import (
+	"gopkg.in/yaml.v2"
 	"log"
 	"strconv"
-	"gopkg.in/yaml.v2"
 )
 
 func (b *Build) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -214,7 +214,6 @@ func (s *Secrets) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-
 func (v *Volumes) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var volumes interface{}
 	err := unmarshal(&volumes)
@@ -259,7 +258,7 @@ func (s *Limits) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 		s.Hard = limit.Hard
 		s.Soft = limit.Soft
-	}else{
+	} else {
 		s.Hard = single
 		s.Soft = single
 	}

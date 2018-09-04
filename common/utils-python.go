@@ -45,4 +45,3 @@ func PythonPackages(requirementsTxt string) ([]string, error) {
 
 	return packages, nil
 }
-

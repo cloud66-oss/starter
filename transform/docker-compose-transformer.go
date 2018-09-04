@@ -3,10 +3,10 @@ package transform
 import (
 	"strings"
 
+	"github.com/cloud66-oss/starter/common"
 	"github.com/cloud66-oss/starter/definitions/docker-compose"
 	"github.com/cloud66-oss/starter/definitions/kubernetes"
 	"github.com/cloud66-oss/starter/definitions/service-yml"
-	"github.com/cloud66-oss/starter/common"
 )
 
 type DockerComposeTransformer struct {
@@ -63,7 +63,6 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 		serviceYamlService.Volumes = dockerToServiceVolumes(v.Volumes)
 		serviceYamlService.Ports = dockerToServicePorts(v.Expose, v.Ports, shouldPrompt)
 
-
 		serviceYamlService.StopGrace = dockerToServiceStopGrace(v.Stop_grace_period)
 		serviceYamlService.WorkDir = v.Working_dir
 		serviceYamlService.EnvVars = v.Environment
@@ -76,10 +75,10 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 			},
 		}
 
-		if v.Build.Dockerfile!=""{
-			if v.Build.Context!="" && v.Build.Context!="."{
-				serviceYamlService.DockerfilePath = v.Build.Context+"/"+v.Build.Dockerfile
-			}else{
+		if v.Build.Dockerfile != "" {
+			if v.Build.Context != "" && v.Build.Context != "." {
+				serviceYamlService.DockerfilePath = v.Build.Context + "/" + v.Build.Dockerfile
+			} else {
 				serviceYamlService.DockerfilePath = v.Build.Dockerfile
 			}
 		}
@@ -92,12 +91,12 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 		if len(v.EnvFile) > 0 {
 			var lines map[string]string
 			for i := 0; i < len(v.EnvFile); i++ {
-				path := filepath[0:len(filepath)-len("docker-compose.yml")]
+				path := filepath[0 : len(filepath)-len("docker-compose.yml")]
 				lines = readEnv_file(path + v.EnvFile[i])
 				for j, w := range lines {
 					if j != "" {
-						if len(serviceYamlService.EnvVars)==0{
-							serviceYamlService.EnvVars = make(map[string]string,1)
+						if len(serviceYamlService.EnvVars) == 0 {
+							serviceYamlService.EnvVars = make(map[string]string, 1)
 						}
 						serviceYamlService.EnvVars[j] = w
 					}

@@ -1,15 +1,15 @@
 package kubernetes
 
 import (
+	"fmt"
+	"gopkg.in/yaml.v2"
+	"os"
 	"sort"
 	"strconv"
-	"gopkg.in/yaml.v2"
 	"strings"
-	"fmt"
-	"os"
 )
 
-func composeWriter (file []byte, deployments []KubesDeployment, kubesServices []KubesService) []byte{
+func composeWriter(file []byte, deployments []KubesDeployment, kubesServices []KubesService) []byte {
 	var keys []string
 	for _, k := range kubesServices {
 		keys = append(keys, k.Metadata.Name)
@@ -72,10 +72,10 @@ func finalFormat(file []byte) string {
 		}
 
 		// handle empty value for env_vars
-		if strings.Contains(lines[i], "value: ") && strings.Contains(lines[i], "\"\""){
-			for j:=0; j<len(lines[i]);j++{
-				if lines[i][j]=='"'{
-					lines[i]=lines[i][:j]
+		if strings.Contains(lines[i], "value: ") && strings.Contains(lines[i], "\"\"") {
+			for j := 0; j < len(lines[i]); j++ {
+				if lines[i][j] == '"' {
+					lines[i] = lines[i][:j]
 					break
 				}
 			}
@@ -104,4 +104,3 @@ func CheckError(err error) {
 		os.Exit(1)
 	}
 }
-

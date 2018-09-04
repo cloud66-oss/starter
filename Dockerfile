@@ -14,11 +14,11 @@ RUN go get github.com/onsi/ginkgo/ginkgo
 RUN go get github.com/onsi/gomega
 
 #copy the source files
-RUN mkdir -p /usr/local/go/src/github.com/cloud66/starter
-ADD . /usr/local/go/src/github.com/cloud66/starter
+RUN mkdir -p /usr/local/go/src/github.com/cloud66-oss/starter
+ADD . /usr/local/go/src/github.com/cloud66-oss/starter
 
 #testing without git
-ADD ./test/node/express_no_git /usr/local/go/src/github.com/cloud66
+ADD ./test/node/express_no_git /usr/local/go/src/github.com/cloud66-oss
 
 #switch to our app directory
-WORKDIR /usr/local/go/src/github.com/cloud66/starter
+WORKDIR /usr/local/go/src/github.com/cloud66-oss/starter

@@ -3,25 +3,23 @@ package node
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 	"strconv"
+	"strings"
 
+	"github.com/blang/semver"
 	"github.com/cloud66-oss/starter/common"
 	"github.com/cloud66-oss/starter/packs"
-	"github.com/blang/semver"
 )
 
 type Analyzer struct {
 	packs.AnalyzerBase
-	PackageJSON string
+	PackageJSON   string
 	MeteorRelease string
 }
 
 func (a *Analyzer) Analyze() (*Analysis, error) {
 	a.PackageJSON = filepath.Join(a.RootDir, "package.json")
 	a.MeteorRelease = filepath.Join(a.RootDir, ".meteor/release")
-
-
 
 	gitURL, gitBranch, buildRoot, err := a.ProjectMetadata()
 	if err != nil {
@@ -41,7 +39,6 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 		dbs = append(dbs, common.Database{Name: "mongodb", DockerImage: "mongo"})
 	}
 
-
 	framework_version := a.GuessFrameworkVersion()
 	supported_versions := a.FindVersion()
 	version := supported_versions[len(supported_versions)-1]
@@ -50,7 +47,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 	services, err := a.AnalyzeServices(a, envVars, gitBranch, gitURL, buildRoot)
 
 	// inject all the services with the databases used in the infrastructure
-	listOfStartCommands := []string {}
+	listOfStartCommands := []string{}
 
 	for _, service := range services {
 		listOfStartCommands = append(listOfStartCommands, service.Command)
@@ -61,8 +58,7 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 		return nil, err
 	}
 
-
-	listOfDatabases := []string {}
+	listOfDatabases := []string{}
 
 	for _, database := range dbs {
 		listOfDatabases = append(listOfDatabases, database.Name)
@@ -70,16 +66,16 @@ func (a *Analyzer) Analyze() (*Analysis, error) {
 
 	analysis := &Analysis{
 		AnalysisBase: packs.AnalysisBase{
-			PackName:         a.GetPack().Name(),
-			GitBranch:        gitBranch,
-			GitURL:           gitURL,
-			Framework:        framework,
-			FrameworkVersion: framework_version,
-			LanguageVersion:  version,
+			PackName:                  a.GetPack().Name(),
+			GitBranch:                 gitBranch,
+			GitURL:                    gitURL,
+			Framework:                 framework,
+			FrameworkVersion:          framework_version,
+			LanguageVersion:           version,
 			SupportedLanguageVersions: supported_versions,
-			Databases:			listOfDatabases,
-			ListOfStartCommands:	listOfStartCommands,
-			Messages:         a.Messages},
+			Databases:                 listOfDatabases,
+			ListOfStartCommands:       listOfStartCommands,
+			Messages:                  a.Messages},
 		DockerComposeYAMLContext: &DockerComposeYAMLContext{packs.DockerComposeYAMLContextBase{Services: services, Dbs: dbs}},
 		ServiceYAMLContext:       &ServiceYAMLContext{packs.ServiceYAMLContextBase{Services: services, Dbs: dbs}},
 		DockerfileContext:        &DockerfileContext{packs.DockerfileContextBase{Version: version, Framework: framework, Packages: packages}}}
@@ -99,7 +95,7 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 			} else {
 				service.Ports = []*common.PortMapping{common.NewInternalPortMapping(strconv.Itoa(port))}
 				service.EnvVars = []*common.EnvVar{common.NewEnvMapping("PORT", strconv.Itoa(port))}
-				port = port +1
+				port = port + 1
 			}
 		}
 	}
@@ -138,7 +134,7 @@ func (a *Analyzer) GetPackageVersion(pack string) string {
 	if hasFound {
 		v1, err := semver.Make(strings.Replace(strings.Trim(version, "^>=~"), "x", "0", -1))
 		if err != nil {
-		  return ""
+			return ""
 		}
 		version = fmt.Sprintf("%d.%d.%d", v1.Major, v1.Minor, v1.Patch)
 		return version
@@ -151,7 +147,7 @@ func (a *Analyzer) GuessFramework() string {
 	for _, framework := range common.GetSupportedNodeFrameworks() {
 		if a.HasPackage(framework) {
 			if framework == "meteor-node-stubs" {
-				return "meteor"		
+				return "meteor"
 			}
 			return framework
 		}
@@ -165,13 +161,11 @@ func (a *Analyzer) GetMeteorVersion() string {
 	return meteorVersion
 }
 
-
-
 func (a *Analyzer) GuessFrameworkVersion() string {
 	for _, framework := range common.GetSupportedNodeFrameworks() {
 		if a.HasPackage(framework) {
 			if framework == "meteor-node-stubs" {
-				return a.GetMeteorVersion()		
+				return a.GetMeteorVersion()
 			}
 			return a.GetPackageVersion(framework)
 		}

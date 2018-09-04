@@ -1,9 +1,9 @@
 package service_yml_to_kubes
 
 import (
-	"github.com/cloud66-oss/starter/packs"
 	"github.com/cloud66-oss/starter/common"
 	"github.com/cloud66-oss/starter/definitions/service-yml"
+	"github.com/cloud66-oss/starter/packs"
 	"github.com/cloud66-oss/starter/transform"
 )
 
@@ -20,7 +20,7 @@ func (p *Pack) LanguageVersion() string {
 	return p.Analysis.LanguageVersion
 }
 
-func (p *Pack) FilesToBeAnalysed() [] string {
+func (p *Pack) FilesToBeAnalysed() []string {
 	return []string{"service.yml"}
 }
 
@@ -67,12 +67,12 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 
 	serviceYmlBase := service_yml.ServiceYml{}
-	serviceYmlBase.UnmarshalFromFile(outputDir+"/service.yml")
+	serviceYmlBase.UnmarshalFromFile(outputDir + "/service.yml")
 
 	s := transform.ServiceYmlTransformer{Base: serviceYmlBase}
 
 	kubernetes := s.ToKubernetes()
-	kubernetes.MarshalToFile(outputDir+"/kubernetes.yml")
+	kubernetes.MarshalToFile(outputDir + "/kubernetes.yml")
 
 	return nil
 }

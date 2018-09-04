@@ -17,10 +17,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
-	"text/template"
 	"regexp"
 	"strconv"
+	"strings"
+	"text/template"
 )
 
 // API holds starter API
@@ -58,7 +58,6 @@ func (a *API) Error(w rest.ResponseWriter, error string, error_code int, http_co
 	}
 }
 
-
 // StartAPI starts the API listeners
 func (a *API) StartAPI() error {
 	api := rest.NewApi()
@@ -84,14 +83,14 @@ func (a *API) StartAPI() error {
 		common.PrintL0("Starting API on %s\n", a.config.APIURL)
 		common.PrintL1("API is now running...\n")
 
-		packs := []packs.Pack{/*new(compose_to_service_yml.Pack),*/ new(ruby.Pack), new(node.Pack), new(php.Pack)/*, new(service_yml_to_kubes.Pack)*/}
+		packs := []packs.Pack{ /*new(compose_to_service_yml.Pack),*/ new(ruby.Pack), new(node.Pack), new(php.Pack) /*, new(service_yml_to_kubes.Pack)*/}
 
 		for _, p := range packs {
 			support := Language{}
 			support.Name = p.Name()
 			support.Files = p.FilesToBeAnalysed()
 
-			if a.config.use_registry && p.Name()!="docker-compose" && p.Name()!="service.yml"{
+			if a.config.use_registry && p.Name() != "docker-compose" && p.Name() != "service.yml" {
 				url := "https://registry-1.docker.io/"
 				username := "" // anonymous
 				password := "" // anonymous
@@ -150,13 +149,13 @@ func (a *API) dockerfiles(w rest.ResponseWriter, r *rest.Request) {
 		var doc bytes.Buffer
 
 		version := struct {
-			Version  string
+			Version   string
 			Framework string
-			Packages *common.Lister
+			Packages  *common.Lister
 		}{
-			Version:  "latest",
+			Version:   "latest",
 			Framework: "express",
-			Packages: common.NewLister(),
+			Packages:  common.NewLister(),
 		}
 
 		err := tmpl.Execute(&doc, version)
@@ -402,7 +401,6 @@ func unzip(src, dest string) error {
 	}
 	return nil
 }
-
 
 func Filter(vs []string, f func(string) bool) []string {
 	vsf := make([]string, 0)

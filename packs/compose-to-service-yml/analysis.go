@@ -8,4 +8,3 @@ type Analysis struct {
 	ServiceYAMLContext *ServiceYAMLContext
 	DockerfileContext  *DockerfileContext*/
 }
-

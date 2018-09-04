@@ -2,31 +2,40 @@
 
 
 [[projects]]
+  digest = "1:7fe9fc2579ab2063df324e9a99998d5d8d8b829a6e0f65e0873887c5ada30aa6"
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
+  pruneopts = "UT"
   revision = "3ec0642a7fb6488f65b06f9040adc67e3990296a"
 
 [[projects]]
+  digest = "1:12a9e7d1020829188a63070403d65ec986df28f193ab7a93d97f451c49b23f8e"
   name = "github.com/ant0ine/go-json-rest"
   packages = [
     "rest",
-    "rest/trie"
+    "rest/trie",
   ]
+  pruneopts = "UT"
   revision = "01a517a7065ab0030bf286c6a8e5abc9b245c776"
 
 [[projects]]
+  digest = "1:66306e0c1ec962d1cb0ff3a156f96034a4ac154bb6b374fff87aa02229001787"
   name = "github.com/blang/semver"
   packages = ["."]
+  pruneopts = "UT"
   revision = "60ec3488bfea7cca02b021d106d9911120d25fe9"
   version = "v3.3.0"
 
 [[projects]]
+  digest = "1:fed1f537c2f1269fe475a8556c393fe466641682d73ef8fd0491cd3aa1e47bad"
   name = "github.com/certifi/gocertifi"
   packages = ["."]
+  pruneopts = "UT"
   revision = "deb3ae2ef2610fde3330947281941c562861188b"
   version = "2018.01.18"
 
 [[projects]]
+  digest = "1:b078d8392f5c1fcba9fb99d34e365d2251c5bec03c8d352a3154435063b2aef1"
   name = "github.com/docker/distribution"
   packages = [
     ".",
@@ -35,59 +44,79 @@
     "manifest",
     "manifest/schema1",
     "reference",
-    "uuid"
+    "uuid",
   ]
+  pruneopts = "UT"
   revision = "431cfa3179d9b3766e39f6a74283db8bb5a13209"
 
 [[projects]]
   branch = "master"
+  digest = "1:4841e14252a2cecf11840bd05230412ad469709bbacfc12467e2ce5ad07f339b"
   name = "github.com/docker/libtrust"
   packages = ["."]
+  pruneopts = "UT"
   revision = "aabc10ec26b754e797f9028f4589c5b7bd90dc20"
 
 [[projects]]
   branch = "master"
+  digest = "1:d4623fc7bf7e281d9107367cc4a9e76ed3e86b1eec1a4e30630c870bef1fedd0"
   name = "github.com/getsentry/raven-go"
   packages = ["."]
+  pruneopts = "UT"
   revision = "ed7bcb39ff10f39ab08e317ce16df282845852fa"
 
 [[projects]]
+  digest = "1:d5ceff0438435462612ced2ef1ecae2028628237d97f4d04fe06d881c029fb67"
   name = "github.com/go-resty/resty"
   packages = ["."]
+  pruneopts = "UT"
   revision = "b353fcada0eb6fc32e78bb1ad88030bc0d9ad311"
 
 [[projects]]
+  digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
   name = "github.com/gorilla/context"
   packages = ["."]
+  pruneopts = "UT"
   revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:b69cf1b6a7862193bbb2de66ce814341d4a4d18870c64b319e735436c3cfcd99"
   name = "github.com/gorilla/mux"
   packages = ["."]
+  pruneopts = "UT"
   revision = "0a192a193177452756c362c20087ddafcf6829c4"
 
 [[projects]]
+  digest = "1:90fbdaf4e94d5716d2530722cb72c0d32cf553045bffa801f1941b6729e5ed67"
   name = "github.com/hashicorp/go-version"
   packages = ["."]
+  pruneopts = "UT"
   revision = "999359b6b7a041ce16e695d51e92145b83f01087"
 
 [[projects]]
+  digest = "1:c2f0317e96d094787fe4a8c9fd8abba5b7a2cd88bec0a0ad00f1774a22c7173f"
   name = "github.com/heroku/docker-registry-client"
   packages = ["registry"]
+  pruneopts = "UT"
   revision = "97450e9c3ae5d9fa1b31ba877efb06cd28339320"
 
 [[projects]]
+  digest = "1:9d300044d702c652d52fc3cbd3898b63a4f853d4bb23d0dd13fcc54f2f7ffc69"
   name = "github.com/mgutz/ansi"
   packages = ["."]
+  pruneopts = "UT"
   revision = "452f5f5396543168418a299cd963697ac742b56e"
 
 [[projects]]
+  digest = "1:f048897d11e3e08c3ef8b257688e4dd44207ef16f10a9061bb39a5498b3d7d89"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
+  pruneopts = "UT"
   revision = "981ab348d865cf048eb7d17e78ac7192632d8415"
 
 [[projects]]
+  digest = "1:97860933e64dfde497daaeb12719bff1191a7c464b45bca69604121abcdb56f3"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -104,11 +133,13 @@
     "internal/writer",
     "reporters",
     "reporters/stenographer",
-    "types"
+    "types",
   ]
+  pruneopts = "UT"
   revision = "c3a655f9b37a2207fa39721b078b3173ee9218d6"
 
 [[projects]]
+  digest = "1:f9c481f06a060a6ee281d788f81bc32367daf58b3a4790abbc15181e4a5f18ff"
   name = "github.com/onsi/gomega"
   packages = [
     ".",
@@ -122,45 +153,69 @@
     "matchers/support/goraph/edge",
     "matchers/support/goraph/node",
     "matchers/support/goraph/util",
-    "types"
+    "types",
   ]
+  pruneopts = "UT"
   revision = "7ce781ea776b2fd506491011353bded2e40c8467"
 
 [[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
   name = "github.com/pkg/errors"
   packages = ["."]
+  pruneopts = "UT"
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
 
 [[projects]]
+  digest = "1:f6b329cbb5d4748e2cd2dad96260dc2a2ef5ec6aa1dd4e0bc00958f0b35493c3"
   name = "github.com/satori/go.uuid"
   packages = ["."]
+  pruneopts = "UT"
   revision = "0aa62d5ddceb50dbcb909d790b5345affd3669b6"
 
 [[projects]]
+  digest = "1:cc20f66086c76624692fdc23c0f910745eaef589ff43985ff4f59bfe8496d88b"
   name = "golang.org/x/net"
   packages = [
     "context",
     "idna",
-    "publicsuffix"
+    "publicsuffix",
   ]
+  pruneopts = "UT"
   revision = "f841c39de738b1d0df95b5a7187744f0e03d8112"
 
 [[projects]]
   branch = "master"
+  digest = "1:d773e525476aefa22ea944a5425a9bfb99819b2e67eeb9b1966454fd57522bbf"
   name = "golang.org/x/sys"
   packages = ["unix"]
+  pruneopts = "UT"
   revision = "1b2967e3c290b7c545b3db0deeda16e9be4f98a2"
 
 [[projects]]
+  digest = "1:342378ac4dcb378a5448dd723f0784ae519383532f5e70ade24132c4c8693202"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
+  pruneopts = "UT"
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0d7cf25b05dcd1786456455c62ee43568de637ec03b58bdb9bfc6f2148267456"
+  input-imports = [
+    "github.com/ant0ine/go-json-rest/rest",
+    "github.com/blang/semver",
+    "github.com/getsentry/raven-go",
+    "github.com/go-resty/resty",
+    "github.com/hashicorp/go-version",
+    "github.com/heroku/docker-registry-client/registry",
+    "github.com/mgutz/ansi",
+    "github.com/mitchellh/go-homedir",
+    "github.com/onsi/ginkgo",
+    "github.com/onsi/gomega",
+    "github.com/satori/go.uuid",
+    "gopkg.in/yaml.v2",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

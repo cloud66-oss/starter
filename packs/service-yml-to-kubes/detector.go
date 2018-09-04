@@ -3,8 +3,8 @@ package service_yml_to_kubes
 import (
 	"path/filepath"
 
-	"github.com/cloud66-oss/starter/packs"
 	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/packs"
 )
 
 type Detector struct {
@@ -14,5 +14,3 @@ type Detector struct {
 func (d *Detector) Detect(rootDir string) bool {
 	return common.FileExists(filepath.Join(rootDir, "service.yml"))
 }
-
-

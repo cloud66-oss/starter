@@ -1,9 +1,9 @@
 package docker_compose
 
-type Healthcheck struct{
-	Test []string
+type Healthcheck struct {
+	Test     []string
 	Interval string
-	Timeout string
-	Retries string
-	Disable bool
+	Timeout  string
+	Retries  string
+	Disable  bool
 }

@@ -3,10 +3,10 @@ package packs
 import (
 	"bufio"
 	"fmt"
+	"github.com/cloud66-oss/starter/common"
 	"os"
 	"path/filepath"
 	"strings"
-	"github.com/cloud66-oss/starter/common"
 )
 
 type AnalyzerBase struct {
@@ -16,8 +16,8 @@ type AnalyzerBase struct {
 	Environment  string
 	ShouldPrompt bool
 
-	GitURL 		string
-	GitBranch 	string
+	GitURL    string
+	GitBranch string
 
 	Messages common.Lister
 }
@@ -33,7 +33,7 @@ func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
 		} else {
 			return gitURL, gitBranch, buildRoot, nil
 		}
-	} 
+	}
 	if a.GitURL != "" && a.GitBranch != "" {
 		return a.GitURL, a.GitBranch, ".", nil
 	} else {
@@ -51,7 +51,7 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Dat
 			dbs = append(dbs, db)
 		}
 	}
-	
+
 	var message string
 	var defaultValue bool
 	if len(foundDbs) > 0 {
@@ -62,7 +62,6 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Dat
 		defaultValue = true
 	}
 
-	
 	if common.AskYesOrNo(message, defaultValue, a.ShouldPrompt) && a.ShouldPrompt {
 		common.PrintlnL1("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values")
 		common.PrintlnL1("  Example: 'mysql elasticsearch' ")
@@ -72,8 +71,8 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Dat
 		otherDbs, err := reader.ReadString('\n')
 		if err == nil {
 			listOtherDbs := strings.Fields(otherDbs)
-			for _,otherDb := range listOtherDbs { 
-				dbs = append(dbs, common.Database{Name: otherDb, DockerImage: otherDb})	
+			for _, otherDb := range listOtherDbs {
+				dbs = append(dbs, common.Database{Name: otherDb, DockerImage: otherDb})
 			}
 		}
 	}
@@ -96,7 +95,6 @@ func (a *AnalyzerBase) CheckNotSupportedPackages(packages *common.Lister) {
 
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {
 	services, err := b.analyzeProcfile()
-
 
 	if err != nil {
 		common.PrintlnError("Failed to parse Procfile due to %s", err.Error())

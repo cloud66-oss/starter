@@ -16,9 +16,8 @@ func (p *Pack) LanguageVersion() string {
 	return p.Analysis.LanguageVersion
 }
 
-
-func (p *Pack) FilesToBeAnalysed() [] string {
-	return []string{ "package.json", "Procfile", ".meteor/release"}
+func (p *Pack) FilesToBeAnalysed() []string {
+	return []string{"package.json", "Procfile", ".meteor/release"}
 }
 
 func (p *Pack) Framework() string {
@@ -30,7 +29,7 @@ func (p *Pack) FrameworkVersion() string {
 }
 
 func (p *Pack) GetSupportedLanguageVersions() []string {
-	if p.Analysis != nil {	
+	if p.Analysis != nil {
 		return p.Analysis.SupportedLanguageVersions
 	} else {
 		return common.GetAllowedNodeVersions()
@@ -53,8 +52,8 @@ func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool, gi
 			PackElement:  packs.PackElement{Pack: p},
 			RootDir:      rootDir,
 			ShouldPrompt: shouldPrompt,
-			GitURL: git_repo,
-			GitBranch: git_branch,
+			GitURL:       git_repo,
+			GitBranch:    git_branch,
 			Environment:  environment}}
 	p.Analysis, err = a.Analyze()
 	return err
@@ -94,7 +93,6 @@ func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shou
 	return w.Write(p.Analysis.DockerComposeYAMLContext)
 }
 
-
 func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 	common.PrintlnWarning("You can not generate a Kubernetes configuration file using this pack. Nothing to do.")
 	return nil
@@ -105,9 +103,9 @@ func (p *Pack) GetMessages() []string {
 }
 
 func (p *Pack) GetDatabases() []string {
-	return  p.Analysis.Databases
+	return p.Analysis.Databases
 }
 
 func (p *Pack) GetStartCommands() []string {
-	return  p.Analysis.ListOfStartCommands
+	return p.Analysis.ListOfStartCommands
 }

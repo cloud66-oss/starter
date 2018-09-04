@@ -1,8 +1,8 @@
 package php
 
 import (
-	"github.com/cloud66-oss/starter/packs"
 	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/packs"
 )
 
 type Pack struct {
@@ -15,7 +15,7 @@ func (p *Pack) Name() string {
 }
 
 func (p *Pack) FilesToBeAnalysed() []string {
-	return []string{"composer.json" }
+	return []string{"composer.json"}
 }
 
 func (p *Pack) LanguageVersion() string {

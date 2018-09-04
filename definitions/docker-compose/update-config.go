@@ -1,6 +1,6 @@
 package docker_compose
 
-type UpdateConfig struct{
+type UpdateConfig struct {
 	Parallelism int
-	Delay string
+	Delay       string
 }

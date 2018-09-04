@@ -2,14 +2,14 @@ package transform
 
 import (
 	"fmt"
-	"os"
-	"strings"
-	"strconv"
-	"gopkg.in/yaml.v2"
 	"github.com/cloud66-oss/starter/common"
-	"sort"
 	"github.com/cloud66-oss/starter/definitions/kubernetes"
 	"github.com/cloud66-oss/starter/definitions/service-yml"
+	"gopkg.in/yaml.v2"
+	"os"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 func finalFormat(file []byte) string {
@@ -195,7 +195,7 @@ func generateService(serviceType string, serviceSpecs service_yml.Service, servi
 	service := kubernetes.KubesService{}
 
 	service = kubernetes.KubesService{ApiVersion: "v1",
-		Kind:                                 "Service",
+		Kind: "Service",
 		Metadata: kubernetes.Metadata{
 			Name:   serviceName + "-sv" + strings.ToLower(serviceType[:1]),
 			Labels: serviceSpecs.Tags,
@@ -214,15 +214,15 @@ func setDbDeploymentPorts(dbName string) []kubernetes.Port {
 	return ports
 }
 
-func setDbServicePorts(dbName string) ([]kubernetes.Port) {
+func setDbServicePorts(dbName string) []kubernetes.Port {
 	_, ports := getExposedPorts(dbName)
 	return ports
 }
 
-func serviceToKubesCommand(command string) []string{
-	if command!=""{
+func serviceToKubesCommand(command string) []string {
+	if command != "" {
 		return []string{command}
-	}else{
+	} else {
 		return nil
 	}
 }
@@ -281,7 +281,7 @@ func appendNewPort(ports []kubernetes.Port, name string, port int, targetPort in
 	return ports, nodePort
 }
 
-func appendNewPortNoNodePort(ports []kubernetes.Port, name string, port int, targetPort int, protocol string, containerPort int) ([]kubernetes.Port) {
+func appendNewPortNoNodePort(ports []kubernetes.Port, name string, port int, targetPort int, protocol string, containerPort int) []kubernetes.Port {
 	ports = append(ports, kubernetes.Port{
 		Name:          name,
 		Port:          port,
@@ -354,21 +354,21 @@ func (k KubesTransformer) ComposeWriter(file []byte, deployments []kubernetes.Ku
 	return file
 }
 
-func getDbImage(dbName string) string{
+func getDbImage(dbName string) string {
 	var image string
 
-	switch dbName{
+	switch dbName {
 	case "mongodb":
 		dbName = "mongo"
 	case "postgresql":
 		dbName = "postgres"
 
 	}
-	image = dbName+":latest"
+	image = dbName + ":latest"
 	return image
 }
 
-func getServiceToKubesWarnings(s service_yml.Service){
+func getServiceToKubesWarnings(s service_yml.Service) {
 	if s.GitUrl != "" {
 		common.PrintlnWarning("Kubernetes format does not support \"git_repo\" at the moment")
 	}

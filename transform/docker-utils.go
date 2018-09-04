@@ -1,15 +1,15 @@
 package transform
 
 import (
-	"fmt"
-	"strings"
-	"os"
 	"bufio"
+	"fmt"
+	"os"
+	"strings"
 	"unicode"
 
+	"github.com/cloud66-oss/starter/common"
 	"github.com/cloud66-oss/starter/definitions/docker-compose"
 	"github.com/cloud66-oss/starter/definitions/service-yml"
-	"github.com/cloud66-oss/starter/common"
 	"gopkg.in/yaml.v2"
 	"strconv"
 )

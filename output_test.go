@@ -1,13 +1,13 @@
 package main_test
 
 import (
-	"io/ioutil"
-	"os"
-	"regexp"
 	"github.com/cloud66-oss/starter/common"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
+	"os"
 	"os/exec"
+	"regexp"
 )
 
 func runStarter() (string, error) {

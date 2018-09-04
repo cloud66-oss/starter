@@ -1,10 +1,10 @@
 package kubernetes
 
 import (
-	"os"
-	"io/ioutil"
-	"gopkg.in/yaml.v2"
 	"fmt"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
 
 	"github.com/cloud66-oss/starter/definitions/docker-compose"
 )

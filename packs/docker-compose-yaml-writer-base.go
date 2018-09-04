@@ -24,4 +24,3 @@ func (w *DockerComposeYAMLWriterBase) Write(context interface{}) error {
 
 	return w.removeBlankLines("docker-compose.yml")
 }
-

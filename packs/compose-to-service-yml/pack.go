@@ -1,9 +1,9 @@
 package compose_to_service_yml
 
 import (
-	"github.com/cloud66-oss/starter/packs"
 	"github.com/cloud66-oss/starter/common"
 	"github.com/cloud66-oss/starter/definitions/docker-compose"
+	"github.com/cloud66-oss/starter/packs"
 	"github.com/cloud66-oss/starter/transform"
 )
 
@@ -20,7 +20,7 @@ func (p *Pack) LanguageVersion() string {
 	return p.Analysis.LanguageVersion
 }
 
-func (p *Pack) FilesToBeAnalysed() [] string {
+func (p *Pack) FilesToBeAnalysed() []string {
 	return []string{"docker-compose.yml"}
 }
 
@@ -67,12 +67,12 @@ func (p *Pack) WriteDockerfile(templateDir string, outputDir string, shouldPromp
 func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldPrompt bool) error {
 
 	dockerBase := docker_compose.DockerCompose{}
-	dockerBase.UnmarshalFromFile(outputDir+"/docker-compose.yml")
+	dockerBase.UnmarshalFromFile(outputDir + "/docker-compose.yml")
 
 	d := transform.DockerComposeTransformer{Base: dockerBase}
 
 	serviceYml := d.ToServiceYml(p.Analysis.GitURL, p.Analysis.GitBranch, shouldPrompt, outputDir+"/docker-compose.yml")
-	serviceYml.MarshalToFile(outputDir+"/service.yml")
+	serviceYml.MarshalToFile(outputDir + "/service.yml")
 
 	return nil
 }

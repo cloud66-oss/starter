@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-type Analyzer struct{
+type Analyzer struct {
 	packs.AnalyzerBase
 	ServiceYml string
 }

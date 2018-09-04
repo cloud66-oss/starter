@@ -1,15 +1,15 @@
 package service_yml
 
 import (
-	"os"
-	"io/ioutil"
-	"gopkg.in/yaml.v2"
 	"fmt"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
 )
 
 type ServiceYml struct {
 	Services  map[string]Service `yaml:"services,omitempty"`
-	Databases []string `yaml:"databases,omitempty"`
+	Databases []string           `yaml:"databases,omitempty"`
 }
 
 func (s *ServiceYml) UnmarshalFromFile(path string) error {

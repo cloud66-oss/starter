@@ -1,11 +1,11 @@
 package docker_compose
 
 import (
-	"unicode"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 func getKeyValue(line string) (string, string) {

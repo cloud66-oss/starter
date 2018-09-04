@@ -1,8 +1,8 @@
 package ruby
 
 import (
-	"github.com/cloud66-oss/starter/packs"
 	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/packs"
 )
 
 type Pack struct {
@@ -19,7 +19,7 @@ func (p *Pack) LanguageVersion() string {
 }
 
 func (p *Pack) FilesToBeAnalysed() []string {
-	return []string{ "Gemfile", "Procfile", "config/database.yml" }
+	return []string{"Gemfile", "Procfile", "config/database.yml"}
 }
 
 func (p *Pack) Framework() string {
@@ -49,8 +49,8 @@ func (p *Pack) Analyze(rootDir string, environment string, shouldPrompt bool, gi
 			PackElement:  packs.PackElement{Pack: p},
 			RootDir:      rootDir,
 			ShouldPrompt: shouldPrompt,
-			GitURL: git_repo,
-			GitBranch: git_branch,
+			GitURL:       git_repo,
+			GitBranch:    git_branch,
 			Environment:  environment}}
 	p.Analysis, err = a.Analyze()
 	return err
@@ -99,9 +99,9 @@ func (p *Pack) GetMessages() []string {
 }
 
 func (p *Pack) GetDatabases() []string {
-	return []string {}
+	return []string{}
 }
 
 func (p *Pack) GetStartCommands() []string {
-	return  p.Analysis.ListOfStartCommands
+	return p.Analysis.ListOfStartCommands
 }

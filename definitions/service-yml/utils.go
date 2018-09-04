@@ -1,9 +1,9 @@
 package service_yml
 
 import (
-	"strconv"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func shortPortToLong(shortSyntax string) Port {

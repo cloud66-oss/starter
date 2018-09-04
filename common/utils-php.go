@@ -2,8 +2,8 @@ package common
 
 import (
 	// "fmt"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
 	//"strings"
 	"regexp"
 )
@@ -42,4 +42,3 @@ func GetFramework(composerJSONfile string, framework string) (bool, string) {
 func GetPHPDatabase(composerJSONfile string, databaseName string) (bool, string) {
 	return true, databaseName
 }
-

@@ -1,5 +1,5 @@
 package kubernetes
 
-type Handler struct{
+type Handler struct {
 	Exec Exec `yaml:"exec,omitempty"`
 }

@@ -1,6 +1,6 @@
 package docker_compose
 
-type Limits struct{
+type Limits struct {
 	Soft int
 	Hard int
 }

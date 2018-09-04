@@ -104,7 +104,7 @@ func (a *Analyzer) GuessFramework() string {
 	isRails, _ := common.GetGemVersion(a.Gemfile, "rails")
 	if isRails {
 		return "rails"
-	} 
+	}
 	return ""
 }
 

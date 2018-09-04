@@ -1,10 +1,10 @@
 package transform
 
 import (
-	"github.com/cloud66-oss/starter/definitions/service-yml"
-	"github.com/cloud66-oss/starter/definitions/kubernetes"
-	"github.com/cloud66-oss/starter/definitions/docker-compose"
 	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/definitions/docker-compose"
+	"github.com/cloud66-oss/starter/definitions/kubernetes"
+	"github.com/cloud66-oss/starter/definitions/service-yml"
 )
 
 type ServiceYmlTransformer struct {
@@ -38,7 +38,7 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 				},
 			}
 			deploy := kubernetes.KubesDeployment{ApiVersion: "extensions/v1beta1",
-				Kind:                                    "Deployment",
+				Kind: "Deployment",
 				Metadata: kubernetes.Metadata{
 					Name: dbName + "-deployment",
 				},

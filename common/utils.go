@@ -1,12 +1,12 @@
 package common
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
-	"bufio"
 
 	"github.com/hashicorp/go-version"
 	"github.com/mgutz/ansi"
