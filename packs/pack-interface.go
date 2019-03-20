@@ -17,4 +17,5 @@ type Pack interface {
 	GetStartCommands() []string
 	GetSupportedLanguageVersions() []string
 	SetSupportedLanguageVersions(versions []string)
+	StencilRepositoryPath() string
 }
