@@ -8,6 +8,10 @@ type Pack struct {
 	Analysis *Analysis
 }
 
+const (
+	nodeExpressStencilTemplatePath = "https://raw.githubusercontent.com/cloud66/stencils-node-express/master/" // this way we only have to add the filename. We should start by download the templates.json, do a couples of checks and after that download the stuff
+)
+
 func (p *Pack) Name() string {
 	return "node"
 }
@@ -108,4 +112,8 @@ func (p *Pack) GetDatabases() []string {
 
 func (p *Pack) GetStartCommands() []string {
 	return p.Analysis.ListOfStartCommands
+}
+
+func (p *Pack) StencilRepositoryPath() string {
+	return nodeExpressStencilTemplatePath
 }

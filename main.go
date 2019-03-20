@@ -478,18 +478,19 @@ func analyze(
 	if create_bundle {
 		//analyze the app, select the right template-repo, download the right stencils and helm releases, populate them with the rights values and create bundle file
 		var templateRepository string = pack.StencilRepositoryPath()
-		if templateRepository != nil && templateRepository != "" {
+		if templateRepository == "" {
+			//no stencil template defined for this pack, print an error and do nothing
+			fmt.Printf("Sorry but there is no stencil template for this language/framework yet\n")
+		}else{
 			//start download the template.json file
+			fmt.Printf("template repo path: %s \n", templateRepository)
+
+			
 
 
+			common.PrintlnL0("Now you can use the bundle file to create your formation with the following cx command:")
+			common.PrintlnL0("magical cx command that will do everything")
 		}
-
-
-
-
-		common.PrintlnL0("Now you can use the bundle file to create your formation with the following cx command:")
-		common.PrintlnL0("magical cx command that will do everything")
-
 	}
 
 	result.Ok = true

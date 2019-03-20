@@ -12,6 +12,11 @@ type Pack struct {
 	Analysis *Analysis
 }
 
+const (
+	StencilTemplatePath = "" //still not implemented
+)
+
+
 func (p *Pack) Name() string {
 	return "docker-compose"
 }
@@ -97,4 +102,8 @@ func (p *Pack) GetDatabases() []string {
 
 func (p *Pack) GetStartCommands() []string {
 	return []string{}
+}
+
+func (p *Pack) StencilRepositoryPath() string {
+	return StencilTemplatePath
 }

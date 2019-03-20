@@ -10,6 +10,10 @@ type Pack struct {
 	Analysis *Analysis
 }
 
+const (
+	StencilTemplatePath = "" //still not implemented
+)
+
 func (p *Pack) Name() string {
 	return "php"
 }
@@ -102,4 +106,8 @@ func (p *Pack) GetDatabases() []string {
 
 func (p *Pack) GetStartCommands() []string {
 	return p.Analysis.ListOfStartCommands
+}
+
+func (p *Pack) StencilRepositoryPath() string {
+	return StencilTemplatePath
 }
