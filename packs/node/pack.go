@@ -9,7 +9,7 @@ type Pack struct {
 }
 
 const (
-	nodeExpressStencilTemplatePath = "" //TODO: this way we only have to add the filename. We should start by download the templates.json, do a couples of checks and after that download the stuff
+	nodeExpressStencilTemplatePath = "https://raw.githubusercontent.com/cloud66/stencils-node-express/master/" // this way we only have to add the filename. We should start by download the templates.json, do a couples of checks and after that download the stuff
 )
 
 func (p *Pack) Name() string {
@@ -116,9 +116,4 @@ func (p *Pack) GetStartCommands() []string {
 
 func (p *Pack) StencilRepositoryPath() string {
 	return nodeExpressStencilTemplatePath
-}
-
-func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string, branch string) error {
-	common.PrintlnWarning("You can not generate the Skycap configuration files using this pack. Nothing to do.")
-	return nil
 }
