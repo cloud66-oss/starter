@@ -111,3 +111,8 @@ func (p *Pack) GetStartCommands() []string {
 func (p *Pack) StencilRepositoryPath() string {
 	return StencilTemplatePath
 }
+
+func (p *Pack) CreateSkycapFiles(outputDir string) error{
+	common.PrintlnWarning("You can not generate the Skycap configuration files using this pack. Nothing to do.")
+	return nil
+}
