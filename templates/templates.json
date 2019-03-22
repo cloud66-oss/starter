@@ -11,6 +11,9 @@
   ],
   "docker-compose-ymls" : [
     { "name": "docker-compose.yml.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/docker-compose.yml.template"}
+  ],
+  "bundle-manifest-jsons" : [
+    { "name": "bundle-manifest.json.template", "url":  "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/bundle-manifest.json.template"}
   ]
 }
 

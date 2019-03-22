@@ -1,0 +1,19 @@
+{
+    "version": "1",
+    "metadata": {
+        "app": "",
+        "timestamp": "2019-03-15T14:20:18.019975Z"
+    },
+    "uid": "",
+    "name": "",
+    "stencils": [],
+    "stencil_groups": [],
+    "base_template": {
+        "repo": "",
+        "branch": ""
+    },
+    "policies": [],
+    "helm_releases" : [],
+    "environment_variables": {},
+    "tags": []
+}
