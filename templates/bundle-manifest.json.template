@@ -1,21 +1,21 @@
 {
-    "version": "1",
-    "metadata": {
-        "app": "",
-        "timestamp": ""
-    },
-    "uid": "",
-    "name": "",
-    "stencil_groups": [],
-    "base_templates": [
-        {
-            "repo": "",
-            "branch": "",
-            "stencils": [],
-        },
-    ]
-    "policies": [],
-    "helm_releases" : [],
-    "configurations": [],
-    "tags": []
+  "version": "1",
+  "metadata": {
+    "app": "",
+    "timestamp": ""
+  },
+  "uid": "",
+  "name": "",
+  "stencil_groups": [],
+  "base_templates": [
+    {
+      "repo": "",
+      "branch": "",
+      "stencils": [],
+    }
+  ],
+  "policies": [],
+  "helm_releases" : [],
+  "configurations": [],
+  "tags": []
 }
