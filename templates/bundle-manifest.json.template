@@ -7,9 +7,7 @@
   "uid": "",
   "name": "",
   "stencil_groups": [],
-  "base_templates": [
-    { "repo": "", "branch": "","stencils": [] }
-  ],
+  "base_templates": [],
   "policies": [],
   "helm_releases" : [],
   "configurations": [],
