@@ -2,18 +2,20 @@
     "version": "1",
     "metadata": {
         "app": "",
-        "timestamp": "2019-03-15T14:20:18.019975Z"
+        "timestamp": ""
     },
     "uid": "",
     "name": "",
-    "stencils": [],
     "stencil_groups": [],
-    "base_template": {
-        "repo": "",
-        "branch": ""
-    },
+    "base_templates": [
+        {
+            "repo": "",
+            "branch": "",
+            "stencils": [],
+        },
+    ]
     "policies": [],
     "helm_releases" : [],
-    "environment_variables": {},
+    "configurations": [],
     "tags": []
 }
