@@ -8,11 +8,7 @@
   "name": "",
   "stencil_groups": [],
   "base_templates": [
-    {
-      "repo": "",
-      "branch": "",
-      "stencils": []
-    }
+    { "repo": "", "branch": "","stencils": [] }
   ],
   "policies": [],
   "helm_releases" : [],
