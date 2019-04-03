@@ -12,6 +12,7 @@ type Pack struct {
 
 const (
 	StencilTemplatePath = "" //still not implemented
+	templateRepositoryBranch = ""
 )
 
 func (p *Pack) Name() string {
@@ -69,11 +70,11 @@ func (p *Pack) GetMessages() []string {
 	return p.Analysis.Messages.Items
 }
 
-func (p *Pack) StencilRepositoryPath() string {
-	return StencilTemplatePath
+func (p *Pack) StencilRepositoryPath() (string, string) {
+	return StencilTemplatePath, templateRepositoryBranch
 }
 
-func (p *Pack) CreateSkycapFiles(outputDir string) error{
+func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string) error{
 	common.PrintlnWarning("You can not generate the Skycap configuration files using this pack. Nothing to do.")
 	return nil
 }

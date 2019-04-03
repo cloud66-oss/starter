@@ -1,10 +1,9 @@
 package ruby
 
 import (
-	"fmt"
+	"github.com/cloud66-oss/starter/bundle"
 	"github.com/cloud66-oss/starter/common"
 	"github.com/cloud66-oss/starter/packs"
-	"os"
 )
 
 type Pack struct {
@@ -14,6 +13,8 @@ type Pack struct {
 
 const (
 	rubyRailsStencilTemplatePath = "https://raw.githubusercontent.com/cloud66/stencils-ruby-rails/{{.branch}}/" // this way we only have to add the filename. We should start by download the templates.json, do a couples of checks and after that download the stuff
+	rubyRailsGithubURL = "https://github.com/cloud66/stencils-ruby-rails.git"
+	templateRepositoryBranch = "master"
 )
 
 func (p *Pack) Name() string {
@@ -100,37 +101,10 @@ func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 	return nil
 }
 
-func (p *Pack) CreateSkycapFiles(outputDir string) error{
-	var services = p.Analysis.ServiceYAMLContext.Services
-	var envVars = make(map[string]string)
-	for _, envVarArray := range services {
-		for _, envs := range envVarArray.EnvVars {
-			envVars[envs.Key] = envs.Value
-		}
-	}
-	fmt.Printf("Env vars array: %v \n", envVars)
-
-	//analyze the app, select the right template-repo, download the right stencils and helm releases, populate them with the rights values and create bundle file
-	var templateRepository string = p.StencilRepositoryPath()
-	if templateRepository == "" {
-		//no stencil template defined for this pack, print an error and do nothing
-		fmt.Printf("Sorry but there is no stencil template for this language/framework yet\n")
-	}else{
-		//start download the template.json file
-		fmt.Printf("template repo path: %s \n", templateRepository)
-		getStencilTemplates(templateRepository)
-		common.PrintlnL0("Now you can use the bundle file to create your formation with the following cx command:")
-		common.PrintlnL0("magical cx command that will do everything")
-	}
-
-
-
-
-
-
-	return nil
+func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string) error{
+	var templateRepository, branch = p.StencilRepositoryPath()
+	return bundle.CreateSkycapFiles(outputDir, templateDir, templateRepository, branch, p.Name(), rubyRailsGithubURL, p.Analysis.ServiceYAMLContext.Services, p.Analysis.ServiceYAMLContext.Dbs)
 }
-
 
 func (p *Pack) GetMessages() []string {
 	return p.Analysis.Messages.Items
@@ -144,29 +118,6 @@ func (p *Pack) GetStartCommands() []string {
 	return p.Analysis.ListOfStartCommands
 }
 
-func (p *Pack) StencilRepositoryPath() string {
-	return rubyRailsStencilTemplatePath
-}
-
-// downloading templates from github and putting them into homedir
-func getStencilTemplates(repoPath string) error {
-	tempDir := "./.skycap"
-	common.PrintlnL0("Checking templates in %s", tempDir)
-
-	//Create .bundle directory if it doesn't exist
-	err := os.MkdirAll(tempDir, 0777)
-	if err != nil {
-		return err
-	}
-
-	//Download templates.json file
-	manifest_path := repoPath+"templates.json"
-	down_err := common.DownloadSingleFile(tempDir, common.DownloadFile{URL: manifest_path, Name: "templates.json"}, "master")
-	if down_err != nil {
-		return down_err
-	}
-
-
-
-	return nil
+func (p *Pack) StencilRepositoryPath() (string, string) {
+	return rubyRailsStencilTemplatePath, templateRepositoryBranch
 }
