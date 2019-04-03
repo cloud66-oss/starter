@@ -401,16 +401,15 @@ func analyze(
 	}
 
 	if strings.Contains(generator, "skycap") {
-		_, err = os.Stat(".skycap/templates.json")
+		_, err = os.Stat(filepath.Join(path, filepath.Join("skycap", "manifest.json")))
 		if err == nil && !overwrite {
 			return nil, fmt.Errorf("Skycap files already exist. Use flag to overwrite.")
 		}
-		err = pack.CreateSkycapFiles("./.skycap")
+		err = pack.CreateSkycapFiles(path, templates)
 
 		if err != nil {
 			return nil, fmt.Errorf("Failed to write Skycap configuration files due to: %s", err.Error())
 		}
-
 	}
 
 	if len(pack.GetMessages()) > 0 {
