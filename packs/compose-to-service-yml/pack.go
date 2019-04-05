@@ -13,10 +13,9 @@ type Pack struct {
 }
 
 const (
-	StencilTemplatePath = "" //still not implemented
+	StencilTemplatePath      = "" //TODO: still not implemented
 	templateRepositoryBranch = ""
 )
-
 
 func (p *Pack) Name() string {
 	return "docker-compose"
@@ -109,7 +108,7 @@ func (p *Pack) StencilRepositoryPath() (string, string) {
 	return StencilTemplatePath, templateRepositoryBranch
 }
 
-func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string) error{
+func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string) error {
 	common.PrintlnWarning("You can not generate the Skycap configuration files using this pack. Nothing to do.")
 	return nil
 }

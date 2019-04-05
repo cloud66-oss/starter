@@ -84,7 +84,7 @@ func init() {
 	-g dockerfile: only the Dockerfile
 	-g docker-compose: only the docker-compose.yml + Dockerfile
 	-g service: only the service.yml + Dockerfile (cloud 66 specific)
-	-g skycap: only the skycap files (cloud66 specific)
+	-g skycap: only the skycap files (cloud 66 specific)
 	-g dockerfile,service,docker-compose,skycap (all files)
 	-g kube: starter will generate a kubernetes deployment from service.yml`)
 
@@ -216,7 +216,7 @@ func main() {
 		flagGenerator,
 		"",
 		"",
-		flagRegistry,)
+		flagRegistry)
 
 	if err != nil {
 		common.PrintError(err.Error())
@@ -252,7 +252,7 @@ func analyze(
 	git_repo string,
 	git_branch string,
 	use_registry bool,
-	) (*analysisResult, error) {
+) (*analysisResult, error) {
 
 	if path == "" {
 		pwd, err := os.Getwd()
@@ -264,7 +264,7 @@ func analyze(
 
 	result := &analysisResult{Ok: false}
 
-	// if templateFolder is specified we're goi...........ng to use that otherwise download
+	// if templateFolder is specified we're going to use that otherwise download
 	if templates == "" {
 		// Luca: Download of templates, From where??
 		homeDir, _ := homedir.Dir()
@@ -401,14 +401,14 @@ func analyze(
 	}
 
 	if strings.Contains(generator, "skycap") {
-		_, err = os.Stat(filepath.Join(path, filepath.Join("skycap", "manifest.json")))
+		_, err = os.Stat("starter.bundle")
 		if err == nil && !overwrite {
-			return nil, fmt.Errorf("Skycap files already exist. Use flag to overwrite.")
+			return nil, fmt.Errorf("Starter bundle file already exist. Use flag to overwrite.")
 		}
 		err = pack.CreateSkycapFiles(path, templates)
 
 		if err != nil {
-			return nil, fmt.Errorf("Failed to write Skycap configuration files due to: %s", err.Error())
+			return nil, fmt.Errorf("Failed to write Starter bundle file due to: %s", err.Error())
 		}
 	}
 
