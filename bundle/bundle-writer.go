@@ -11,74 +11,105 @@ import (
 )
 
 type ManifestBundle struct {
-    Version        string                   `json:"version"`
-    Metadata       *Metadata                `json:"metadata"`
-    Uid            string                   `json:"uid"`
-    Name           string                   `json:"name"`
-    StencilGroups  []*BundleStencilGroup    `json:"stencil_groups"`
-    BaseTemplates  []*BundleBaseTemplates   `json:"base_template"`
-    Policies       []*BundlePolicy          `json:"policies"`
-    Tags           []string                 `json:"tags"`
-    HelmReleases   []*BundleHelmRelease     `json:"helm_releases"`
-    Configurations []string                 `json:"configuration"`
+	Version        string                 `json:"version"`
+	Metadata       *Metadata              `json:"metadata"`
+	UID            string                 `json:"uid"`
+	Name           string                 `json:"name"`
+	StencilGroups  []*BundleStencilGroup  `json:"stencil_groups"`
+	BaseTemplates  []*BundleBaseTemplates `json:"base_template"`
+	Policies       []*BundlePolicy        `json:"policies"`
+	Tags           []string               `json:"tags"`
+	HelmReleases   []*BundleHelmRelease   `json:"helm_releases"`
+	Configurations []string               `json:"configuration"`
 }
 
-
 type BundleHelmRelease struct {
-    Name             string `json:"repo"`
-    Version          string `json:"version"`
-    RepositoryURL    string `json:"repository_url"`
-	ValuesFile       string `json:"values_file"`
+	Name          string `json:"repo"`
+	Version       string `json:"version"`
+	RepositoryURL string `json:"repository_url"`
+	ValuesFile    string `json:"values_file"`
 }
 
 type BundleConfiguration struct {
-    Repo   string `json:"repo"`
-    Branch string `json:"branch"`
+	Repo   string `json:"repo"`
+	Branch string `json:"branch"`
 }
 
 type BundleBaseTemplates struct {
-    Repo     string `json:"repo"`
-    Branch   string `json:"branch"`
-    Stencils []*BundleStencil `json:"stencils"`
+	Repo     string           `json:"repo"`
+	Branch   string           `json:"branch"`
+	Stencils []*BundleStencil `json:"stencils"`
 }
 
 type Metadata struct {
-    App         string     `json:"app"`
-    Timestamp   time.Time  `json:"timestamp"`
-    Annotations []string   `json:"annotations"`
+	App         string    `json:"app"`
+	Timestamp   time.Time `json:"timestamp"`
+	Annotations []string  `json:"annotations"`
 }
 
 type BundleStencil struct {
-    Uid              string   `json:"uid"`
-    Filename         string   `json:"filename"`
-    TemplateFilename string   `json:"template_filename"`
-    ContextID        string   `json:"context_id"`
-    Status           int      `json:"status"`
-    Tags             []string `json:"tags"`
-    Sequence         int      `json:"sequence"`
+	UID              string   `json:"uid"`
+	Filename         string   `json:"filename"`
+	TemplateFilename string   `json:"template_filename"`
+	ContextID        string   `json:"context_id"`
+	Status           int      `json:"status"`
+	Tags             []string `json:"tags"`
+	Sequence         int      `json:"sequence"`
 }
 
 type BundleStencilGroup struct {
-    Uid  string   `json:"uid"`
-    Name string   `json:"name"`
-    Tags []string `json:"tags"`
+	UID  string   `json:"uid"`
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
 }
 
 type BundlePolicy struct {
-    Uid      string   `json:"uid"`
-    Name     string   `json:"name"`
-    Selector string   `json:"selector"`
-    Tags     []string `json:"tags"`
+	UID      string   `json:"uid"`
+	Name     string   `json:"name"`
+	Selector string   `json:"selector"`
+	Tags     []string `json:"tags"`
 }
 
+type TemplateJSON struct {
+	Version     string           `json:"version"`
+	Public      bool             `json:"public"`
+	Name        string           `json:"name"`
+	Icon        string           `json:"icon"`
+	LongName    string           `json:"long_name"`
+	Description string           `json:"description"`
+	Templates   *TemplatesStruct `json:"templates"`
+}
+
+type TemplatesStruct struct {
+	Stencils     []*StencilTemplate      `json:"stencils"`
+	Policies     []*PolicyTemplate       `json:"policies"`
+	Transformers []*TransformersTemplate `json:"transformers"`
+}
+
+type StencilTemplate struct {
+	Name              string   `json:"name"`
+	FilenamePattern   string   `json:"filename_pattern"`
+	Filename          string   `json:"filename"`
+	Description       string   `json:"description"`
+	ContextType       string   `json:"context_type"`
+	Tags              []string `json:"tags"`
+	PreferredSequence int      `json:"preferred_sequence"`
+	Suggested         bool     `json:"suggested"`
+	MinUsage          int      `json:"min_usage"`
+	MaxUsage          int      `json:"max_usage"`
+}
+
+type PolicyTemplate struct{}
+
+type TransformersTemplate struct{}
 
 func CreateSkycapFiles(outputDir string,
-						templateRepository string,
-						branch string,
-						pack_name string,
-						githubURL string,
-						services []*common.Service,
-						databases []common.Database) error {
+	templateRepository string,
+	branch string,
+	packName string,
+	githubURL string,
+	services []*common.Service,
+	databases []common.Database) error {
 
 	if templateRepository == "" {
 		//no stencil template defined for this pack, print an error and do nothing
@@ -86,17 +117,20 @@ func CreateSkycapFiles(outputDir string,
 		return nil
 	}
 	//Create .bundle directory structure if it doesn't exist
-	skycapFolder := filepath.Join(outputDir, "skycap")
+	tempFolder := os.TempDir()
+	skycapFolder := filepath.Join(tempFolder, "skycap")
+	defer os.RemoveAll(skycapFolder)
 	err := createBundleFolderStructure(skycapFolder)
-	defer os.RemoveAll(filepath.Join(skycapFolder, "temp"))
-
+	if err != nil {
+		return err
+	}
 	//create manifest.json file and start filling
 	manifestFile, err := loadManifest()
 	if err != nil {
 		return err
 	}
 
-	manifestFile, err = saveEnvVars(pack_name, getEnvVars(services, databases), manifestFile, skycapFolder)
+	manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, skycapFolder)
 	if err != nil {
 		return err
 	}
@@ -116,33 +150,45 @@ func CreateSkycapFiles(outputDir string,
 		return err
 	}
 
-	manifestFile, err = addMetadatas(manifestFile)
+	manifestFile, err = addMetadata(manifestFile)
 
 	if err != nil {
 		return err
 	}
 
 	err = saveManifest(skycapFolder, manifestFile)
-	if err !=nil {
+	if err != nil {
 		return err
 	}
+
+	// tarball
+	err = os.RemoveAll(filepath.Join(skycapFolder, "temp"))
+	if err != nil {
+		common.PrintError(err.Error())
+	}
+
+	err = common.Tar(skycapFolder, filepath.Join(outputDir, "starter.bundle"))
+	if err != nil {
+		common.PrintError(err.Error())
+	}
+	fmt.Printf("Bundle is saved to starter.bundle\n")
+
 	return err
 }
 
 // downloading templates from github and putting them into homedir
-func getStencilTemplateFile(templateRepository string, skycapFolder string, filename string, branch string) (string, error) {
+func getStencilTemplateFile(templateRepository string, tempFolder string, filename string, branch string) (string, error) {
 
 	//Download templates.json file
-	manifest_path := templateRepository + filename // don't need to use filepath since it's a URL
-	temp_folder := filepath.Join(skycapFolder, "temp")
-	down_err := common.DownloadSingleFile(temp_folder, common.DownloadFile{URL: manifest_path, Name: filename}, branch)
-	if down_err != nil {
-		return "", down_err
+	manifestPath := templateRepository + filename // don't need to use filepath since it's a URL
+	downErr := common.DownloadSingleFile(tempFolder, common.DownloadFile{URL: manifestPath, Name: filename}, branch)
+	if downErr != nil {
+		return "", downErr
 	}
-	return filepath.Join(temp_folder, filename), nil
+	return filepath.Join(tempFolder, filename), nil
 }
 
-func getEnvVars (servs []*common.Service, databases []common.Database) (map[string]string) {
+func getEnvVars(servs []*common.Service, databases []common.Database) map[string]string {
 	var envas = make(map[string]string)
 	for _, envVarArray := range servs {
 		for _, envs := range envVarArray.EnvVars {
@@ -153,7 +199,7 @@ func getEnvVars (servs []*common.Service, databases []common.Database) (map[stri
 }
 
 func createBundleFolderStructure(baseFolder string) error {
-	var folders = [6]string{"stencils", "policies", "stencil-group", "helm-releases", "temp", "configurations"}
+	var folders = [5]string{"stencils", "policies", "stencil-group", "helm-releases", "configurations"}
 	for _, subfolder := range folders {
 		folder := filepath.Join(baseFolder, subfolder)
 		err := os.MkdirAll(folder, 0777)
@@ -165,67 +211,67 @@ func createBundleFolderStructure(baseFolder string) error {
 }
 
 func getRequiredStencils(templateRepository string,
-						branch string,
-						outputDir string,
-						services []*common.Service,
-						skycapFolder string,
-						manifestFile ManifestBundle,
-						githubURL string) 	(ManifestBundle, error){
+	branch string,
+	outputDir string,
+	services []*common.Service,
+	skycapFolder string,
+	manifestFile *ManifestBundle,
+	githubURL string) (*ManifestBundle, error) {
 
+	templateFolder := filepath.Join(os.TempDir(), "temp")
+	err := os.MkdirAll(templateFolder, 0777)
+	defer os.RemoveAll(templateFolder)
+	if err != nil {
+		return nil, err
+	}
 	//start download the template.json file
-	tjPathfile, err := getStencilTemplateFile(templateRepository, skycapFolder, "templates.json", branch)
+	tjPathfile, err := getStencilTemplateFile(templateRepository, templateFolder, "templates.json", branch)
 	if err != nil {
 		fmt.Printf("Error while downloading the templates.json. err: %s", err)
-		return ManifestBundle{}, err
+		return nil, err
 	}
 	// open the template.json file and start downloading the stencils
-	templateJson, err := os.Open(tjPathfile)
+	templateJSON, err := os.Open(tjPathfile)
 	if err != nil {
-		return ManifestBundle{}, err
+		return nil, err
 	}
 
-	templatesJsonData, err := ioutil.ReadAll(templateJson)
+	templatesJSONData, err := ioutil.ReadAll(templateJSON)
 	if err != nil {
-		return ManifestBundle{}, err
+		return nil, err
 	}
 
-	var templJson map[string]interface{}
-	err = json.Unmarshal([]byte(templatesJsonData), &templJson)
+	var templJSON TemplateJSON
+	err = json.Unmarshal([]byte(templatesJSONData), &templJSON)
 	if err != nil {
-		return ManifestBundle{}, err
+		return nil, err
 	}
 
 	var manifestStencils = make([]*BundleStencil, 0)
-
-	for i, data := range templJson {
-		if i =="templates" {
-			for _, stencils := range data.([]interface{}) {
-				stencil := stencils.(map[string]interface{})
-				if stencil["min_usage"].(float64) > 0 {
-					if stencil["context_type"] == "service" {
-						for _, service := range services {
-							manifestFile, manifestStencils, err = downloadAndAddStencil(
-								service.Name,
-								stencil,
-								manifestFile,
-								skycapFolder,
-								templateRepository,
-								branch,
-								manifestStencils)
-							// create entry in manifest file with formatted name
-							// download and rename stencil file
-						}
-					}else {
-						manifestFile, manifestStencils, err = downloadAndAddStencil(
-							"",
-							stencil,
-							manifestFile,
-							skycapFolder,
-							templateRepository,
-							branch,
-							manifestStencils)
-					}
+	for _, stencil := range templJSON.Templates.Stencils {
+		if stencil.MinUsage > 0 {
+			if stencil.ContextType == "service" {
+				for _, service := range services {
+					manifestFile, manifestStencils, err = downloadAndAddStencil(
+						service.Name,
+						stencil,
+						manifestFile,
+						skycapFolder,
+						templateRepository,
+						branch,
+						manifestStencils)
+					// create entry in manifest file with formatted name
+					// download and rename stencil file
 				}
+			} else {
+				manifestFile, manifestStencils, err = downloadAndAddStencil(
+					"",
+					stencil,
+					manifestFile,
+					skycapFolder,
+					templateRepository,
+					branch,
+					manifestStencils)
 			}
 		}
 	}
@@ -234,29 +280,28 @@ func getRequiredStencils(templateRepository string,
 	newTemplate.Branch = branch
 	newTemplate.Stencils = manifestStencils
 
-	manifestFile.BaseTemplates =  append(manifestFile.BaseTemplates, &newTemplate)
+	manifestFile.BaseTemplates = append(manifestFile.BaseTemplates, &newTemplate)
 
 	return manifestFile, nil
 }
 
-
-func loadManifest() (ManifestBundle, error) {
-	var manifest ManifestBundle
-	manifest.Version = "1"
-	manifest.Metadata = nil
-	manifest.Uid = ""
-	manifest.Name = ""
-	manifest.StencilGroups = make([]*BundleStencilGroup, 0)
-	manifest.BaseTemplates = make([]*BundleBaseTemplates, 0)
-	manifest.Policies = make([]*BundlePolicy, 0)
-	manifest.Tags = make([]string, 0)
-	manifest.HelmReleases = make([]*BundleHelmRelease, 0)
-	manifest.Configurations = make([]string, 0)
-
+func loadManifest() (*ManifestBundle, error) {
+	manifest := &ManifestBundle{
+		Version:        "1",
+		Metadata:       nil,
+		UID:            "",
+		Name:           "",
+		StencilGroups:  make([]*BundleStencilGroup, 0),
+		BaseTemplates:  make([]*BundleBaseTemplates, 0),
+		Policies:       make([]*BundlePolicy, 0),
+		Tags:           make([]string, 0),
+		HelmReleases:   make([]*BundleHelmRelease, 0),
+		Configurations: make([]string, 0),
+	}
 	return manifest, nil
 }
 
-func saveManifest(skycapFolder string, content ManifestBundle) error {
+func saveManifest(skycapFolder string, content *ManifestBundle) error {
 	out, err := json.MarshalIndent(content, "", "  ")
 	if err != nil {
 		return err
@@ -265,71 +310,72 @@ func saveManifest(skycapFolder string, content ManifestBundle) error {
 	return ioutil.WriteFile(manifestPath, out, 0600)
 }
 
-func saveEnvVars(prefix string, envVars map[string]string , manifestFile ManifestBundle, skycapFolder string) (ManifestBundle, error) {
-	filename := prefix+"-config"
-	vars_path := filepath.Join(filepath.Join(skycapFolder,"configurations"), prefix+"-config")
+func saveEnvVars(prefix string, envVars map[string]string, manifestFile *ManifestBundle, skycapFolder string) (*ManifestBundle, error) {
+	filename := prefix + "-config"
+	varsPath := filepath.Join(filepath.Join(skycapFolder, "configurations"), prefix+"-config")
 	var fileOut string
 	for key, value := range envVars {
-		fileOut = fileOut+key+"="+value+"\n"
+		fileOut = fileOut + key + "=" + value + "\n"
 	}
-	err := ioutil.WriteFile(vars_path, []byte(fileOut), 0600)
-	if err!=nil {
-		return ManifestBundle{}, err
+	err := ioutil.WriteFile(varsPath, []byte(fileOut), 0600)
+	if err != nil {
+		return nil, err
 	}
 	var configs = manifestFile.Configurations
-	manifestFile.Configurations = append(configs,filename)
+	manifestFile.Configurations = append(configs, filename)
 	return manifestFile, nil
 }
 
 func downloadAndAddStencil(context string,
-							stencil map[string]interface{},
-							manifestFile ManifestBundle,
-							skycapFolder string,
-							templateRepository string,
-							branch string,
-							manifestStencils []*BundleStencil)	 (ManifestBundle, []*BundleStencil, error) {
+	stencil *StencilTemplate,
+	manifestFile *ManifestBundle,
+	skycapFolder string,
+	templateRepository string,
+	branch string,
+	manifestStencils []*BundleStencil) (*ManifestBundle, []*BundleStencil, error) {
 	var filename = ""
 	if context != "" {
-		filename = context+"_"
+		filename = context + "_"
 	}
-	filename = filename + stencil["filename"].(string)
+	filename = filename + stencil.Filename
 
 	//download the stencil file
-	stencil_path := templateRepository + stencil["filename"].(string)// don't need to use filepath since it's a URL
-	stencils_folder := filepath.Join(skycapFolder, "stencils")
-	down_err := common.DownloadSingleFile(stencils_folder, common.DownloadFile{URL: stencil_path, Name: filename}, branch)
-	if down_err != nil {
-		return ManifestBundle{}, nil, down_err
+	stencilPath := templateRepository + "stencils/" + stencil.Filename // don't need to use filepath since it's a URL
+	stencilsFolder := filepath.Join(skycapFolder, "stencils")
+	downErr := common.DownloadSingleFile(stencilsFolder, common.DownloadFile{URL: stencilPath, Name: filename}, branch)
+	if downErr != nil {
+		return nil, nil, downErr
 	}
 
 	// Add the entry to the manifest file
 	var tempStencil BundleStencil
-	tempStencil.Uid= ""
+	tempStencil.UID = ""
 	tempStencil.Filename = filename
-	tempStencil.TemplateFilename = stencil["filename"].(string)
+	tempStencil.TemplateFilename = stencil.Filename
 	tempStencil.ContextID = context
 	tempStencil.Status = 2 // it means that the stencils still need to be deployed
 	tempStencil.Tags = []string{"starter"}
-	tempStencil.Sequence = int(stencil["preferred_sequence"].(float64))
+	tempStencil.Sequence = stencil.PreferredSequence
 
 	manifestStencils = append(manifestStencils, &tempStencil)
 
 	return manifestFile, manifestStencils, nil
 }
 
-func addMetadatas(manifestFile ManifestBundle) (ManifestBundle, error) {
-	var metadata Metadata
-	metadata.Annotations = []string{"Generated by Cloud66 starter"}
-	metadata.App = "starter"
-	metadata.Timestamp = time.Now().UTC()
-	manifestFile.Metadata = &metadata
+func addMetadata(manifestFile *ManifestBundle) (*ManifestBundle, error) {
+	var metadata = &Metadata{
+		Annotations: []string{"Generated by Cloud 66 starter"},
+		App:         "starter",
+		Timestamp:   time.Now().UTC(),
+	}
+	manifestFile.Metadata = metadata
 	manifestFile.Name = "starter-formation"
 	manifestFile.Tags = []string{"starter"}
 	return manifestFile, nil
 }
 
-func addDatabase(manifestFile ManifestBundle, databases []common.Database) (ManifestBundle, error) {
-	var helm_releases = make([]*BundleHelmRelease, 0)
+func addDatabase(manifestFile *ManifestBundle, databases []common.Database) (*ManifestBundle, error) {
+	var helmReleases = make([]*BundleHelmRelease, 0)
 	var release BundleHelmRelease
 	for _, db := range databases {
 		switch db.Name {
@@ -345,8 +391,8 @@ func addDatabase(manifestFile ManifestBundle, databases []common.Database) (Mani
 		}
 		release.RepositoryURL = "https://kubernetes-charts.storage.googleapis.com/"
 		release.ValuesFile = ""
-		helm_releases = append(helm_releases, &release)
+		helmReleases = append(helmReleases, &release)
 	}
-	manifestFile.HelmReleases = helm_releases
+	manifestFile.HelmReleases = helmReleases
 	return manifestFile, nil
 }
