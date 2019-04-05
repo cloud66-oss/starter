@@ -10,6 +10,11 @@ type Pack struct {
 	Analysis *Analysis
 }
 
+const (
+	StencilTemplatePath      = "" //TODO: still not implemented
+	templateRepositoryBranch = ""
+)
+
 func (p *Pack) Name() string {
 	return "php"
 }
@@ -102,4 +107,13 @@ func (p *Pack) GetDatabases() []string {
 
 func (p *Pack) GetStartCommands() []string {
 	return p.Analysis.ListOfStartCommands
+}
+
+func (p *Pack) StencilRepositoryPath() (string, string) {
+	return StencilTemplatePath, templateRepositoryBranch
+}
+
+func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string) error {
+	common.PrintlnWarning("You can not generate the Skycap configuration files using this pack. Nothing to do.")
+	return nil
 }

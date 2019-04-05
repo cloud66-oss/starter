@@ -1,16 +1,6 @@
 package main
 
-import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"net/http"
-	"time"
-
-	"github.com/cloud66-oss/starter/common"
-)
-
+/*
 func fetch(url string, mod *time.Time) (io.ReadCloser, error) {
 	common.PrintlnL2("Downloading from %s", url)
 
@@ -50,3 +40,4 @@ func fetchJSON(url string, mod *time.Time, v interface{}) error {
 	defer r.Close()
 	return json.NewDecoder(r).Decode(v)
 }
+*/

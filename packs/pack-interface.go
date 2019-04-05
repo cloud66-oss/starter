@@ -17,4 +17,6 @@ type Pack interface {
 	GetStartCommands() []string
 	GetSupportedLanguageVersions() []string
 	SetSupportedLanguageVersions(versions []string)
+	CreateSkycapFiles(outputDir string, templateDir string) error
+	StencilRepositoryPath() (string, string)
 }

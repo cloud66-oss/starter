@@ -10,7 +10,6 @@ import (
 	"github.com/getsentry/raven-go"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/mitchellh/go-homedir"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/signal"
@@ -19,11 +18,6 @@ import (
 	"runtime"
 	"strings"
 )
-
-type downloadFile struct {
-	URL  string `json:"url"`
-	Name string `json:"name"`
-}
 
 type analysisResult struct {
 	Ok                        bool
@@ -44,13 +38,6 @@ type analysisResult struct {
 	DeployCommands []string
 }
 
-type templateDefinition struct {
-	Version           string         `json:"version"`
-	Dockerfiles       []downloadFile `json:"dockerfiles"`
-	ServiceYmls       []downloadFile `json:"service-ymls"`
-	DockerComposeYmls []downloadFile `json:"docker-compose-ymls"`
-}
-
 var (
 	flagPath        string
 	flagNoPrompt    bool
@@ -63,7 +50,6 @@ var (
 	flagConfig      string
 	flagDaemon      bool
 	flagRegistry    bool
-
 	//flags are gone
 
 	config = &Config{}
@@ -78,7 +64,7 @@ var (
 	dockerComposeYAMLTemplateDir string
 )
 
-const (
+const ( // Luca: Add here the base repository path for the stencils template
 	templatePath = "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/templates.json"
 )
 
@@ -98,7 +84,8 @@ func init() {
 	-g dockerfile: only the Dockerfile
 	-g docker-compose: only the docker-compose.yml + Dockerfile
 	-g service: only the service.yml + Dockerfile (cloud 66 specific)
-	-g dockerfile,service,docker-compose (all files)
+	-g skycap: only the skycap files (cloud 66 specific)
+	-g dockerfile,service,docker-compose,skycap (all files)
 	-g kube: starter will generate a kubernetes deployment from service.yml`)
 
 	//sentry DSN setup
@@ -106,11 +93,11 @@ func init() {
 }
 
 // downloading templates from github and putting them into homedir
-func getTempaltes(tempDir string) error {
+func GetTemplates(tempDir string) error {
 	common.PrintlnL0("Checking templates in %s", tempDir)
 
-	var tv templateDefinition
-	err := fetchJSON(strings.Replace(templatePath, "{{.branch}}", flagBranch, -1), nil, &tv)
+	var tv common.TemplateDefinition
+	err := common.FetchJSON(strings.Replace(templatePath, "{{.branch}}", flagBranch, -1), nil, &tv)
 	if err != nil {
 		return err
 	}
@@ -124,7 +111,7 @@ func getTempaltes(tempDir string) error {
 			return err
 		}
 
-		err = downloadTemplates(tempDir, tv)
+		err = common.DownloadTemplates(tempDir, tv, templatePath, flagBranch)
 		if err != nil {
 			return err
 		}
@@ -135,7 +122,7 @@ func getTempaltes(tempDir string) error {
 	if err != nil {
 		return err
 	}
-	var localTv templateDefinition
+	var localTv common.TemplateDefinition
 	err = json.Unmarshal(templatesLocal, &localTv)
 	if err != nil {
 		return err
@@ -145,63 +132,12 @@ func getTempaltes(tempDir string) error {
 	if localTv.Version != tv.Version {
 		common.PrintlnL2("Newer templates found. Downloading them now")
 		// they are different, we need to download the new ones
-		err = downloadTemplates(tempDir, tv)
+		err = common.DownloadTemplates(tempDir, tv, templatePath, flagBranch)
 		if err != nil {
 			return err
 		}
 	} else {
 		common.PrintlnL1("Local templates are up to date")
-	}
-
-	return nil
-}
-
-func downloadTemplates(tempDir string, td templateDefinition) error {
-	err := downloadSingleFile(tempDir, downloadFile{URL: strings.Replace(templatePath, "{{.branch}}", flagBranch, -1), Name: "templates.json"})
-	if err != nil {
-		return err
-	}
-
-	for _, temp := range td.Dockerfiles {
-		err := downloadSingleFile(tempDir, temp)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, temp := range td.ServiceYmls {
-		err := downloadSingleFile(tempDir, temp)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, temp := range td.DockerComposeYmls {
-		err := downloadSingleFile(tempDir, temp)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func downloadSingleFile(tempDir string, temp downloadFile) error {
-	r, err := fetch(strings.Replace(temp.URL, "{{.branch}}", flagBranch, -1), nil)
-	if err != nil {
-		return err
-	}
-	defer r.Close()
-
-	output, err := os.Create(filepath.Join(tempDir, temp.Name))
-	if err != nil {
-		return err
-	}
-	defer output.Close()
-
-	_, err = io.Copy(output, r)
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -330,11 +266,12 @@ func analyze(
 
 	// if templateFolder is specified we're going to use that otherwise download
 	if templates == "" {
+		// Luca: Download of templates, From where??
 		homeDir, _ := homedir.Dir()
 
 		templates = filepath.Join(homeDir, ".starter")
 		if updateTemplates {
-			err := getTempaltes(templates)
+			err := GetTemplates(templates)
 			if err != nil {
 				return nil, fmt.Errorf("Failed to download latest templates due to %s", err.Error())
 			}
@@ -463,13 +400,24 @@ func analyze(
 		}
 	}
 
+	if strings.Contains(generator, "skycap") {
+		_, err = os.Stat("starter.bundle")
+		if err == nil && !overwrite {
+			return nil, fmt.Errorf("Starter bundle file already exist. Use flag to overwrite.")
+		}
+		err = pack.CreateSkycapFiles(path, templates)
+
+		if err != nil {
+			return nil, fmt.Errorf("Failed to write Starter bundle file due to: %s", err.Error())
+		}
+	}
+
 	if len(pack.GetMessages()) > 0 {
 		for _, warning := range pack.GetMessages() {
 			result.Warnings = append(result.Warnings, warning)
 		}
 	}
 
-	result.Ok = true
 	result.Language = pack.Name()
 	result.LanguageVersion = pack.LanguageVersion()
 	result.Framework = pack.Framework()
@@ -479,6 +427,7 @@ func analyze(
 	result.SupportedLanguageVersions = pack.GetSupportedLanguageVersions()
 	result.BuildCommands = []string{}
 	result.DeployCommands = []string{}
+	result.Ok = true
 
 	return result, nil
 }
