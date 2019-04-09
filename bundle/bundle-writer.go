@@ -36,6 +36,7 @@ type BundleConfiguration struct {
 }
 
 type BundleBaseTemplates struct {
+	Name     string           `json:"name"`
 	Repo     string           `json:"repo"`
 	Branch   string           `json:"branch"`
 	Stencils []*BundleStencil `json:"stencils"`
@@ -118,9 +119,9 @@ func CreateSkycapFiles(outputDir string,
 	}
 	//Create .bundle directory structure if it doesn't exist
 	tempFolder := os.TempDir()
-	skycapFolder := filepath.Join(tempFolder, "skycap")
-	defer os.RemoveAll(skycapFolder)
-	err := createBundleFolderStructure(skycapFolder)
+	bundleFolder := filepath.Join(tempFolder, "bundle")
+	defer os.RemoveAll(bundleFolder)
+	err := createBundleFolderStructure(bundleFolder)
 	if err != nil {
 		return err
 	}
@@ -130,7 +131,7 @@ func CreateSkycapFiles(outputDir string,
 		return err
 	}
 
-	manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, skycapFolder)
+	manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, bundleFolder)
 	if err != nil {
 		return err
 	}
@@ -142,7 +143,7 @@ func CreateSkycapFiles(outputDir string,
 		branch,
 		outputDir,
 		services,
-		skycapFolder,
+		bundleFolder,
 		manifestFile,
 		githubURL)
 
@@ -156,18 +157,18 @@ func CreateSkycapFiles(outputDir string,
 		return err
 	}
 
-	err = saveManifest(skycapFolder, manifestFile)
+	err = saveManifest(bundleFolder, manifestFile)
 	if err != nil {
 		return err
 	}
 
 	// tarball
-	err = os.RemoveAll(filepath.Join(skycapFolder, "temp"))
+	err = os.RemoveAll(filepath.Join(bundleFolder, "temp"))
 	if err != nil {
 		common.PrintError(err.Error())
 	}
 
-	err = common.Tar(skycapFolder, filepath.Join(outputDir, "starter.bundle"))
+	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))
 	if err != nil {
 		common.PrintError(err.Error())
 	}
@@ -214,7 +215,7 @@ func getRequiredStencils(templateRepository string,
 	branch string,
 	outputDir string,
 	services []*common.Service,
-	skycapFolder string,
+	bundleFolder string,
 	manifestFile *ManifestBundle,
 	githubURL string) (*ManifestBundle, error) {
 
@@ -256,7 +257,7 @@ func getRequiredStencils(templateRepository string,
 						service.Name,
 						stencil,
 						manifestFile,
-						skycapFolder,
+						bundleFolder,
 						templateRepository,
 						branch,
 						manifestStencils)
@@ -268,7 +269,7 @@ func getRequiredStencils(templateRepository string,
 					"",
 					stencil,
 					manifestFile,
-					skycapFolder,
+					bundleFolder,
 					templateRepository,
 					branch,
 					manifestStencils)
@@ -276,6 +277,7 @@ func getRequiredStencils(templateRepository string,
 		}
 	}
 	var newTemplate BundleBaseTemplates
+	newTemplate.Name = templJSON.Name
 	newTemplate.Repo = githubURL
 	newTemplate.Branch = branch
 	newTemplate.Stencils = manifestStencils
@@ -301,18 +303,18 @@ func loadManifest() (*ManifestBundle, error) {
 	return manifest, nil
 }
 
-func saveManifest(skycapFolder string, content *ManifestBundle) error {
+func saveManifest(bundleFolder string, content *ManifestBundle) error {
 	out, err := json.MarshalIndent(content, "", "  ")
 	if err != nil {
 		return err
 	}
-	manifestPath := filepath.Join(skycapFolder, "manifest.json")
+	manifestPath := filepath.Join(bundleFolder, "manifest.json")
 	return ioutil.WriteFile(manifestPath, out, 0600)
 }
 
-func saveEnvVars(prefix string, envVars map[string]string, manifestFile *ManifestBundle, skycapFolder string) (*ManifestBundle, error) {
+func saveEnvVars(prefix string, envVars map[string]string, manifestFile *ManifestBundle, bundleFolder string) (*ManifestBundle, error) {
 	filename := prefix + "-config"
-	varsPath := filepath.Join(filepath.Join(skycapFolder, "configurations"), prefix+"-config")
+	varsPath := filepath.Join(filepath.Join(bundleFolder, "configurations"), prefix+"-config")
 	var fileOut string
 	for key, value := range envVars {
 		fileOut = fileOut + key + "=" + value + "\n"
@@ -329,7 +331,7 @@ func saveEnvVars(prefix string, envVars map[string]string, manifestFile *Manifes
 func downloadAndAddStencil(context string,
 	stencil *StencilTemplate,
 	manifestFile *ManifestBundle,
-	skycapFolder string,
+	bundleFolder string,
 	templateRepository string,
 	branch string,
 	manifestStencils []*BundleStencil) (*ManifestBundle, []*BundleStencil, error) {
@@ -341,7 +343,7 @@ func downloadAndAddStencil(context string,
 
 	//download the stencil file
 	stencilPath := templateRepository + "stencils/" + stencil.Filename // don't need to use filepath since it's a URL
-	stencilsFolder := filepath.Join(skycapFolder, "stencils")
+	stencilsFolder := filepath.Join(bundleFolder, "stencils")
 	downErr := common.DownloadSingleFile(stencilsFolder, common.DownloadFile{URL: stencilPath, Name: filename}, branch)
 	if downErr != nil {
 		return nil, nil, downErr
