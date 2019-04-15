@@ -35,11 +35,12 @@ type BundleConfiguration struct {
 }
 
 type BundleBaseTemplates struct {
-	Name     string           `json:"name"`
-	Repo     string           `json:"repo"`
-	Branch   string           `json:"branch"`
-	Stencils []*BundleStencil `json:"stencils"`
-	Policies []*BundlePolicy  `json:"policies"`
+	Name         string                `json:"name"`
+	Repo         string                `json:"repo"`
+	Branch       string                `json:"branch"`
+	Stencils     []*BundleStencil      `json:"stencils"`
+	Policies     []*BundlePolicy       `json:"policies"`
+	Transformers []*BundleTransformers `json:"transformers"`
 }
 
 type Metadata struct {
@@ -70,6 +71,12 @@ type BundlePolicy struct {
 	Selector string   `json:"selector"`
 	Sequence int      `json:"sequence"`
 	Tags     []string `json:"tags"`
+}
+
+type BundleTransformers struct { // this is just a placeholder for now
+	UID  string   `json:"uid"`
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
 }
 
 type TemplateJSON struct {
@@ -283,6 +290,7 @@ func getRequiredStencils(templateRepository string,
 	newTemplate.Branch = branch
 	newTemplate.Stencils = manifestStencils
 	newTemplate.Policies = make([]*BundlePolicy, 0)
+	newTemplate.Transformers = make([]*BundleTransformers, 0)
 
 	manifestFile.BaseTemplates = append(manifestFile.BaseTemplates, &newTemplate)
 
