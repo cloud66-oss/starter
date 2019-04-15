@@ -23,6 +23,7 @@ type ManifestBundle struct {
 }
 
 type BundleHelmRelease struct {
+	UID           string `json:"uid"`
 	ChartName     string `json:"chart_name"`
 	DisplayName   string `json:"display_name"`
 	Version       string `json:"version"`
@@ -398,6 +399,7 @@ func addDatabase(manifestFile *ManifestBundle, databases []common.Database) (*Ma
 			common.PrintlnWarning("Database %s not supported\n", db.Name)
 			continue
 		}
+		release.UID = ""
 		release.RepositoryURL = "https://kubernetes-charts.storage.googleapis.com/"
 		release.ValuesFile = ""
 		helmReleases = append(helmReleases, &release)
