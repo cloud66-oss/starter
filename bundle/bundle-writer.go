@@ -23,7 +23,8 @@ type ManifestBundle struct {
 }
 
 type BundleHelmRelease struct {
-	Name          string `json:"repo"`
+	ChartName     string `json:"chart_name"`
+	DisplayName   string `json:"display_name"`
 	Version       string `json:"version"`
 	RepositoryURL string `json:"repository_url"`
 	ValuesFile    string `json:"values_file"`
@@ -391,10 +392,12 @@ func addDatabase(manifestFile *ManifestBundle, databases []common.Database) (*Ma
 	for _, db := range databases {
 		switch db.Name {
 		case "mysql":
-			release.Name = db.Name
+			release.ChartName = db.Name
+			release.DisplayName = "starter-" + db.Name
 			release.Version = "0.10.2"
 		case "postgresql":
-			release.Name = "postgresql"
+			release.ChartName = db.Name
+			release.DisplayName = "starter-" + db.Name
 			release.Version = "3.1.0"
 		default:
 			common.PrintlnWarning("Database %s not supported\n", db.Name)
