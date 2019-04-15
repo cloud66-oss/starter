@@ -70,7 +70,7 @@ type BundlePolicy struct {
 	Tags     []string `json:"tags"`
 }
 
-type BundleTransformers struct { // this is just a placeholder for now
+type BundleTransformer struct { // this is just a placeholder for now
 	UID  string   `json:"uid"`
 	Name string   `json:"name"`
 	Tags []string `json:"tags"`
@@ -287,7 +287,7 @@ func getRequiredStencils(templateRepository string,
 	newTemplate.Branch = branch
 	newTemplate.Stencils = manifestStencils
 	newTemplate.Policies = make([]*BundlePolicy, 0)
-	newTemplate.Transformers = make([]*BundleTransformers, 0)
+	newTemplate.Transformers = make([]*BundleTransformer, 0)
 
 	manifestFile.BaseTemplates = append(manifestFile.BaseTemplates, &newTemplate)
 
