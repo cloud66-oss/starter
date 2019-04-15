@@ -32,12 +32,12 @@ type BundleHelmRelease struct {
 }
 
 type BundleBaseTemplates struct {
-	Name         string                `json:"name"`
-	Repo         string                `json:"repo"`
-	Branch       string                `json:"branch"`
-	Stencils     []*BundleStencil      `json:"stencils"`
-	Policies     []*BundlePolicy       `json:"policies"`
-	Transformers []*BundleTransformers `json:"transformers"`
+	Name         string               `json:"name"`
+	Repo         string               `json:"repo"`
+	Branch       string               `json:"branch"`
+	Stencils     []*BundleStencil     `json:"stencils"`
+	Policies     []*BundlePolicy      `json:"policies"`
+	Transformers []*BundleTransformer `json:"transformers"`
 }
 
 type Metadata struct {
