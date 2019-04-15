@@ -17,7 +17,6 @@ type ManifestBundle struct {
 	Name           string                 `json:"name"`
 	StencilGroups  []*BundleStencilGroup  `json:"stencil_groups"`
 	BaseTemplates  []*BundleBaseTemplates `json:"base_template"`
-	Policies       []*BundlePolicy        `json:"policies"`
 	Tags           []string               `json:"tags"`
 	HelmReleases   []*BundleHelmRelease   `json:"helm_releases"`
 	Configurations []string               `json:"configuration"`
@@ -40,6 +39,7 @@ type BundleBaseTemplates struct {
 	Repo     string           `json:"repo"`
 	Branch   string           `json:"branch"`
 	Stencils []*BundleStencil `json:"stencils"`
+	Policies []*BundlePolicy  `json:"policies"`
 }
 
 type Metadata struct {
@@ -281,6 +281,7 @@ func getRequiredStencils(templateRepository string,
 	newTemplate.Repo = githubURL
 	newTemplate.Branch = branch
 	newTemplate.Stencils = manifestStencils
+	newTemplate.Policies = make([]*BundlePolicy, 0)
 
 	manifestFile.BaseTemplates = append(manifestFile.BaseTemplates, &newTemplate)
 
@@ -295,7 +296,6 @@ func loadManifest() (*ManifestBundle, error) {
 		Name:           "",
 		StencilGroups:  make([]*BundleStencilGroup, 0),
 		BaseTemplates:  make([]*BundleBaseTemplates, 0),
-		Policies:       make([]*BundlePolicy, 0),
 		Tags:           make([]string, 0),
 		HelmReleases:   make([]*BundleHelmRelease, 0),
 		Configurations: make([]string, 0),
