@@ -30,11 +30,6 @@ type BundleHelmRelease struct {
 	ValuesFile    string `json:"values_file"`
 }
 
-type BundleConfiguration struct {
-	Repo   string `json:"repo"`
-	Branch string `json:"branch"`
-}
-
 type BundleBaseTemplates struct {
 	Name         string                `json:"name"`
 	Repo         string                `json:"repo"`
