@@ -205,7 +205,7 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 }
 
 func createBundleFolderStructure(baseFolder string) error {
-	var folders = [5]string{"stencils", "policies", "stencil-group", "helm-releases", "configurations"}
+	var folders = [5]string{"stencils", "policies", "stencil_groups", "helm_releases", "configurations"}
 	for _, subfolder := range folders {
 		folder := filepath.Join(baseFolder, subfolder)
 		err := os.MkdirAll(folder, 0777)
