@@ -341,6 +341,7 @@ func downloadAndAddStencil(context string,
 	templateRepository string,
 	branch string,
 	manifestStencils []*BundleStencil) (*ManifestBundle, []*BundleStencil, error) {
+
 	var filename = ""
 	if context != "" {
 		filename = context + "_"
