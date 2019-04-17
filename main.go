@@ -64,7 +64,7 @@ var (
 	dockerComposeYAMLTemplateDir string
 )
 
-const ( // Luca: Add here the base repository path for the stencils template
+const (
 	templatePath = "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/templates.json"
 )
 
@@ -266,7 +266,6 @@ func analyze(
 
 	// if templateFolder is specified we're going to use that otherwise download
 	if templates == "" {
-		// Luca: Download of templates, From where??
 		homeDir, _ := homedir.Dir()
 
 		templates = filepath.Join(homeDir, ".starter")
