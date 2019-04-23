@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/cloud66/trackman/utils"
 	"github.com/khash/updater"
 )
 
@@ -14,9 +15,10 @@ func UpdateExec(channel string) {
 }
 
 func update(silent bool, channel string) {
-	worker, err := updater.NewUpdater(Version, &updater.Options{
+	fmt.Println("Inside the update method with channel : ", channel)
+	worker, err := updater.NewUpdater(utils.Version, &updater.Options{
 		RemoteURL: "https://s3.amazonaws.com/downloads.cloud66.com/starter/",
-		Channel:   Channel,
+		Channel:   utils.Channel,
 		Silent:    silent,
 	})
 	if err != nil {
@@ -28,7 +30,7 @@ func update(silent bool, channel string) {
 		os.Exit(0)
 	}
 
-	err = worker.Run(channel != Channel)
+	err = worker.Run(channel != utils.Channel)
 	if err != nil {
 		if !silent {
 			fmt.Println(err)
