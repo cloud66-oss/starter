@@ -10,6 +10,7 @@ import (
 	"github.com/cloud66-oss/starter/packs/node"
 	"github.com/cloud66-oss/starter/packs/php"
 	"github.com/cloud66-oss/starter/packs/ruby"
+	"github.com/cloud66-oss/starter/utils"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/satori/go.uuid"
 	"io"
@@ -132,7 +133,7 @@ func (a *API) ping(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (a *API) version(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(VERSION)
+	w.WriteJson(utils.Version)
 }
 
 func (a *API) dockerfiles(w rest.ResponseWriter, r *rest.Request) {
