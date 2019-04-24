@@ -13,8 +13,7 @@ type Pack struct {
 
 const (
 	rubyRailsStencilTemplatePath = "https://raw.githubusercontent.com/cloud66/stencils-ruby-rails/{{.branch}}/" // this way we only have to add the filename. We should start by download the templates.json, do a couples of checks and after that download the stuff
-	rubyRailsGithubURL = "https://github.com/cloud66/stencils-ruby-rails.git"
-	templateRepositoryBranch = "master"
+	rubyRailsGithubURL           = "https://github.com/cloud66/stencils-ruby-rails.git"
 )
 
 func (p *Pack) Name() string {
@@ -101,8 +100,8 @@ func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 	return nil
 }
 
-func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string) error{
-	var templateRepository, branch = p.StencilRepositoryPath()
+func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string, branch string) error {
+	var templateRepository = p.StencilRepositoryPath()
 	return bundle.CreateSkycapFiles(outputDir, templateRepository, branch, p.Name(), rubyRailsGithubURL, p.Analysis.ServiceYAMLContext.Services, p.Analysis.ServiceYAMLContext.Dbs)
 }
 
@@ -118,6 +117,6 @@ func (p *Pack) GetStartCommands() []string {
 	return p.Analysis.ListOfStartCommands
 }
 
-func (p *Pack) StencilRepositoryPath() (string, string) {
-	return rubyRailsStencilTemplatePath, templateRepositoryBranch
+func (p *Pack) StencilRepositoryPath() string {
+	return rubyRailsStencilTemplatePath
 }
