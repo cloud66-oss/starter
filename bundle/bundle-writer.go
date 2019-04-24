@@ -17,29 +17,27 @@ type ManifestBundle struct {
 	Name           string                 `json:"name"`
 	StencilGroups  []*BundleStencilGroup  `json:"stencil_groups"`
 	BaseTemplates  []*BundleBaseTemplates `json:"base_template"`
-	Policies       []*BundlePolicy        `json:"policies"`
 	Tags           []string               `json:"tags"`
 	HelmReleases   []*BundleHelmRelease   `json:"helm_releases"`
 	Configurations []string               `json:"configuration"`
 }
 
 type BundleHelmRelease struct {
-	Name          string `json:"repo"`
+	UID           string `json:"uid"`
+	ChartName     string `json:"chart_name"`
+	DisplayName   string `json:"display_name"`
 	Version       string `json:"version"`
 	RepositoryURL string `json:"repository_url"`
 	ValuesFile    string `json:"values_file"`
 }
 
-type BundleConfiguration struct {
-	Repo   string `json:"repo"`
-	Branch string `json:"branch"`
-}
-
 type BundleBaseTemplates struct {
-	Name     string           `json:"name"`
-	Repo     string           `json:"repo"`
-	Branch   string           `json:"branch"`
-	Stencils []*BundleStencil `json:"stencils"`
+	Name         string               `json:"name"`
+	Repo         string               `json:"repo"`
+	Branch       string               `json:"branch"`
+	Stencils     []*BundleStencil     `json:"stencils"`
+	Policies     []*BundlePolicy      `json:"policies"`
+	Transformers []*BundleTransformer `json:"transformers"`
 }
 
 type Metadata struct {
@@ -68,7 +66,14 @@ type BundlePolicy struct {
 	UID      string   `json:"uid"`
 	Name     string   `json:"name"`
 	Selector string   `json:"selector"`
+	Sequence int      `json:"sequence"`
 	Tags     []string `json:"tags"`
+}
+
+type BundleTransformer struct { // this is just a placeholder for now
+	UID  string   `json:"uid"`
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
 }
 
 type TemplateJSON struct {
@@ -200,7 +205,7 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 }
 
 func createBundleFolderStructure(baseFolder string) error {
-	var folders = [5]string{"stencils", "policies", "stencil-group", "helm-releases", "configurations"}
+	var folders = [5]string{"stencils", "policies", "stencil_groups", "helm_releases", "configurations"}
 	for _, subfolder := range folders {
 		folder := filepath.Join(baseFolder, subfolder)
 		err := os.MkdirAll(folder, 0777)
@@ -281,6 +286,8 @@ func getRequiredStencils(templateRepository string,
 	newTemplate.Repo = githubURL
 	newTemplate.Branch = branch
 	newTemplate.Stencils = manifestStencils
+	newTemplate.Policies = make([]*BundlePolicy, 0)
+	newTemplate.Transformers = make([]*BundleTransformer, 0)
 
 	manifestFile.BaseTemplates = append(manifestFile.BaseTemplates, &newTemplate)
 
@@ -295,7 +302,6 @@ func loadManifest() (*ManifestBundle, error) {
 		Name:           "",
 		StencilGroups:  make([]*BundleStencilGroup, 0),
 		BaseTemplates:  make([]*BundleBaseTemplates, 0),
-		Policies:       make([]*BundlePolicy, 0),
 		Tags:           make([]string, 0),
 		HelmReleases:   make([]*BundleHelmRelease, 0),
 		Configurations: make([]string, 0),
@@ -335,6 +341,7 @@ func downloadAndAddStencil(context string,
 	templateRepository string,
 	branch string,
 	manifestStencils []*BundleStencil) (*ManifestBundle, []*BundleStencil, error) {
+
 	var filename = ""
 	if context != "" {
 		filename = context + "_"
@@ -382,15 +389,18 @@ func addDatabase(manifestFile *ManifestBundle, databases []common.Database) (*Ma
 	for _, db := range databases {
 		switch db.Name {
 		case "mysql":
-			release.Name = db.Name
+			release.ChartName = db.Name
+			release.DisplayName = db.Name
 			release.Version = "0.10.2"
 		case "postgresql":
-			release.Name = "postgresql"
+			release.ChartName = db.Name
+			release.DisplayName = db.Name
 			release.Version = "3.1.0"
 		default:
 			common.PrintlnWarning("Database %s not supported\n", db.Name)
 			continue
 		}
+		release.UID = ""
 		release.RepositoryURL = "https://kubernetes-charts.storage.googleapis.com/"
 		release.ValuesFile = ""
 		helmReleases = append(helmReleases, &release)
