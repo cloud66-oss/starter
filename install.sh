@@ -1,6 +1,5 @@
 #!/bin/bash
-
-version=1.3.2
+version=1.4.1
 
 # bash utilities credit: http://natelandau.com/bash-scripting-utilities/
 
