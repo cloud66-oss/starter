@@ -1,6 +1,5 @@
 #!/bin/bash
-
-version=1.3.2
+version=1.4.1
 
 # bash utilities credit: http://natelandau.com/bash-scripting-utilities/
 
@@ -44,16 +43,14 @@ do_install() {
   if is_os "darwin"; then
     e_info "Downloading Starter for macOS..."
     `rm -f /tmp/starter &> /dev/null`
-    `curl -L --progress-bar -o /tmp/starter https://github.com/cloud66-oss/starter/releases/download/$version/starter_darwin_amd64`
+    `curl -L --progress-bar -o /tmp/starter https://s3.amazonaws.com/downloads.cloud66.com/starter/darwin_amd64_v$version`    
   elif is_os "linux"; then
     if [[ is_64 ]]; then
 	  e_info "Downloading Starter for Linux x64..."
 	  `rm -f /tmp/starter &> /dev/null`
-	  `curl -L --progress-bar -o /tmp/starter https://github.com/cloud66-oss/starter/releases/download/$version/starter_linux_amd64`
+	  `curl -L --progress-bar -o /tmp/starter https://s3.amazonaws.com/downloads.cloud66.com/starter/linux_amd64_v$version`
     else
-	  e_info "Downloading Starter for Linux x32..."
-	  `rm -f /tmp/starter &> /dev/null`
-	  `curl -L --progress-bar -o /tmp/starter https://github.com/cloud66-oss/starter/releases/download/$version/starter_linux_386`
+	  e_error "Aborted: 32 bit version of starter is not currently supported!"
     fi
   else
   	e_error "Aborted: Unable to detect your operating system and architecture!"
