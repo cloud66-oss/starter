@@ -1,5 +1,5 @@
 {
-  "version" : "1.0.2",
+  "version" : "1.0.3",
   "dockerfiles" : [
     { "name": "node.dockerfile.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/node.dockerfile.template"},
     { "name": "python.dockerfile.template", "url" : "https://raw.githubusercontent.com/cloud66/starter/{{.branch}}/templates/python.dockerfile.template"},

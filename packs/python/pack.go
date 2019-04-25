@@ -10,6 +10,10 @@ type Pack struct {
 	Analysis *Analysis
 }
 
+const (
+	StencilTemplatePath = "" //TODO: still not implemented
+)
+
 func (p *Pack) Name() string {
 	return "python"
 }
@@ -63,4 +67,13 @@ func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 
 func (p *Pack) GetMessages() []string {
 	return p.Analysis.Messages.Items
+}
+
+func (p *Pack) StencilRepositoryPath() string {
+	return StencilTemplatePath
+}
+
+func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string, branch string) error {
+	common.PrintlnWarning("You can not generate the Skycap configuration files using this pack. Nothing to do.")
+	return nil
 }

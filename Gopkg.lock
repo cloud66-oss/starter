@@ -88,11 +88,12 @@
   revision = "0a192a193177452756c362c20087ddafcf6829c4"
 
 [[projects]]
-  digest = "1:90fbdaf4e94d5716d2530722cb72c0d32cf553045bffa801f1941b6729e5ed67"
+  digest = "1:88e0b0baeb9072f0a4afbcf12dda615fc8be001d1802357538591155998da21b"
   name = "github.com/hashicorp/go-version"
   packages = ["."]
   pruneopts = "UT"
-  revision = "999359b6b7a041ce16e695d51e92145b83f01087"
+  revision = "ac23dc3fea5d1a983c43f6a0f6e2c13f0195d8bd"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:c2f0317e96d094787fe4a8c9fd8abba5b7a2cd88bec0a0ad00f1774a22c7173f"
@@ -100,6 +101,14 @@
   packages = ["registry"]
   pruneopts = "UT"
   revision = "97450e9c3ae5d9fa1b31ba877efb06cd28339320"
+
+[[projects]]
+  branch = "master"
+  digest = "1:a853582c334f42d1eea4db7455f3f522f2caad0b865719c4c9669d3f220af655"
+  name = "github.com/khash/updater"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b6437d49c45a11462a75b6478fdce116b1bd276f"
 
 [[projects]]
   digest = "1:9d300044d702c652d52fc3cbd3898b63a4f853d4bb23d0dd13fcc54f2f7ffc69"
@@ -114,6 +123,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "981ab348d865cf048eb7d17e78ac7192632d8415"
+
+[[projects]]
+  branch = "master"
+  digest = "1:3e09b51c8e509155d306b638cbf19289c3f13509fec1132472274b34143a5810"
+  name = "github.com/mitchellh/ioprogress"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "6a23b12fa88ea53e63d9b49f148fe6b29c30af6d"
 
 [[projects]]
   digest = "1:97860933e64dfde497daaeb12719bff1191a7c464b45bca69604121abcdb56f3"
@@ -210,6 +227,7 @@
     "github.com/go-resty/resty",
     "github.com/hashicorp/go-version",
     "github.com/heroku/docker-registry-client/registry",
+    "github.com/khash/updater",
     "github.com/mgutz/ansi",
     "github.com/mitchellh/go-homedir",
     "github.com/onsi/ginkgo",
