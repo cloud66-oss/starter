@@ -161,7 +161,7 @@ func (a *Analyzer) FindDatabases() []common.Database {
 		a.Messages.Add(
 			fmt.Sprintf("%s %s-> %s",
 				"database.yml: Make sure you are using environment variables.",
-				common.MsgReset, "http://help.cloud66.com/deployment/environment-variables"))
+				common.MsgReset, "https://help.cloud66.com/skycap/tutorials/setting-environment-variables.html"))
 	}
 
 	if hasMongoIdYaml := common.FileExists("config/mongoid.yml"); hasMongoIdYaml {
@@ -169,7 +169,7 @@ func (a *Analyzer) FindDatabases() []common.Database {
 		a.Messages.Add(
 			fmt.Sprintf("%s %s-> %s",
 				"mongoid.yml: Make sure you are using environment variables.",
-				common.MsgReset, "http://help.cloud66.com/deployment/environment-variables"))
+				common.MsgReset, "https://help.cloud66.com/skycap/tutorials/setting-environment-variables.html"))
 	}
 	return dbs
 }

@@ -63,7 +63,7 @@ Head to the Starter releases and download the latest version for your platform. 
 This will analyze the project in the current folder and generate the three files: `Dockerfile, docker-compose.yml and `service.yml` in the same folder, prompting for information when required.
 
 
-    Cloud 66 Starter ~ (c) 2017 Cloud 66
+    Cloud 66 Starter ~ (c) 2019 Cloud 66
     Detecting framework for the project at /Users/awesome/work/boom
     Found ruby application
     Enter ruby version: [latest]
