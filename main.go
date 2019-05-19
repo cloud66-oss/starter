@@ -203,7 +203,7 @@ func main() {
 		config.SetDefaults()
 	}
 
-	common.PrintlnTitle("Starter (c) 2017 Cloud66 Inc.")
+	common.PrintlnTitle("Starter (c) 2019 Cloud66 Inc.")
 
 	// Run in daemon mode
 	if flagDaemon {

@@ -11,15 +11,17 @@ import (
 )
 
 type ManifestBundle struct {
-	Version        string                 `json:"version"`
-	Metadata       *Metadata              `json:"metadata"`
-	UID            string                 `json:"uid"`
-	Name           string                 `json:"name"`
-	StencilGroups  []*BundleStencilGroup  `json:"stencil_groups"`
-	BaseTemplates  []*BundleBaseTemplates `json:"base_template"`
-	Tags           []string               `json:"tags"`
-	HelmReleases   []*BundleHelmRelease   `json:"helm_releases"`
-	Configurations []string               `json:"configuration"`
+	Version         string                  `json:"version"`
+	Metadata        *Metadata               `json:"metadata"`
+	UID             string                  `json:"uid"`
+	Name            string                  `json:"name"`
+	StencilGroups   []*BundleStencilGroup   `json:"stencil_groups"`
+	BaseTemplates   []*BundleBaseTemplates  `json:"base_template"`
+	Policies        []*BundlePolicy         `json:"policies"`
+	Transformations []*BundleTransformation `json:"transformations"`
+	Tags            []string                `json:"tags"`
+	HelmReleases    []*BundleHelmRelease    `json:"helm_releases"`
+	Configurations  []string                `json:"configuration"`
 }
 
 type BundleHelmRelease struct {
@@ -32,12 +34,10 @@ type BundleHelmRelease struct {
 }
 
 type BundleBaseTemplates struct {
-	Name         string               `json:"name"`
-	Repo         string               `json:"repo"`
-	Branch       string               `json:"branch"`
-	Stencils     []*BundleStencil     `json:"stencils"`
-	Policies     []*BundlePolicy      `json:"policies"`
-	Transformers []*BundleTransformer `json:"transformers"`
+	Name     string           `json:"name"`
+	Repo     string           `json:"repo"`
+	Branch   string           `json:"branch"`
+	Stencils []*BundleStencil `json:"stencils"`
 }
 
 type Metadata struct {
@@ -70,7 +70,7 @@ type BundlePolicy struct {
 	Tags     []string `json:"tags"`
 }
 
-type BundleTransformer struct { // this is just a placeholder for now
+type BundleTransformation struct { // this is just a placeholder for now
 	UID  string   `json:"uid"`
 	Name string   `json:"name"`
 	Tags []string `json:"tags"`
@@ -87,9 +87,9 @@ type TemplateJSON struct {
 }
 
 type TemplatesStruct struct {
-	Stencils     []*StencilTemplate      `json:"stencils"`
-	Policies     []*PolicyTemplate       `json:"policies"`
-	Transformers []*TransformersTemplate `json:"transformers"`
+	Stencils        []*StencilTemplate         `json:"stencils"`
+	Policies        []*PolicyTemplate          `json:"policies"`
+	Transformations []*TransformationsTemplate `json:"transformations"`
 }
 
 type StencilTemplate struct {
@@ -107,7 +107,7 @@ type StencilTemplate struct {
 
 type PolicyTemplate struct{}
 
-type TransformersTemplate struct{}
+type TransformationsTemplate struct{}
 
 func CreateSkycapFiles(outputDir string,
 	templateRepository string,
@@ -156,6 +156,11 @@ func CreateSkycapFiles(outputDir string,
 		return err
 	}
 
+	manifestFile, err = addPoliciesAndTransformations(manifestFile)
+
+	if err != nil {
+		return err
+	}
 	manifestFile, err = addMetadata(manifestFile)
 
 	if err != nil {
@@ -205,7 +210,7 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 }
 
 func createBundleFolderStructure(baseFolder string) error {
-	var folders = [5]string{"stencils", "policies", "stencil_groups", "helm_releases", "configurations"}
+	var folders = [6]string{"stencils", "policies", "transformations", "stencil_groups", "helm_releases", "configurations"}
 	for _, subfolder := range folders {
 		folder := filepath.Join(baseFolder, subfolder)
 		err := os.MkdirAll(folder, 0777)
@@ -286,8 +291,6 @@ func getRequiredStencils(templateRepository string,
 	newTemplate.Repo = githubURL
 	newTemplate.Branch = branch
 	newTemplate.Stencils = manifestStencils
-	newTemplate.Policies = make([]*BundlePolicy, 0)
-	newTemplate.Transformers = make([]*BundleTransformer, 0)
 
 	manifestFile.BaseTemplates = append(manifestFile.BaseTemplates, &newTemplate)
 
@@ -380,6 +383,13 @@ func addMetadata(manifestFile *ManifestBundle) (*ManifestBundle, error) {
 	manifestFile.Metadata = metadata
 	manifestFile.Name = "starter-formation"
 	manifestFile.Tags = []string{"starter"}
+	return manifestFile, nil
+}
+
+func addPoliciesAndTransformations(manifestFile *ManifestBundle) (*ManifestBundle, error) {
+
+	manifestFile.Policies = make([]*BundlePolicy, 0)
+	manifestFile.Transformations = make([]*BundleTransformation, 0)
 	return manifestFile, nil
 }
 
