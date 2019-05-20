@@ -16,7 +16,7 @@ type ManifestBundle struct {
 	UID             string                  `json:"uid"`
 	Name            string                  `json:"name"`
 	StencilGroups   []*BundleStencilGroup   `json:"stencil_groups"`
-	BaseTemplates   []*BundleBaseTemplates  `json:"base_template"`
+	BaseTemplates   []*BundleBaseTemplates  `json:"base_templates"`
 	Policies        []*BundlePolicy         `json:"policies"`
 	Transformations []*BundleTransformation `json:"transformations"`
 	Tags            []string                `json:"tags"`
