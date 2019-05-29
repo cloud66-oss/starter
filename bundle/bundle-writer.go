@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cloud66-oss/starter/common"
+	"github.com/sethvargo/go-password/password"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -16,7 +18,7 @@ type ManifestBundle struct {
 	UID             string                  `json:"uid"`
 	Name            string                  `json:"name"`
 	StencilGroups   []*BundleStencilGroup   `json:"stencil_groups"`
-	BaseTemplates   []*BundleBaseTemplates  `json:"base_template"`
+	BaseTemplates   []*BundleBaseTemplates  `json:"base_templates"`
 	Policies        []*BundlePolicy         `json:"policies"`
 	Transformations []*BundleTransformation `json:"transformations"`
 	Tags            []string                `json:"tags"`
@@ -202,9 +204,39 @@ func getStencilTemplateFile(templateRepository string, tempFolder string, filena
 func getEnvVars(servs []*common.Service, databases []common.Database) map[string]string {
 	var envas = make(map[string]string)
 	for _, envVarArray := range servs {
+		for _, portMapping := range envVarArray.Ports {
+			portEnvas := portMapping.GetEnvironmentVariablesArray(envVarArray.Name)
+			for key, value := range portEnvas {
+				envas[key] = value
+			}
+		}
 		for _, envs := range envVarArray.EnvVars {
 			envas[envs.Key] = envs.Value
 		}
+	}
+	for _, db := range databases {
+		// DATABASE NAME
+		key := strings.ToUpper(db.DockerImage + "_DATABASE")
+
+		envas[key] = envas["RAILS_ENV"] + "_database"
+
+		// USER
+		key = strings.ToUpper(db.DockerImage + "_USERNAME")
+		userId, err := password.Generate(6, 3, 0, true, false)
+		if err != nil {
+			fmt.Println("Error generating the database admin username. Error: ", err)
+			return nil
+		}
+		envas[key] = strings.ToLower("u" + userId)
+
+		// USER PASSWORD
+		key = strings.ToUpper(db.DockerImage + "_PASSWORD")
+		userpsw, err := password.Generate(15, 5, 2, false, false)
+		if err != nil {
+			fmt.Println("Error generating the database admin username. Error: ", err)
+			return nil
+		}
+		envas[key] = userpsw
 	}
 	return envas
 }
