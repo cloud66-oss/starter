@@ -92,6 +92,7 @@ type TemplatesStruct struct {
 	Stencils        []*StencilTemplate         `json:"stencils"`
 	Policies        []*PolicyTemplate          `json:"policies"`
 	Transformations []*TransformationsTemplate `json:"transformations"`
+	HelmReleases    []*HelmReleaseTemplate     `json:"helm_releases"`
 }
 
 type StencilTemplate struct {
@@ -105,11 +106,23 @@ type StencilTemplate struct {
 	Suggested         bool     `json:"suggested"`
 	MinUsage          int      `json:"min_usage"`
 	MaxUsage          int      `json:"max_usage"`
+	Dependencies      []string `json:"dependencies"`
 }
 
-type PolicyTemplate struct{}
+type PolicyTemplate struct {
+	Name         string   `json:"name"`
+	Dependencies []string `json:"dependencies"`
+}
 
-type TransformationsTemplate struct{}
+type TransformationsTemplate struct {
+	Name         string   `json:"name"`
+	Dependencies []string `json:"dependencies"`
+}
+
+type HelmReleaseTemplate struct {
+	Name         string   `json:"name"`
+	Dependencies []string `json:"dependencies"`
+}
 
 func CreateSkycapFiles(outputDir string,
 	templateRepository string,
@@ -449,4 +462,116 @@ func addDatabase(manifestFile *ManifestBundle, databases []common.Database) (*Ma
 	}
 	manifestFile.HelmReleases = helmReleases
 	return manifestFile, nil
+}
+
+type color int
+
+const (
+	white color = 0
+	grey  color = 1
+	black color = 2
+)
+
+func getRequiredComponentNames(templateJSON *TemplateJSON) ([]string, error) {
+	// get initial list of dependencies
+	var requiredComponentNames = make([]string, 0)
+	for _, stencil := range templateJSON.Templates.Stencils {
+		if stencil.MinUsage > 0 {
+			requiredComponentNames = append(requiredComponentNames, stencil.Name)
+		}
+	}
+
+	// loop through them and get the full dependency tree
+	var requiredComponentNameMap map[string]bool
+	for _, requiredComponentName := range requiredComponentNames {
+		visited := make(map[string]color)
+
+		err := getRequiredComponentNamesInternal(templateJSON, requiredComponentName, requiredComponentName, visited)
+		if err != nil {
+			return nil, err
+		}
+
+		for depencencyName, _ := range visited {
+			requiredComponentNameMap[depencencyName] = true
+		}
+	}
+
+	requiredComponentNames = make([]string, 0)
+	for requiredComponentName, _ := range requiredComponentNameMap {
+		requiredComponentNames = append(requiredComponentNames, requiredComponentName)
+	}
+
+	return requiredComponentNames, nil
+}
+
+func getRequiredComponentNamesInternal(templateJSON *TemplateJSON, rootName string, name string, visited map[string]color) error {
+	_, present := visited[name]
+	if !present {
+		visited[name] = white
+	}
+
+	currentColor, _ := visited[name]
+	switch currentColor {
+	case white:
+		visited[name] = grey
+	case grey:
+		fmt.Printf("circular dependency for '%s' detected while processing dependency list of '%s'\n", name, rootName)
+		return nil
+	case black:
+		return nil
+	}
+
+	templateDependencies, err := getTemplateDependencies(templateJSON, name)
+	if err != nil {
+		return err
+	}
+	for _, templateDependency := range templateDependencies {
+		err := getRequiredComponentNamesInternal(templateJSON, rootName, templateDependency, visited)
+		if err != nil {
+			return err
+		}
+	}
+	visited[name] = black
+
+	return nil
+}
+
+func getTemplateDependencies(templateJSON *TemplateJSON, name string) ([]string, error) {
+	nameParts := strings.Split(name, "/")
+	if len(nameParts) != 2 {
+		return nil, fmt.Errorf("dependency name '%s' should be 'TEMPLATE_TYPE/TEMPLATE_NAME', where TEMPLATE_TYPE is one of 'stencils', 'policies', 'transformations', or 'helm_charts'", name)
+	}
+
+	templateType := nameParts[0]
+	templateName := nameParts[1]
+	switch templateType {
+	case "stencils":
+		for _, v := range templateJSON.Templates.Stencils {
+			if v.Name == templateName {
+				return v.Dependencies, nil
+			}
+		}
+	case "policies":
+		for _, v := range templateJSON.Templates.Policies {
+			if v.Name == templateName {
+				return v.Dependencies, nil
+			}
+		}
+	case "transformations":
+		for _, v := range templateJSON.Templates.Transformations {
+			if v.Name == templateName {
+				return v.Dependencies, nil
+			}
+		}
+	case "helm_charts":
+		for _, v := range templateJSON.Templates.HelmReleases {
+			if v.Name == templateName {
+				return v.Dependencies, nil
+			}
+		}
+	default:
+		return nil, fmt.Errorf("dependency name '%s' should be 'TEMPLATE_TYPE/TEMPLATE_NAME', where TEMPLATE_TYPE is one of 'stencils', 'policies', 'transformations', or 'helm_charts'", name)
+	}
+
+	return nil, fmt.Errorf("could not find dependency with name '%s'", name)
 }
