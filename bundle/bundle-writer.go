@@ -303,32 +303,36 @@ func getRequiredStencils(templateRepository string,
 		return nil, err
 	}
 
+	requiredComponentNames, err := getRequiredComponentNames(&templJSON)
+	if err != nil {
+		return nil, err
+	}
+
 	var manifestStencils = make([]*BundleStencil, 0)
-	for _, stencil := range templJSON.Templates.Stencils {
-		if stencil.MinUsage > 0 {
-			if stencil.ContextType == "service" {
-				for _, service := range services {
-					manifestFile, manifestStencils, err = downloadAndAddStencil(
-						service.Name,
-						stencil,
-						manifestFile,
-						bundleFolder,
-						templateRepository,
-						branch,
-						manifestStencils)
-					// create entry in manifest file with formatted name
-					// download and rename stencil file
-				}
-			} else {
+	requiredStencils := filterStencilsByRequiredComponentNames(&templJSON, requiredComponentNames)
+	for _, stencil := range requiredStencils {
+		if stencil.ContextType == "service" {
+			for _, service := range services {
 				manifestFile, manifestStencils, err = downloadAndAddStencil(
-					"",
+					service.Name,
 					stencil,
 					manifestFile,
 					bundleFolder,
 					templateRepository,
 					branch,
 					manifestStencils)
+				// create entry in manifest file with formatted name
+				// download and rename stencil file
 			}
+		} else {
+			manifestFile, manifestStencils, err = downloadAndAddStencil(
+				"",
+				stencil,
+				manifestFile,
+				bundleFolder,
+				templateRepository,
+				branch,
+				manifestStencils)
 		}
 	}
 	var newTemplate BundleBaseTemplates
@@ -496,6 +500,7 @@ func getRequiredComponentNames(templateJSON *TemplateJSON) ([]string, error) {
 		}
 	}
 
+	// get unique required component names
 	requiredComponentNames = make([]string, 0)
 	for requiredComponentName, _ := range requiredComponentNameMap {
 		requiredComponentNames = append(requiredComponentNames, requiredComponentName)
@@ -574,4 +579,21 @@ func getTemplateDependencies(templateJSON *TemplateJSON, name string) ([]string,
 	}
 
 	return nil, fmt.Errorf("could not find dependency with name '%s'", name)
+}
+
+func filterStencilsByRequiredComponentNames(templateJSON *TemplateJSON, requiredComponentNames []string) []*StencilTemplate {
+	result := make([]*StencilTemplate, 0)
+	for _, stencil := range templateJSON.Templates.Stencils {
+		stencilRequired := false
+		for _, requiredComponentName := range requiredComponentNames {
+			if stencil.Name == requiredComponentName {
+				stencilRequired = true
+				break
+			}
+		}
+		if stencilRequired {
+			result = append(result, stencil)
+		}
+	}
+	return result
 }
