@@ -320,7 +320,11 @@ func getRequiredStencils(templateRepository string,
 					bundleFolder,
 					templateRepository,
 					branch,
-					manifestStencils)
+					manifestStencils,
+				)
+				if err != nil {
+					return nil, err
+				}
 				// create entry in manifest file with formatted name
 				// download and rename stencil file
 			}
@@ -332,7 +336,11 @@ func getRequiredStencils(templateRepository string,
 				bundleFolder,
 				templateRepository,
 				branch,
-				manifestStencils)
+				manifestStencils,
+			)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	var newTemplate BundleBaseTemplates
