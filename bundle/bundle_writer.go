@@ -489,12 +489,13 @@ func getRequiredComponentNames(templateJSON *TemplateJSON) ([]string, error) {
 	var requiredComponentNames = make([]string, 0)
 	for _, stencil := range templateJSON.Templates.Stencils {
 		if stencil.MinUsage > 0 {
-			requiredComponentNames = append(requiredComponentNames, stencil.Name)
+			fullyQualifiedStencilName := "stencils/" + stencil.Name
+			requiredComponentNames = append(requiredComponentNames, fullyQualifiedStencilName)
 		}
 	}
 
 	// loop through them and get the full dependency tree
-	var requiredComponentNameMap map[string]bool
+	requiredComponentNameMap := make(map[string]bool)
 	for _, requiredComponentName := range requiredComponentNames {
 		visited := make(map[string]color)
 
