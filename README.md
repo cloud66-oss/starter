@@ -53,7 +53,7 @@ http://www.startwithdocker.com/
 ### Quick Start:
 ___
 
-Head to the Starter releases and download the latest version for your platform. You can copy the file to `/usr/local/bin` and make sure it is renamed to `starter` and you can run it (`chmod a+x /usr/local/bin/starter`). From this point on you can run `starter update` to update it automatically.
+Head to the Starter releases (https://github.com/cloud66-oss/starter/releases/latest) and download the latest version for your platform. You can copy the file to `/usr/local/bin` and make sure it is renamed to `starter` and you can run it (`chmod a+x /usr/local/bin/starter`). From this point on you can run `starter update` to update it automatically.
 
     $ cd /my/project
     $ starter -g dockerfile,service,docker-compose
