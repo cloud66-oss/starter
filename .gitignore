@@ -29,3 +29,4 @@ starter
 .vagrant
 
 .idea
+/build
