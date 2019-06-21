@@ -303,7 +303,11 @@ func getRequiredStencils(templateRepository string,
 		return nil, err
 	}
 
-	requiredComponentNames, err := getRequiredComponentNames(&templJSON)
+	initialComponentNames, err := getInitialComponentNames(&templJSON)
+	if err != nil {
+		return nil, err
+	}
+	requiredComponentNames, err := getRequiredComponentNames(&templJSON, initialComponentNames)
 	if err != nil {
 		return nil, err
 	}
@@ -484,22 +488,64 @@ const (
 	black color = 2
 )
 
-func getRequiredComponentNames(templateJSON *TemplateJSON) ([]string, error) {
-	// get initial list of dependencies
-	var requiredComponentNames = make([]string, 0)
+type DependencyInterface interface {
+	getName() string
+	getDependencies() []string
+}
+
+func (v StencilTemplate) getName() string {
+	return v.Name
+}
+
+func (v StencilTemplate) getDependencies() []string {
+	return v.Dependencies
+}
+
+func (v PolicyTemplate) getName() string {
+	return v.Name
+}
+
+func (v PolicyTemplate) getDependencies() []string {
+	return v.Dependencies
+}
+
+func (v TransformationsTemplate) getName() string {
+	return v.Name
+}
+
+func (v TransformationsTemplate) getDependencies() []string {
+	return v.Dependencies
+}
+
+func (v HelmReleaseTemplate) getName() string {
+	return v.Name
+}
+
+func (v HelmReleaseTemplate) getDependencies() []string {
+	return v.Dependencies
+}
+
+func getInitialComponentNames(templateJSON *TemplateJSON) ([]string, error) {
+	result := make([]string, 0)
 	for _, stencil := range templateJSON.Templates.Stencils {
 		if stencil.MinUsage > 0 {
-			fullyQualifiedStencilName := "stencils/" + stencil.Name
-			requiredComponentNames = append(requiredComponentNames, fullyQualifiedStencilName)
+			fullyQualifiedStencilName, err := generateFullyQualifiedName(stencil)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, fullyQualifiedStencilName)
 		}
 	}
+	return result, nil
+}
 
+func getRequiredComponentNames(templateJSON *TemplateJSON, initialComponentNames []string) ([]string, error) {
 	// loop through them and get the full dependency tree
 	requiredComponentNameMap := make(map[string]bool)
-	for _, requiredComponentName := range requiredComponentNames {
+	for _, initialComponentName := range initialComponentNames {
 		visited := make(map[string]color)
 
-		err := getRequiredComponentNamesInternal(templateJSON, requiredComponentName, requiredComponentName, visited)
+		err := getRequiredComponentNamesInternal(templateJSON, initialComponentName, initialComponentName, visited)
 		if err != nil {
 			return nil, err
 		}
@@ -510,11 +556,10 @@ func getRequiredComponentNames(templateJSON *TemplateJSON) ([]string, error) {
 	}
 
 	// get unique required component names
-	requiredComponentNames = make([]string, 0)
+	requiredComponentNames := make([]string, 0)
 	for requiredComponentName, _ := range requiredComponentNameMap {
 		requiredComponentNames = append(requiredComponentNames, requiredComponentName)
 	}
-
 	return requiredComponentNames, nil
 }
 
@@ -605,4 +650,20 @@ func filterStencilsByRequiredComponentNames(templateJSON *TemplateJSON, required
 		}
 	}
 	return result
+}
+
+func generateFullyQualifiedName(v DependencyInterface) (string, error) {
+	name := v.getName()
+	switch vt := v.(type) {
+	case StencilTemplate, *StencilTemplate:
+		return "stencils" + "/" + name, nil
+	case PolicyTemplate, *PolicyTemplate:
+		return "policies" + "/" + name, nil
+	case TransformationsTemplate, *TransformationsTemplate:
+		return "transformations" + "/" + name, nil
+	case HelmReleaseTemplate, *HelmReleaseTemplate:
+		return "helm_releases" + "/" + name, nil
+	default:
+		return "", fmt.Errorf("generateFullyQualifiedName missing definition for %T", vt)
+	}
 }

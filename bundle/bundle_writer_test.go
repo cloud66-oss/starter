@@ -8,11 +8,11 @@ import (
 
 func TestTemplateJSONDependencyTraversal(t *testing.T) {
 	templateJSON := generateTemplateJSON()
-	testTemplateJSONDependencyTraversal(t, &templateJSON, []string{"stencils/one", "stencils/two", "stencils/three"})
+	testTemplateJSONDependencyTraversal(t, &templateJSON, []string{"stencils/one"}, []string{"stencils/one", "stencils/two", "stencils/three"})
 }
 
-func testTemplateJSONDependencyTraversal(t *testing.T, templateJSON *TemplateJSON, expectedComponentNames []string) {
-	requiredComponentNames, err := getRequiredComponentNames(templateJSON)
+func testTemplateJSONDependencyTraversal(t *testing.T, templateJSON *TemplateJSON, initialComponentNames []string, expectedComponentNames []string) {
+	requiredComponentNames, err := getRequiredComponentNames(templateJSON, initialComponentNames)
 	if err != nil {
 		t.Errorf("Obtained error when determining dependency tree: %s\n", err)
 		return
@@ -28,7 +28,6 @@ func testTemplateJSONDependencyTraversal(t *testing.T, templateJSON *TemplateJSO
 func generateTemplateJSON() TemplateJSON {
 	stencilOne := StencilTemplate{
 		Name:         "one",
-		MinUsage:     1,
 		Dependencies: []string{"stencils/two"},
 	}
 
