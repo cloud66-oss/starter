@@ -640,7 +640,10 @@ func filterStencilsByRequiredComponentNames(templateJSON *TemplateJSON, required
 	for _, stencil := range templateJSON.Templates.Stencils {
 		stencilRequired := false
 		for _, requiredComponentName := range requiredComponentNames {
-			if stencil.Name == requiredComponentName {
+			nameParts := strings.Split(requiredComponentName, "/")
+			templateType := nameParts[0]
+			templateName := nameParts[1]
+			if templateType == "stencils" && templateName == stencil.Name {
 				stencilRequired = true
 				break
 			}
