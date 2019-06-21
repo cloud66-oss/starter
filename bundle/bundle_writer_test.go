@@ -9,6 +9,10 @@ import (
 func TestTemplateJSONDependencyTraversal(t *testing.T) {
 	templateJSON := generateTemplateJSON()
 	testTemplateJSONDependencyTraversal(t, &templateJSON, []string{"stencils/one"}, []string{"stencils/one", "stencils/two", "stencils/three"})
+	testTemplateJSONDependencyTraversal(t, &templateJSON, []string{"stencils/two"}, []string{"stencils/one", "stencils/two", "stencils/three"})
+	testTemplateJSONDependencyTraversal(t, &templateJSON, []string{"stencils/three"}, []string{"stencils/one", "stencils/two", "stencils/three"})
+	testTemplateJSONDependencyTraversal(t, &templateJSON, []string{"stencils/one", "stencils/two", "stencils/three"}, []string{"stencils/one", "stencils/two", "stencils/three"})
+	testTemplateJSONDependencyTraversal(t, &templateJSON, []string{}, []string{})
 }
 
 func testTemplateJSONDependencyTraversal(t *testing.T, templateJSON *TemplateJSON, initialComponentNames []string, expectedComponentNames []string) {
