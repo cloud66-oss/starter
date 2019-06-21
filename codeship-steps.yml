@@ -1,3 +1,0 @@
-- name: test
-  service: starter
-  command: go test -ginkgo.failFast -ginkgo.seed=1
