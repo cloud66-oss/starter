@@ -14,6 +14,7 @@ func UpdateExec(channel string) {
 }
 
 func update(silent bool, channel string) {
+	fmt.Println("Inside the update method with channel : ", channel)
 	worker, err := updater.NewUpdater(Version, &updater.Options{
 		RemoteURL: "https://s3.amazonaws.com/downloads.cloud66.com/starter/",
 		Channel:   Channel,

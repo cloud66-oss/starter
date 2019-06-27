@@ -1,3 +1,5 @@
+<img src="http://cdn2-cloud66-com.s3.amazonaws.com/images/oss-sponsorship.png" width=150/>
+
 # Starter
 
 ![Codeship Status for cloud66/starter](https://codeship.com/projects/81c5dde0-e914-0133-c219-4eaa3299b296/status)
