@@ -1,6 +1,6 @@
 #!/bin/bash
 
-    version=$(git describe --tags --always)
+version=$(git describe --tags --always)
 
 if [ -z "$1" ]
   then
