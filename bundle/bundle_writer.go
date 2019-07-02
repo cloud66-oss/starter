@@ -120,8 +120,14 @@ type TransformationsTemplate struct {
 }
 
 type HelmReleaseTemplate struct {
-	Name         string   `json:"name"`
-	Dependencies []string `json:"dependencies"`
+	Name         string              `json:"name"`
+	Dependencies []string            `json:"dependencies"`
+	Modifiers    []*ModifierTemplate `json:"modifiers"`
+}
+
+type ModifierTemplate struct {
+	Type     string `json:"type"`
+	Filename string `json:"filename"`
 }
 
 func CreateSkycapFiles(outputDir string,
