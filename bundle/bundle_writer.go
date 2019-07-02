@@ -120,9 +120,14 @@ type TransformationsTemplate struct {
 }
 
 type HelmChartTemplate struct {
-	Name         string              `json:"name"`
-	Dependencies []string            `json:"dependencies"`
-	Modifiers    []*ModifierTemplate `json:"modifiers"`
+	Name               string              `json:"name"`
+	Description        string              `json:"description"`
+	Tags               []string            `json:"tags"`
+	ChartRepositoryUrl string              `json:"chart_repository_url"`
+	ChartName          string              `json:"chart_name"`
+	ChartVersion       string              `json:"chart_version"`
+	Dependencies       []string            `json:"dependencies"`
+	Modifiers          []*ModifierTemplate `json:"modifiers"`
 }
 
 type ModifierTemplate struct {
