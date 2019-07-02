@@ -92,7 +92,7 @@ type TemplatesStruct struct {
 	Stencils        []*StencilTemplate         `json:"stencils"`
 	Policies        []*PolicyTemplate          `json:"policies"`
 	Transformations []*TransformationsTemplate `json:"transformations"`
-	HelmReleases    []*HelmReleaseTemplate     `json:"helm_releases"`
+	HelmCharts      []*HelmChartTemplate       `json:"helm_charts"`
 }
 
 type StencilTemplate struct {
@@ -119,7 +119,7 @@ type TransformationsTemplate struct {
 	Dependencies []string `json:"dependencies"`
 }
 
-type HelmReleaseTemplate struct {
+type HelmChartTemplate struct {
 	Name         string              `json:"name"`
 	Dependencies []string            `json:"dependencies"`
 	Modifiers    []*ModifierTemplate `json:"modifiers"`
@@ -514,11 +514,11 @@ func (v TransformationsTemplate) getDependencies() []string {
 	return v.Dependencies
 }
 
-func (v HelmReleaseTemplate) getName() string {
+func (v HelmChartTemplate) getName() string {
 	return v.Name
 }
 
-func (v HelmReleaseTemplate) getDependencies() []string {
+func (v HelmChartTemplate) getDependencies() []string {
 	return v.Dependencies
 }
 
@@ -620,7 +620,7 @@ func getTemplateDependencies(templateJSON *TemplateJSON, name string) ([]string,
 			}
 		}
 	case "helm_charts":
-		for _, v := range templateJSON.Templates.HelmReleases {
+		for _, v := range templateJSON.Templates.HelmCharts {
 			if v.Name == templateName {
 				return v.Dependencies, nil
 			}
@@ -661,7 +661,7 @@ func generateFullyQualifiedName(v DependencyInterface) (string, error) {
 		return "policies" + "/" + name, nil
 	case TransformationsTemplate, *TransformationsTemplate:
 		return "transformations" + "/" + name, nil
-	case HelmReleaseTemplate, *HelmReleaseTemplate:
+	case HelmChartTemplate, *HelmChartTemplate:
 		return "helm_releases" + "/" + name, nil
 	default:
 		return "", fmt.Errorf("generateFullyQualifiedName missing definition for %T", vt)
