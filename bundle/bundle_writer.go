@@ -462,11 +462,19 @@ func addDatabase(manifestFile *ManifestBundle, databases []common.Database) (*Ma
 		case "mysql":
 			release.ChartName = db.Name
 			release.DisplayName = db.Name
-			release.Version = "0.10.2"
+			release.Version = "1.2.1"
 		case "postgresql":
 			release.ChartName = db.Name
 			release.DisplayName = db.Name
-			release.Version = "3.1.0"
+			release.Version = "5.3.4"
+		case "redis":
+			release.ChartName = db.Name
+			release.DisplayName = db.Name
+			release.Version = "5.3.4"
+		case "mongodb":
+			release.ChartName = db.Name
+			release.DisplayName = db.Name
+			release.Version = "5.3.4"
 		default:
 			common.PrintlnWarning("Database %s not supported\n", db.Name)
 			continue
