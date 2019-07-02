@@ -162,9 +162,18 @@ func CreateSkycapFiles(outputDir string,
 		return err
 	}
 
+	templateJSON, err := generateTemplateJSONFromUpstreamFile(templateRepository, branch)
+	if err != nil {
+		return err
+	}
+
 	manifestFile, err = addDatabase(manifestFile, databases)
+	if err != nil {
+		return err
+	}
 
 	manifestFile, err = getRequiredStencils(
+		templateJSON,
 		templateRepository,
 		branch,
 		outputDir,
@@ -272,7 +281,9 @@ func createBundleFolderStructure(baseFolder string) error {
 	return nil
 }
 
-func getRequiredStencils(templateRepository string,
+func getRequiredStencils(
+	templateJSON *TemplateJSON,
+	templateRepository string,
 	branch string,
 	outputDir string,
 	services []*common.Service,
@@ -280,46 +291,17 @@ func getRequiredStencils(templateRepository string,
 	manifestFile *ManifestBundle,
 	githubURL string) (*ManifestBundle, error) {
 
-	templateFolder := filepath.Join(os.TempDir(), "temp")
-	err := os.MkdirAll(templateFolder, 0777)
-	defer os.RemoveAll(templateFolder)
+	initialComponentNames, err := getInitialComponentNames(templateJSON)
 	if err != nil {
 		return nil, err
 	}
-	//start download the template.json file
-	tjPathfile, err := getStencilTemplateFile(templateRepository, templateFolder, "templates.json", branch)
-	if err != nil {
-		fmt.Printf("Error while downloading the templates.json. err: %s", err)
-		return nil, err
-	}
-	// open the template.json file and start downloading the stencils
-	templateJSON, err := os.Open(tjPathfile)
-	if err != nil {
-		return nil, err
-	}
-
-	templatesJSONData, err := ioutil.ReadAll(templateJSON)
-	if err != nil {
-		return nil, err
-	}
-
-	var templJSON TemplateJSON
-	err = json.Unmarshal([]byte(templatesJSONData), &templJSON)
-	if err != nil {
-		return nil, err
-	}
-
-	initialComponentNames, err := getInitialComponentNames(&templJSON)
-	if err != nil {
-		return nil, err
-	}
-	requiredComponentNames, err := getRequiredComponentNames(&templJSON, initialComponentNames)
+	requiredComponentNames, err := getRequiredComponentNames(templateJSON, initialComponentNames)
 	if err != nil {
 		return nil, err
 	}
 
 	var manifestStencils = make([]*BundleStencil, 0)
-	requiredStencils := filterStencilsByRequiredComponentNames(&templJSON, requiredComponentNames)
+	requiredStencils := filterStencilsByRequiredComponentNames(templateJSON, requiredComponentNames)
 	for _, stencil := range requiredStencils {
 		if stencil.ContextType == "service" {
 			for _, service := range services {
@@ -354,7 +336,7 @@ func getRequiredStencils(templateRepository string,
 		}
 	}
 	var newTemplate BundleBaseTemplates
-	newTemplate.Name = templJSON.Name
+	newTemplate.Name = templateJSON.Name
 	newTemplate.Repo = githubURL
 	newTemplate.Branch = branch
 	newTemplate.Stencils = manifestStencils
@@ -684,4 +666,39 @@ func generateFullyQualifiedName(v DependencyInterface) (string, error) {
 	default:
 		return "", fmt.Errorf("generateFullyQualifiedName missing definition for %T", vt)
 	}
+}
+
+func generateTemplateJSONFromUpstreamFile(templateRepository, branch string) (*TemplateJSON, error) {
+	templateFolder := filepath.Join(os.TempDir(), "temp")
+	err := os.MkdirAll(templateFolder, 0777)
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(templateFolder)
+
+	//start download the template.json file
+	templateJSONFilePath, err := getStencilTemplateFile(templateRepository, templateFolder, "templates.json", branch)
+	if err != nil {
+		fmt.Printf("Error while downloading the templates.json. err: %s", err)
+		return nil, err
+	}
+
+	// open the template.json file and start downloading the stencils
+	templateJSONFile, err := os.Open(templateJSONFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	templatesJSONData, err := ioutil.ReadAll(templateJSONFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var templateJSON TemplateJSON
+	err = json.Unmarshal([]byte(templatesJSONData), &templateJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	return &templateJSON, nil
 }
