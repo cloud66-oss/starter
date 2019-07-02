@@ -462,8 +462,9 @@ func addPoliciesAndTransformations(manifestFile *ManifestBundle) (*ManifestBundl
 
 func addDatabase(manifestFile *ManifestBundle, databases []common.Database) (*ManifestBundle, error) {
 	var helmReleases = make([]*BundleHelmRelease, 0)
-	var release BundleHelmRelease
 	for _, db := range databases {
+		var release BundleHelmRelease
+
 		switch db.Name {
 		case "mysql":
 			release.ChartName = db.Name
