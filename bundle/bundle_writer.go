@@ -7,6 +7,7 @@ import (
 	"github.com/sethvargo/go-password/password"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -172,7 +173,7 @@ func CreateSkycapFiles(outputDir string,
 		return err
 	}
 
-	manifestFile, err = addDatabase(manifestFile, databases)
+	manifestFile, err = addDatabase(templateJSON, templateRepository, branch, bundleFolder, manifestFile, databases)
 	if err != nil {
 		return err
 	}
@@ -223,17 +224,6 @@ func CreateSkycapFiles(outputDir string,
 }
 
 // downloading templates from github and putting them into homedir
-func getStencilTemplateFile(templateRepository string, tempFolder string, filename string, branch string) (string, error) {
-
-	//Download templates.json file
-	manifestPath := templateRepository + filename // don't need to use filepath since it's a URL
-	downErr := common.DownloadSingleFile(tempFolder, common.DownloadFile{URL: manifestPath, Name: filename}, branch)
-	if downErr != nil {
-		return "", downErr
-	}
-	return filepath.Join(tempFolder, filename), nil
-}
-
 func getEnvVars(servs []*common.Service, databases []common.Database) map[string]string {
 	var envas = make(map[string]string)
 	for _, envVarArray := range servs {
@@ -447,7 +437,7 @@ func addPoliciesAndTransformations(manifestFile *ManifestBundle) (*ManifestBundl
 	return manifestFile, nil
 }
 
-func addDatabase(manifestFile *ManifestBundle, databases []common.Database) (*ManifestBundle, error) {
+func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleFolder string, manifestFile *ManifestBundle, databases []common.Database) (*ManifestBundle, error) {
 	var helmReleases = make([]*BundleHelmRelease, 0)
 	for _, db := range databases {
 		var release BundleHelmRelease
@@ -473,9 +463,41 @@ func addDatabase(manifestFile *ManifestBundle, databases []common.Database) (*Ma
 			common.PrintlnWarning("Database %s not supported\n", db.Name)
 			continue
 		}
+
+		var applicableHelmChartTemplate *HelmChartTemplate
+		for _, h := range templateJSON.Templates.HelmCharts {
+			// TODO: maybe check the chart repository URL as well
+			if h.ChartName == release.ChartName && h.ChartVersion == release.Version {
+				applicableHelmChartTemplate = h
+				break
+			}
+		}
+
+		var valuesFile string
+		if applicableHelmChartTemplate != nil {
+			for _, modifier := range applicableHelmChartTemplate.Modifiers {
+				if modifier.Type == "values.yml" {
+					modifierContents, err := readStencilTemplateFile(templateRepository, branch, modifier.Filename)
+					if err != nil {
+						return nil, err
+					}
+
+					modifierBasename := path.Base(modifier.Filename)
+					destinationFilename := filepath.Join(bundleFolder, "helm_releases", modifierBasename)
+					err = ioutil.WriteFile(destinationFilename, modifierContents, 0644)
+					if err != nil {
+						return nil, err
+					}
+
+					valuesFile = modifierBasename
+					break
+				}
+			}
+		}
+
 		release.UID = ""
 		release.RepositoryURL = "https://kubernetes-charts.storage.googleapis.com/"
-		release.ValuesFile = ""
+		release.ValuesFile = valuesFile
 		helmReleases = append(helmReleases, &release)
 	}
 	manifestFile.HelmReleases = helmReleases
@@ -674,36 +696,59 @@ func generateFullyQualifiedName(v DependencyInterface) (string, error) {
 }
 
 func generateTemplateJSONFromUpstreamFile(templateRepository, branch string) (*TemplateJSON, error) {
-	templateFolder := filepath.Join(os.TempDir(), "temp")
-	err := os.MkdirAll(templateFolder, 0777)
-	if err != nil {
-		return nil, err
-	}
-	defer os.RemoveAll(templateFolder)
-
-	//start download the template.json file
-	templateJSONFilePath, err := getStencilTemplateFile(templateRepository, templateFolder, "templates.json", branch)
-	if err != nil {
-		fmt.Printf("Error while downloading the templates.json. err: %s", err)
-		return nil, err
-	}
-
-	// open the template.json file and start downloading the stencils
-	templateJSONFile, err := os.Open(templateJSONFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	templatesJSONData, err := ioutil.ReadAll(templateJSONFile)
+	templatesJSONData, err := readStencilTemplateFile(templateRepository, branch, "templates.json")
 	if err != nil {
 		return nil, err
 	}
 
 	var templateJSON TemplateJSON
-	err = json.Unmarshal([]byte(templatesJSONData), &templateJSON)
+	err = json.Unmarshal(templatesJSONData, &templateJSON)
 	if err != nil {
 		return nil, err
 	}
 
 	return &templateJSON, nil
+}
+
+func readStencilTemplateFile(templateRepository, branch, filename string) ([]byte, error) {
+	temporaryFolder, err := ioutil.TempDir("", "bundle")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(temporaryFolder)
+
+	//start download the template.json file
+	downloadedFilePath, err := downloadStencilTemplateFile(templateRepository, branch, filename, temporaryFolder)
+	if err != nil {
+		fmt.Printf("Error while downloading file %s. The error is: %s\n", filename, err)
+		return nil, err
+	}
+
+	// open the template.json file and start downloading the stencils
+	downloadedFile, err := os.Open(downloadedFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	downloadedFileData, err := ioutil.ReadAll(downloadedFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return downloadedFileData, nil
+}
+
+func downloadStencilTemplateFile(templateRepository, branch, filename, temporaryFolder string) (string, error) {
+	manifestPath := templateRepository + filename // don't need to use filepath since it's a URL
+	destinationFilename, err := common.GenerateRandomBase64String(32)
+	if err != nil {
+		return "", err
+	}
+
+	err = common.DownloadSingleFile(temporaryFolder, common.DownloadFile{URL: manifestPath, Name: destinationFilename}, branch)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(temporaryFolder, destinationFilename), nil
 }
