@@ -1,10 +1,12 @@
 package bundle
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/cloud66-oss/starter/common"
 	"github.com/sethvargo/go-password/password"
+	"gopkg.in/go-yaml/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path"
@@ -25,6 +27,7 @@ type ManifestBundle struct {
 	Tags            []string                `json:"tags"`
 	HelmReleases    []*BundleHelmRelease    `json:"helm_releases"`
 	Configurations  []string                `json:"configuration"`
+	ConfigStore     []string                `json:"configstore"`
 }
 
 type BundleHelmRelease struct {
@@ -136,6 +139,16 @@ type ModifierTemplate struct {
 	Filename string `json:"filename"`
 }
 
+type ConfigStoreEntries struct {
+	Records []*ConfigStoreEntry `json:"records" yaml:"records"`
+}
+type ConfigStoreEntry struct {
+	Key      string            `json:"key" yaml:"key"`
+	RawValue string            `json:"raw_value" yaml:"raw_value"`
+	Metadata map[string]string `json:"metadata" yaml:"metadata"`
+	Ttl      int               `json:"ttl" yaml:"ttl"`
+}
+
 func CreateSkycapFiles(outputDir string,
 	templateRepository string,
 	branch string,
@@ -164,6 +177,11 @@ func CreateSkycapFiles(outputDir string,
 	}
 
 	manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, bundleFolder)
+	if err != nil {
+		return err
+	}
+
+	err = handleConfigStoreEntries(packName, services, databases, manifestFile, bundleFolder)
 	if err != nil {
 		return err
 	}
@@ -254,7 +272,7 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 
 		// USER PASSWORD
 		key = strings.ToUpper(db.DockerImage + "_PASSWORD")
-		userpsw, err := password.Generate(15, 5, 2, false, false)
+		userpsw, err := password.Generate(15, 5, 0, false, false)
 		if err != nil {
 			fmt.Println("Error generating the database admin username. Error: ", err)
 			return nil
@@ -264,8 +282,63 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 	return envas
 }
 
+func getConfigStoreEntries(services []*common.Service, databases []common.Database) ([]*ConfigStoreEntry, error) {
+	environmentVariables := getEnvVars(services, databases)
+
+	result := make([]*ConfigStoreEntry, 0)
+	for _, database := range databases {
+		result = append(result, &ConfigStoreEntry{
+			Key:      database.DockerImage + "." + "database",
+			RawValue: base64.StdEncoding.EncodeToString([]byte(environmentVariables["RAILS_ENV"] + "_" + "database")),
+		})
+
+		generatedUsername, err := password.Generate(10, 5, 0, true, true)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, &ConfigStoreEntry{
+			Key:      database.DockerImage + "." + "username",
+			RawValue: base64.StdEncoding.EncodeToString([]byte(generatedUsername)),
+		})
+
+		generatedPassword, err := password.Generate(64, 20, 0, false, true)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, &ConfigStoreEntry{
+			Key:      database.DockerImage + "." + "password",
+			RawValue: base64.StdEncoding.EncodeToString([]byte(generatedPassword)),
+		})
+
+		result = append(result, &ConfigStoreEntry{
+			Key:      database.DockerImage + "." + "host",
+			RawValue: base64.StdEncoding.EncodeToString([]byte(database.DockerImage)),
+		})
+	}
+	return result, nil
+}
+
+func setConfigStoreEntries(configStoreEntries []*ConfigStoreEntry, prefix string, manifestBundle *ManifestBundle, bundleFolder string) error {
+	unmarshalledOutput := ConfigStoreEntries{Records: configStoreEntries}
+	marshalledOutput, err := yaml.Marshal(&unmarshalledOutput)
+	if err != nil {
+		return err
+	}
+
+	fileName := prefix + "-configstore.yml"
+	filePath := filepath.Join(filepath.Join(bundleFolder, "configstore"), fileName)
+
+	err = ioutil.WriteFile(filePath, marshalledOutput, 0600)
+	if err != nil {
+		return err
+	}
+
+	manifestBundle.Configurations = append(manifestBundle.Configurations, fileName)
+	return nil
+}
+
 func createBundleFolderStructure(baseFolder string) error {
-	var folders = [6]string{"stencils", "policies", "transformations", "stencil_groups", "helm_releases", "configurations"}
+	var folders = []string{"stencils", "policies", "transformations", "stencil_groups", "helm_releases", "configurations", "configstore"}
 	for _, subfolder := range folders {
 		folder := filepath.Join(baseFolder, subfolder)
 		err := os.MkdirAll(folder, 0777)
@@ -352,6 +425,7 @@ func loadManifest() (*ManifestBundle, error) {
 		Tags:           make([]string, 0),
 		HelmReleases:   make([]*BundleHelmRelease, 0),
 		Configurations: make([]string, 0),
+		ConfigStore:    make([]string, 0),
 	}
 	return manifest, nil
 }
@@ -379,6 +453,20 @@ func saveEnvVars(prefix string, envVars map[string]string, manifestFile *Manifes
 	var configs = manifestFile.Configurations
 	manifestFile.Configurations = append(configs, filename)
 	return manifestFile, nil
+}
+
+func handleConfigStoreEntries(prefix string, services []*common.Service, databases []common.Database, manifestBundle *ManifestBundle, bundleFolder string) error {
+	configStoreEntries, err := getConfigStoreEntries(services, databases)
+	if err != nil {
+		return err
+	}
+
+	err = setConfigStoreEntries(configStoreEntries, prefix, manifestBundle, bundleFolder)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func downloadAndAddStencil(context string,
