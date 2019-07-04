@@ -44,3 +44,7 @@
 [[constraint]]
   name = "github.com/sethvargo/go-password"
   version = "0.1.2"
+
+[[constraint]]
+  name = "gopkg.in/go-yaml/yaml.v2"
+  version = "2.2.2"
