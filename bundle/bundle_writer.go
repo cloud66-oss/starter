@@ -4,8 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/cloud66-oss/starter/common"
-	"github.com/sethvargo/go-password/password"
 	"gopkg.in/go-yaml/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -13,6 +11,10 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/cloud66-oss/cloud66"
+	"github.com/cloud66-oss/starter/common"
+	"github.com/sethvargo/go-password/password"
 )
 
 type ManifestBundle struct {
@@ -137,16 +139,6 @@ type HelmChartTemplate struct {
 type ModifierTemplate struct {
 	Type     string `json:"type"`
 	Filename string `json:"filename"`
-}
-
-type ConfigStoreRecords struct {
-	Records []*ConfigStoreRecord `json:"records" yaml:"records"`
-}
-type ConfigStoreRecord struct {
-	Key      string            `json:"key" yaml:"key"`
-	RawValue string            `json:"raw_value" yaml:"raw_value"`
-	Metadata map[string]string `json:"metadata" yaml:"metadata"`
-	Ttl      int               `json:"ttl" yaml:"ttl"`
 }
 
 func CreateSkycapFiles(outputDir string,
@@ -282,12 +274,12 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 	return envas
 }
 
-func getConfigStoreRecords(services []*common.Service, databases []common.Database) ([]*ConfigStoreRecord, error) {
+func getConfigStoreRecords(services []*common.Service, databases []common.Database) ([]cloud66.ConfigStoreRecord, error) {
 	environmentVariables := getEnvVars(services, databases)
 
-	result := make([]*ConfigStoreRecord, 0)
+	result := make([]cloud66.ConfigStoreRecord, 0)
 	for _, database := range databases {
-		result = append(result, &ConfigStoreRecord{
+		result = append(result, cloud66.ConfigStoreRecord{
 			Key:      database.DockerImage + "." + "database",
 			RawValue: base64.StdEncoding.EncodeToString([]byte(environmentVariables["RAILS_ENV"] + "_" + "database")),
 		})
@@ -296,7 +288,7 @@ func getConfigStoreRecords(services []*common.Service, databases []common.Databa
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, &ConfigStoreRecord{
+		result = append(result, cloud66.ConfigStoreRecord{
 			Key:      database.DockerImage + "." + "username",
 			RawValue: base64.StdEncoding.EncodeToString([]byte(generatedUsername)),
 		})
@@ -305,12 +297,12 @@ func getConfigStoreRecords(services []*common.Service, databases []common.Databa
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, &ConfigStoreRecord{
+		result = append(result, cloud66.ConfigStoreRecord{
 			Key:      database.DockerImage + "." + "password",
 			RawValue: base64.StdEncoding.EncodeToString([]byte(generatedPassword)),
 		})
 
-		result = append(result, &ConfigStoreRecord{
+		result = append(result, cloud66.ConfigStoreRecord{
 			Key:      database.DockerImage + "." + "host",
 			RawValue: base64.StdEncoding.EncodeToString([]byte(database.DockerImage)),
 		})
@@ -318,8 +310,8 @@ func getConfigStoreRecords(services []*common.Service, databases []common.Databa
 	return result, nil
 }
 
-func setConfigStoreRecords(configStoreRecords []*ConfigStoreRecord, prefix string, manifestBundle *ManifestBundle, bundleFolder string) error {
-	unmarshalledOutput := ConfigStoreRecords{Records: configStoreRecords}
+func setConfigStoreRecords(configStoreRecords []cloud66.ConfigStoreRecord, prefix string, manifestBundle *ManifestBundle, bundleFolder string) error {
+	unmarshalledOutput := cloud66.ConfigStoreRecords{Records: configStoreRecords}
 	marshalledOutput, err := yaml.Marshal(&unmarshalledOutput)
 	if err != nil {
 		return err
