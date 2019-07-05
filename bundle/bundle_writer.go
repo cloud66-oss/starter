@@ -325,7 +325,7 @@ func setConfigStoreRecords(configStoreRecords []cloud66.ConfigStoreRecord, prefi
 		return err
 	}
 
-	manifestBundle.Configurations = append(manifestBundle.Configurations, fileName)
+	manifestBundle.ConfigStore = append(manifestBundle.ConfigStore, fileName)
 	return nil
 }
 
