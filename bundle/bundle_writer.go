@@ -139,10 +139,10 @@ type ModifierTemplate struct {
 	Filename string `json:"filename"`
 }
 
-type ConfigStoreEntries struct {
-	Records []*ConfigStoreEntry `json:"records" yaml:"records"`
+type ConfigStoreRecords struct {
+	Records []*ConfigStoreRecord `json:"records" yaml:"records"`
 }
-type ConfigStoreEntry struct {
+type ConfigStoreRecord struct {
 	Key      string            `json:"key" yaml:"key"`
 	RawValue string            `json:"raw_value" yaml:"raw_value"`
 	Metadata map[string]string `json:"metadata" yaml:"metadata"`
@@ -181,7 +181,7 @@ func CreateSkycapFiles(outputDir string,
 		return err
 	}
 
-	err = handleConfigStoreEntries(packName, services, databases, manifestFile, bundleFolder)
+	err = handleConfigStoreRecords(packName, services, databases, manifestFile, bundleFolder)
 	if err != nil {
 		return err
 	}
@@ -282,12 +282,12 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 	return envas
 }
 
-func getConfigStoreEntries(services []*common.Service, databases []common.Database) ([]*ConfigStoreEntry, error) {
+func getConfigStoreRecords(services []*common.Service, databases []common.Database) ([]*ConfigStoreRecord, error) {
 	environmentVariables := getEnvVars(services, databases)
 
-	result := make([]*ConfigStoreEntry, 0)
+	result := make([]*ConfigStoreRecord, 0)
 	for _, database := range databases {
-		result = append(result, &ConfigStoreEntry{
+		result = append(result, &ConfigStoreRecord{
 			Key:      database.DockerImage + "." + "database",
 			RawValue: base64.StdEncoding.EncodeToString([]byte(environmentVariables["RAILS_ENV"] + "_" + "database")),
 		})
@@ -296,7 +296,7 @@ func getConfigStoreEntries(services []*common.Service, databases []common.Databa
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, &ConfigStoreEntry{
+		result = append(result, &ConfigStoreRecord{
 			Key:      database.DockerImage + "." + "username",
 			RawValue: base64.StdEncoding.EncodeToString([]byte(generatedUsername)),
 		})
@@ -305,12 +305,12 @@ func getConfigStoreEntries(services []*common.Service, databases []common.Databa
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, &ConfigStoreEntry{
+		result = append(result, &ConfigStoreRecord{
 			Key:      database.DockerImage + "." + "password",
 			RawValue: base64.StdEncoding.EncodeToString([]byte(generatedPassword)),
 		})
 
-		result = append(result, &ConfigStoreEntry{
+		result = append(result, &ConfigStoreRecord{
 			Key:      database.DockerImage + "." + "host",
 			RawValue: base64.StdEncoding.EncodeToString([]byte(database.DockerImage)),
 		})
@@ -318,8 +318,8 @@ func getConfigStoreEntries(services []*common.Service, databases []common.Databa
 	return result, nil
 }
 
-func setConfigStoreEntries(configStoreEntries []*ConfigStoreEntry, prefix string, manifestBundle *ManifestBundle, bundleFolder string) error {
-	unmarshalledOutput := ConfigStoreEntries{Records: configStoreEntries}
+func setConfigStoreRecords(configStoreRecords []*ConfigStoreRecord, prefix string, manifestBundle *ManifestBundle, bundleFolder string) error {
+	unmarshalledOutput := ConfigStoreRecords{Records: configStoreRecords}
 	marshalledOutput, err := yaml.Marshal(&unmarshalledOutput)
 	if err != nil {
 		return err
@@ -455,13 +455,13 @@ func saveEnvVars(prefix string, envVars map[string]string, manifestFile *Manifes
 	return manifestFile, nil
 }
 
-func handleConfigStoreEntries(prefix string, services []*common.Service, databases []common.Database, manifestBundle *ManifestBundle, bundleFolder string) error {
-	configStoreEntries, err := getConfigStoreEntries(services, databases)
+func handleConfigStoreRecords(prefix string, services []*common.Service, databases []common.Database, manifestBundle *ManifestBundle, bundleFolder string) error {
+	configStoreRecords, err := getConfigStoreRecords(services, databases)
 	if err != nil {
 		return err
 	}
 
-	err = setConfigStoreEntries(configStoreEntries, prefix, manifestBundle, bundleFolder)
+	err = setConfigStoreRecords(configStoreRecords, prefix, manifestBundle, bundleFolder)
 	if err != nil {
 		return err
 	}
