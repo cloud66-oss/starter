@@ -246,8 +246,6 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 }
 
 func getConfigStoreRecords(services []*common.Service, databases []common.Database) ([]cloud66.BundledConfigStoreRecord, error) {
-	environmentVariables := getEnvVars(services, databases)
-
 	result := make([]cloud66.BundledConfigStoreRecord, 0)
 	for _, database := range databases {
 		result = append(result, cloud66.BundledConfigStoreRecord{

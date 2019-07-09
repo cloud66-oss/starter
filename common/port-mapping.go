@@ -1,7 +1,5 @@
 package common
 
-import "strings"
-
 type PortMapping struct {
 	Container string
 	HTTP      string
