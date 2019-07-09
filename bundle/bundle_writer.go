@@ -241,30 +241,7 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 			envas[envs.Key] = envs.Value
 		}
 	}
-	for _, db := range databases {
-		// DATABASE NAME
-		key := strings.ToUpper(db.DockerImage + "_DATABASE")
 
-		envas[key] = envas["RAILS_ENV"] + "_database"
-
-		// USER
-		key = strings.ToUpper(db.DockerImage + "_USERNAME")
-		userId, err := password.Generate(6, 3, 0, true, false)
-		if err != nil {
-			fmt.Println("Error generating the database admin username. Error: ", err)
-			return nil
-		}
-		envas[key] = strings.ToLower("u" + userId)
-
-		// USER PASSWORD
-		key = strings.ToUpper(db.DockerImage + "_PASSWORD")
-		userpsw, err := password.Generate(15, 5, 0, false, false)
-		if err != nil {
-			fmt.Println("Error generating the database admin username. Error: ", err)
-			return nil
-		}
-		envas[key] = userpsw
-	}
 	return envas
 }
 
