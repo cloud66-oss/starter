@@ -237,12 +237,6 @@ func CreateSkycapFiles(outputDir string,
 func getEnvVars(servs []*common.Service, databases []common.Database) map[string]string {
 	var envas = make(map[string]string)
 	for _, envVarArray := range servs {
-		for _, portMapping := range envVarArray.Ports {
-			portEnvas := portMapping.GetEnvironmentVariablesArray(envVarArray.Name)
-			for key, value := range portEnvas {
-				envas[key] = value
-			}
-		}
 		for _, envs := range envVarArray.EnvVars {
 			envas[envs.Key] = envs.Value
 		}
