@@ -254,7 +254,7 @@ func getConfigStoreRecords(services []*common.Service, databases []common.Databa
 			Scope: cloud66.BundledConfigStoreStackScope,
 			ConfigStoreRecord: cloud66.ConfigStoreRecord{
 				Key:      database.DockerImage + "." + "database",
-				RawValue: base64.StdEncoding.EncodeToString([]byte(environmentVariables["RAILS_ENV"] + "_" + "database")),
+				RawValue: base64.StdEncoding.EncodeToString([]byte("database")),
 			},
 		})
 
