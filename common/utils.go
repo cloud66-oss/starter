@@ -3,6 +3,8 @@ package common
 import (
 	"archive/tar"
 	"bufio"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -239,4 +241,13 @@ func Tar(source, target string) error {
 			_, err = io.Copy(tarball, file)
 			return err
 		})
+}
+
+func GenerateRandomBase64String(size int) (string, error) {
+	rb := make([]byte, size)
+	_, err := rand.Read(rb)
+	if err != nil {
+		return "", err
+	}
+	return base64.URLEncoding.EncodeToString(rb), nil
 }
