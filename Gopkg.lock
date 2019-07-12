@@ -35,6 +35,25 @@
   version = "2018.01.18"
 
 [[projects]]
+  branch = "master"
+  digest = "1:27e90ddacbbf8ee73e93bbf1c216618a9c42b441c8300380c9606e377defe357"
+  name = "github.com/cloud66-oss/cloud66"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0a13a84d103ccf2d5ed211b52ac392bb40662e5f"
+
+[[projects]]
+  branch = "master"
+  digest = "1:feeee3a69c4f9e8a685d8b7438c34a2db019cd96b99b28a13a7a76497c626b3c"
+  name = "github.com/cloud66/fayego"
+  packages = [
+    "fayeclient",
+    "fayeserver",
+  ]
+  pruneopts = "UT"
+  revision = "62f173dff4c0eaf5686464384fcd3b11415b4310"
+
+[[projects]]
   digest = "1:b078d8392f5c1fcba9fb99d34e365d2251c5bec03c8d352a3154435063b2aef1"
   name = "github.com/docker/distribution"
   packages = [
@@ -73,6 +92,14 @@
   revision = "b353fcada0eb6fc32e78bb1ad88030bc0d9ad311"
 
 [[projects]]
+  digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
   name = "github.com/gorilla/context"
   packages = ["."]
@@ -88,6 +115,14 @@
   revision = "0a192a193177452756c362c20087ddafcf6829c4"
 
 [[projects]]
+  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
+
+[[projects]]
   digest = "1:88e0b0baeb9072f0a4afbcf12dda615fc8be001d1802357538591155998da21b"
   name = "github.com/hashicorp/go-version"
   packages = ["."]
@@ -101,6 +136,14 @@
   packages = ["registry"]
   pruneopts = "UT"
   revision = "97450e9c3ae5d9fa1b31ba877efb06cd28339320"
+
+[[projects]]
+  branch = "master"
+  digest = "1:041b1df118bc77031d26f3ad0bec538f3e1f76106a47d7657e20a6b56604de14"
+  name = "github.com/khash/oauth"
+  packages = ["oauth"]
+  pruneopts = "UT"
+  revision = "29933d91e1e3d670d91953d364064f5edb0a8b85"
 
 [[projects]]
   branch = "master"
@@ -176,6 +219,14 @@
   revision = "7ce781ea776b2fd506491011353bded2e40c8467"
 
 [[projects]]
+  digest = "1:e5d0bd87abc2781d14e274807a470acd180f0499f8bf5bb18606e9ec22ad9de9"
+  name = "github.com/pborman/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
+  version = "v1.2"
+
+[[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -239,6 +290,7 @@
   input-imports = [
     "github.com/ant0ine/go-json-rest/rest",
     "github.com/blang/semver",
+    "github.com/cloud66-oss/cloud66",
     "github.com/getsentry/raven-go",
     "github.com/go-resty/resty",
     "github.com/hashicorp/go-version",

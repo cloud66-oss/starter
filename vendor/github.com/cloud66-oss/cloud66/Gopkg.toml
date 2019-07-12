@@ -26,29 +26,17 @@
 
 
 [[constraint]]
-  name = "github.com/blang/semver"
-  version = "3.3.0"
+  branch = "master"
+  name = "github.com/cloud66/fayego"
 
 [[constraint]]
   branch = "master"
-  name = "github.com/getsentry/raven-go"
+  name = "github.com/khash/oauth"
 
 [[constraint]]
-  name = "gopkg.in/yaml.v2"
-  version = "2.2.1"
+  name = "github.com/toqueteos/webbrowser"
+  version = "1.0.0"
 
 [prune]
   go-tests = true
   unused-packages = true
-
-[[constraint]]
-  name = "github.com/sethvargo/go-password"
-  version = "0.1.2"
-
-[[constraint]]
-  name = "gopkg.in/go-yaml/yaml.v2"
-  version = "2.2.2"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/cloud66-oss/cloud66"
