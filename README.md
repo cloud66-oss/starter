@@ -10,7 +10,7 @@ Starter can also generate the `service.yml` file, which is a Cloud 66 service de
 
 ![Logo Starter an open source dockerfile generator](http://blog.cloud66.com/content/images/2016/08/Starter-open-source-dockerfile-generator-on-github.png)
 
-- Website: http://www.startwithdocker.com/
+- Help Pages: https://help.cloud66.com/starter/
 - Download Starter: https://github.com/cloud66-oss/starter/releases/
 - Articles: http://blog.cloud66.com/tag/starter/
 
@@ -50,7 +50,7 @@ ___
 
 Comprehensive documentation is available on the Starter website:
 
-http://www.startwithdocker.com/
+https://help.cloud66.com/starter/
 
 ### Quick Start:
 ___
@@ -101,7 +101,7 @@ For more options, please see:
 ___
 
 
-If you want to contribute to Starter. You can build Starter using [Habitus](http://www.habitus.io). Habitus is an open source build flow tool for Docker.
+If you want to contribute to Starter. You can build Starter using [Habitus](https://help.cloud66.com/habitus/). Habitus is an open source build flow tool for Docker.
 
 Run Habitus in the root directory of this repository. The latest version is generated (after tests) inside the `./artifacts/compiled` directory.
 
