@@ -2,8 +2,6 @@
 
 # Starter
 
-![Codeship Status for cloud66/starter](https://codeship.com/projects/81c5dde0-e914-0133-c219-4eaa3299b296/status)
-
 Starter is an open source command line tool to generate a `Dockerfile` and a `docker-compose.yml` file from arbitrary source code. It will kickstart the journey towards containerizing your apps.
 
 Starter can also generate the `service.yml` file, which is a Cloud 66 service definition file used to define the service configurations that run Docker in production on any cloud, or on your own serve
