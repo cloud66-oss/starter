@@ -1,8 +1,6 @@
 #use the golang base image
-FROM golang:1.8
+FROM golang:1.12
 MAINTAINER Cloud 66
-
-RUN go get -u github.com/golang/dep/cmd/dep
 
 #get all the go crosscompile stuff
 RUN go get github.com/mitchellh/gox
