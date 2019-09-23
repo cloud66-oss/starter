@@ -2,7 +2,7 @@
 FROM golang:1.8
 MAINTAINER Cloud 66
 
-RUN apt-get update && apt-get upgrade
+RUN apt-get -y update && apt-get -y upgrade
 RUN apt-get install go-dep
 
 #get all the go crosscompile stuff
