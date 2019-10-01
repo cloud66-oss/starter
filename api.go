@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/cloud66-oss/starter/common"
@@ -205,7 +206,7 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	unzip(filename, source_dir)
 
 	//analyse
-	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose,service", git_repo, git_branch)
+	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose,service,skycap", git_repo, git_branch)
 
 	//cleanup
 	err = os.RemoveAll(source_dir)
@@ -334,6 +335,7 @@ func analyze_sourcecode(config *Config, path string, generate string, git_repo s
 				result.Service = string(serviceymlfile)
 			}
 		}
+
 		if strings.Contains(generate, "docker-compose") {
 			dockercomposeymlfile, e := ioutil.ReadFile(path + "/docker-compose.yml")
 			if e != nil {
@@ -344,7 +346,17 @@ func analyze_sourcecode(config *Config, path string, generate string, git_repo s
 			}
 		}
 
+		if strings.Contains(generate, "skycap") {
+			bundle, e := ioutil.ReadFile(path + "/starter.bundle")
+			if e != nil {
+				// catch error
+				result.SkycapBundle = ""
+			} else {
+				result.SkycapBundle = base64.StdEncoding.EncodeToString(bundle)
+			}
+		}
 	}
+
 	return result
 }
 func unzip(src, dest string) error {

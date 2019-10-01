@@ -35,6 +35,7 @@ type analysisResult struct {
 	Dockerfile     string
 	Service        string
 	DockerCompose  string
+	SkycapBundle   string
 	StartCommands  []string
 	BuildCommands  []string
 	DeployCommands []string
