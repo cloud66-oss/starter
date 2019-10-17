@@ -7,6 +7,7 @@ type Service struct {
 	Command       string
 	BuildCommand  string
 	DeployCommand string
+	Tags          map[string]string
 	Ports         []*PortMapping
 	EnvVars       []*EnvVar
 	BuildRoot     string

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/cloud66-oss/starter/common"
 	"github.com/cloud66-oss/starter/packs"
-	"github.com/cloud66-oss/starter/packs/compose-to-service-yml"
 	"github.com/cloud66-oss/starter/packs/node"
 	"github.com/cloud66-oss/starter/packs/php"
 	"github.com/cloud66-oss/starter/packs/ruby"
@@ -18,9 +17,8 @@ func Detect(rootDir string) ([]packs.Pack, error) {
 	ruby := ruby.Pack{}
 	node := node.Pack{}
 	php := php.Pack{}
-	dockercompose := compose_to_service_yml.Pack{}
 	serviceyml := service_yml_to_kubes.Pack{}
-	detectors := []packs.Detector{dockercompose.Detector(), ruby.Detector(), node.Detector(), php.Detector(), serviceyml.Detector()}
+	detectors := []packs.Detector{ruby.Detector(), node.Detector(), php.Detector(), serviceyml.Detector()}
 
 	var packs []packs.Pack
 
@@ -66,12 +64,6 @@ func choosePack(detectedPacks []packs.Pack, noPrompt bool) (packs.Pack, error) {
 		} else {
 
 			common.PrintlnTitle("More than one framework detected! NoPrompt flag value is set to true.")
-
-			for i := 0; i < len(detectedPacks); i++ {
-				if detectedPacks[i].Name() == "docker-compose" {
-					return detectedPacks[i], nil
-				}
-			}
 
 			for i := 0; i < len(detectedPacks); i++ {
 				if detectedPacks[i].Name() == "service.yml" {

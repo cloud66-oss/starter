@@ -14,6 +14,7 @@ type Pack struct {
 
 const (
 	StencilTemplatePath = "" //TODO: still not implemented
+	serviceGithubURL    = "" //TODO: still not implemented
 )
 
 func (p *Pack) Name() string {
@@ -80,11 +81,6 @@ func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 
 	return nil
 }
-
-func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shouldPrompt bool) error {
-	common.PrintlnWarning("You can not generate a docker-compose.yml using this pack. Nothing to do.")
-	return nil
-}
 func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldPrompt bool) error {
 	common.PrintlnWarning("There is already an existing service.yml. Nothing to do.")
 	return nil
@@ -104,6 +100,10 @@ func (p *Pack) GetStartCommands() []string {
 
 func (p *Pack) StencilRepositoryPath() string {
 	return StencilTemplatePath
+}
+
+func (p *Pack) PackGithubUrl() string {
+	return serviceGithubURL
 }
 
 func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string, branch string) error {

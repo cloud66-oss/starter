@@ -18,6 +18,7 @@ services:
         {{if .UDP}}udp: {{.UDP}}{{end}}
     {{end}}{{end}}
 
+    {{if .Tags}}tags:{{range .Tags}}
     {{if .EnvVars}}env_vars:{{range .EnvVars}}
       {{.Key}}: {{.Value}}
     {{end}}{{end}}

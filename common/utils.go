@@ -251,3 +251,10 @@ func GenerateRandomBase64String(size int) (string, error) {
 	}
 	return base64.URLEncoding.EncodeToString(rb), nil
 }
+
+func CheckError(err error) {
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+}

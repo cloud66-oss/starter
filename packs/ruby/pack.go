@@ -84,17 +84,6 @@ func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldProm
 	return w.Write(p.Analysis.ServiceYAMLContext)
 }
 
-func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shouldPrompt bool) error {
-	w := DockerComposeYAMLWriter{
-		packs.DockerComposeYAMLWriterBase{
-			PackElement: packs.PackElement{Pack: p},
-			TemplateWriterBase: packs.TemplateWriterBase{
-				TemplateDir:  templateDir,
-				OutputDir:    outputDir,
-				ShouldPrompt: shouldPrompt}}}
-	return w.Write(p.Analysis.DockerComposeYAMLContext)
-}
-
 func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 	common.PrintlnWarning("You can not generate a Kubernetes configuration file using this pack. Nothing to do.")
 	return nil
@@ -119,4 +108,8 @@ func (p *Pack) GetStartCommands() []string {
 
 func (p *Pack) StencilRepositoryPath() string {
 	return rubyRailsStencilTemplatePath
+}
+
+func (p *Pack) PackGithubUrl() string {
+	return rubyRailsGithubURL
 }

@@ -10,6 +10,7 @@ type Pack struct {
 
 const (
 	nodeExpressStencilTemplatePath = "" //TODO: this way we only have to add the filename. We should start by download the templates.json, do a couples of checks and after that download the stuff
+	nodeGithubURL                  = "" //TODO: this way we only have to add the filename. We should start by download the templates.json, do a couples of checks and after that download the stuff
 )
 
 func (p *Pack) Name() string {
@@ -86,17 +87,6 @@ func (p *Pack) WriteServiceYAML(templateDir string, outputDir string, shouldProm
 	return w.Write(p.Analysis.ServiceYAMLContext)
 }
 
-func (p *Pack) WriteDockerComposeYAML(templateDir string, outputDir string, shouldPrompt bool) error {
-	w := DockerComposeYAMLWriter{
-		packs.DockerComposeYAMLWriterBase{
-			PackElement: packs.PackElement{Pack: p},
-			TemplateWriterBase: packs.TemplateWriterBase{
-				TemplateDir:  templateDir,
-				OutputDir:    outputDir,
-				ShouldPrompt: shouldPrompt}}}
-	return w.Write(p.Analysis.DockerComposeYAMLContext)
-}
-
 func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 	common.PrintlnWarning("You can not generate a Kubernetes configuration file using this pack. Nothing to do.")
 	return nil
@@ -116,6 +106,10 @@ func (p *Pack) GetStartCommands() []string {
 
 func (p *Pack) StencilRepositoryPath() string {
 	return nodeExpressStencilTemplatePath
+}
+
+func (p *Pack) PackGithubUrl() string {
+	return nodeGithubURL
 }
 
 func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string, branch string) error {
