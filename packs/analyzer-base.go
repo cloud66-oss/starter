@@ -101,7 +101,7 @@ func (a *AnalyzerBase) CheckNotSupportedPackages(packages *common.Lister) {
 
 func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, gitBranch string, gitURL string, buildRoot string) ([]*common.Service, error) {
 	services, err := b.analyzeProcfile()
-
+	// LUCA
 	if err != nil {
 		common.PrintlnError("Failed to parse Procfile due to %s", err.Error())
 		return nil, err
@@ -111,6 +111,7 @@ func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, git
 	if err != nil {
 		return nil, err
 	}
+	fmt.Print("LUCA ---service--- : \n\tanalyzer: ", a, "\n\tanalyzerBase", b, "\n")
 	b.refineServices(&services)
 	b.inheritProjectContext(&services, envVars, gitBranch, gitURL, buildRoot)
 	return services, nil
