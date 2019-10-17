@@ -6,7 +6,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/cloud66-oss/starter/bundle"
 	"github.com/cloud66-oss/starter/common"
+	service_yml "github.com/cloud66-oss/starter/definitions/service-yml"
 	"github.com/cloud66-oss/starter/packs"
 	"github.com/cloud66-oss/starter/packs/node"
 	"github.com/cloud66-oss/starter/packs/php"
@@ -45,6 +47,8 @@ type Dockerfile struct {
 	Base     string
 }
 
+var supportedBundlePacks = []packs.Pack{new(ruby.Pack)}
+
 // NewAPI creates a new instance of the API
 func NewAPI(configuration *Config) API {
 	return API{config: configuration}
@@ -74,6 +78,8 @@ func (a *API) StartAPI() error {
 		&rest.Route{HttpMethod: "GET", PathExp: "/analyze/supported", Func: a.supported},
 		&rest.Route{HttpMethod: "GET", PathExp: "/analyze/dockerfiles", Func: a.dockerfiles},
 		&rest.Route{HttpMethod: "POST", PathExp: "/analyze/upload", Func: a.upload},
+		&rest.Route{HttpMethod: "POST", PathExp: "/analyze/get-service", Func: a.getService},
+		&rest.Route{HttpMethod: "POST", PathExp: "/analyze/get-bundle", Func: a.getBundle},
 	)
 	if err != nil {
 		return err
@@ -222,6 +228,106 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
+func (a *API) getService(w rest.ResponseWriter, r *rest.Request) {
+	uuid := uuid.NewV4().String()
+
+	gitRepo := r.FormValue("git_repo")
+	gitBranch := r.FormValue("git_branch")
+
+	//save the file to a random location
+	file, handler, err := r.FormFile("source")
+	if err != nil {
+		a.Error(w, err.Error(), 2, http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	filename := "/tmp/" + uuid + "/" + handler.Filename
+	source_dir := "/tmp/" + uuid
+	err = os.MkdirAll(source_dir, 0777)
+
+	if err != nil {
+		a.Error(w, err.Error(), 3, http.StatusInternalServerError)
+		return
+	}
+	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		a.Error(w, err.Error(), 4, http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+	io.Copy(f, file)
+
+	//unzip the file
+	unzip(filename, source_dir)
+
+	//analyse
+	analysis := analyze_sourcecode(config, source_dir, "service", gitRepo, gitBranch)
+
+	//cleanup
+	err = os.RemoveAll(source_dir)
+	if err != nil {
+		a.Error(w, err.Error(), 5, http.StatusInternalServerError)
+		return
+	}
+
+	if analysis != nil {
+		w.WriteJson(analysis)
+	} else {
+		a.Error(w, "No supported language and/or framework detected", 6, http.StatusOK)
+	}
+}
+
+func (a *API) getBundle(w rest.ResponseWriter, r *rest.Request) {
+	uuid := uuid.NewV4().String()
+
+	//save the file to a random location
+	file, handler, err := r.FormFile("source")
+	if err != nil {
+		a.Error(w, err.Error(), 2, http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	filename := "/tmp/" + uuid + "/" + handler.Filename
+	source_dir := "/tmp/" + uuid
+	err = os.MkdirAll(source_dir, 0777)
+
+	if err != nil {
+		a.Error(w, err.Error(), 3, http.StatusInternalServerError)
+		return
+	}
+
+	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		a.Error(w, err.Error(), 4, http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+	io.Copy(f, file)
+
+	//unzip the file
+	unzip(filename, source_dir)
+
+	//analyze the service.yml file to get the bundle
+	bundle, err := generate_bundle(config, source_dir)
+	//old_analyse
+	//analysis := analyze_sourcecode(config, source_dir, "service", gitRepo, gitBranch)
+
+	//cleanup
+	err = os.RemoveAll(source_dir)
+	if err != nil {
+		a.Error(w, err.Error(), 5, http.StatusInternalServerError)
+		return
+	}
+
+	if bundle != "" {
+		w.WriteJson(bundle)
+	} else {
+		a.Error(w, "No supported language and/or framework detected", 6, http.StatusOK)
+	}
+}
+
 // routes parsing
 
 func (a *API) supported(w rest.ResponseWriter, r *rest.Request) {
@@ -295,6 +401,17 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 		a.Error(w, "No supported language and/or framework detected", 6, http.StatusOK)
 	}
 
+}
+
+func generate_bundle(config *Config, sourcePath string) (string, error) {
+
+	err := createBundleFromServiceFile(sourcePath, filepath.Join(sourcePath, "service.yml"), "master")
+
+	if err == nil {
+		return "", err
+	}
+
+	return filepath.Join(sourcePath, "starter.bundle"), nil
 }
 
 func analyze_sourcecode(config *Config, path string, generate string, git_repo string, git_branch string) *analysisResult {
@@ -423,4 +540,58 @@ func Filter(vs []string, f func(string) bool) []string {
 		}
 	}
 	return vsf
+}
+
+func createBundleFromServiceFile(outputDir string,
+	serviceFilePath string,
+	branch string) error {
+
+	serviceYml := service_yml.ServiceYml{}
+	err := serviceYml.UnmarshalFromFile(filepath.Join(serviceFilePath))
+	if err != nil {
+		return err
+	}
+
+	var serviceContext packs.ServiceYAMLContextBase
+	err = serviceContext.GenerateFromServiceYml(serviceYml)
+	if err != nil {
+		return err
+	}
+
+	services := serviceContext.Services
+	databases := serviceContext.Dbs
+
+	//Create .bundle directory structure if it doesn't exist
+	tempFolder := os.TempDir()
+	bundleFolder := filepath.Join(tempFolder, "bundle")
+	defer os.RemoveAll(bundleFolder)
+	err = bundle.CreateBundleFolderStructure(bundleFolder)
+	if err != nil {
+		return err
+	}
+	for _, pack := range getSupportedBundlePacks() {
+		packServices := make([]*common.Service, 0)
+		for _, service := range services {
+			if service.Tags["framework"] == pack.Name() {
+				packServices = append(packServices, service)
+			}
+		}
+		// generate the bundle for every supported tag
+		err = bundle.GenerateBundle(outputDir, pack.StencilRepositoryPath(), branch, pack.Name(), pack.PackGithubUrl(), packServices, databases)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))
+	if err != nil {
+		common.PrintError(err.Error())
+	}
+	fmt.Printf("Bundle is saved to starter.bundle\n")
+
+	return err
+}
+
+func getSupportedBundlePacks() []packs.Pack {
+	return supportedBundlePacks
 }

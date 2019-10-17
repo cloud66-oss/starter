@@ -12,6 +12,7 @@ type Pack struct {
 
 const (
 	StencilTemplatePath = "" //TODO: still not implemented
+	phpGithubURL        = "" //TODO: still not implemented
 )
 
 func (p *Pack) Name() string {
@@ -110,6 +111,10 @@ func (p *Pack) GetStartCommands() []string {
 
 func (p *Pack) StencilRepositoryPath() string {
 	return StencilTemplatePath
+}
+
+func (p *Pack) PackGithubUrl() string {
+	return phpGithubURL
 }
 
 func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string, branch string) error {

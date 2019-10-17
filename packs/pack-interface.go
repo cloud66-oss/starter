@@ -19,4 +19,5 @@ type Pack interface {
 	SetSupportedLanguageVersions(versions []string)
 	CreateSkycapFiles(outputDir string, templateDir string, branch string) error
 	StencilRepositoryPath() string
+	PackGithubUrl() string
 }

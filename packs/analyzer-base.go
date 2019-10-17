@@ -111,6 +111,7 @@ func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, git
 	if err != nil {
 		return nil, err
 	}
+	fmt.Print("LUCA ---service--- : \n\tanalyzer: ", a, "\n\tanalyzerBase", b, "\n")
 	b.refineServices(&services)
 	b.inheritProjectContext(&services, envVars, gitBranch, gitURL, buildRoot)
 	return services, nil

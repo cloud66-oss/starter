@@ -120,3 +120,7 @@ func (p *Pack) GetStartCommands() []string {
 func (p *Pack) StencilRepositoryPath() string {
 	return rubyRailsStencilTemplatePath
 }
+
+func (p *Pack) PackGithubUrl() string {
+	return rubyRailsGithubURL
+}
