@@ -35,6 +35,7 @@ type analysisResult struct {
 	Dockerfile     string
 	Service        string
 	SkycapBundle   string
+	DockerCompose  string
 	StartCommands  []string
 	BuildCommands  []string
 	DeployCommands []string
@@ -60,8 +61,9 @@ var (
 	// BUILDDATE holds the date starter was built
 	BUILDDATE string
 
-	serviceYAMLTemplateDir string
-	dockerfileTemplateDir  string
+	serviceYAMLTemplateDir       string
+	dockerfileTemplateDir        string
+	dockerComposeYAMLTemplateDir string
 )
 
 const (
@@ -302,6 +304,7 @@ func analyze(
 
 		dockerfileTemplateDir = templates
 		serviceYAMLTemplateDir = templates
+		dockerComposeYAMLTemplateDir = templates
 
 	} else {
 		common.PrintlnTitle("Using local templates at %s", templates)
@@ -311,6 +314,7 @@ func analyze(
 		}
 		dockerfileTemplateDir = templates
 		serviceYAMLTemplateDir = templates
+		dockerComposeYAMLTemplateDir = templates
 	}
 
 	common.PrintlnTitle("Detecting framework for the project at %s", path)
@@ -396,11 +400,18 @@ func analyze(
 	}
 
 	if strings.Contains(generator, "service") {
-		err = pack.WriteServiceYAML(serviceYAMLTemplateDir, path, !noPrompt) //LUCA
+		err = pack.WriteServiceYAML(serviceYAMLTemplateDir, path, !noPrompt)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to write service.yml due to: %s", err.Error())
 		}
 	}
+
+	//if strings.Contains(generator, "docker-compose") {
+	//	err = pack.WriteDockerComposeYAML(dockerComposeYAMLTemplateDir, path, !noPrompt)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("Failed to write docker-compose.yml due to: %s", err.Error())
+	//	}
+	//}
 
 	if strings.Contains(generator, "kube") {
 		_, err = os.Stat("kubernetes.yml")

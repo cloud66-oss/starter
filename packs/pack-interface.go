@@ -10,6 +10,7 @@ type Pack interface {
 	Analyze(rootDir string, environment string, shouldNotPrompt bool, git_repo string, git_branch string) error
 	WriteDockerfile(templateDir string, outputDir string, shouldNotPrompt bool) error
 	WriteServiceYAML(templateDir string, outputDir string, shouldNotPrompt bool) error
+	WriteDockerComposeYAML(templateDir string, outputDir string, shouldNotPrompt bool) error
 	WriteKubesConfig(outputDir string, shouldNotPrompt bool) error
 	GetMessages() []string
 	GetDatabases() []string
@@ -18,5 +19,4 @@ type Pack interface {
 	SetSupportedLanguageVersions(versions []string)
 	CreateSkycapFiles(outputDir string, templateDir string, branch string) error
 	StencilRepositoryPath() string
-	PackGithubUrl() string
 }

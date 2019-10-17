@@ -28,7 +28,7 @@ var _ = Describe("Running Starter in daemon mode", func() {
 	Context("get the list of files starter is using to analyse the codebase", func() {
 		It("should respond with all the supported files", func() {
 			resp, err := resty.R().Get("http://127.0.0.1:9090/analyze/supported")
-			Expect(err).NotTo(HaveOccurred()) //LUCA maybe remove docker-compose
+			Expect(err).NotTo(HaveOccurred())
 			Expect(string(resp.Body())).To(Equal(`{"Languages":[{"Name":"docker-compose","Files":["docker-compose.yml"],"SupportedVersion":null},{"Name":"ruby","Files":["Gemfile","Procfile","config/database.yml"],"SupportedVersion":null},{"Name":"node","Files":["package.json","Procfile",".meteor/release"],"SupportedVersion":["4.6"]},{"Name":"php","Files":["composer.json"],"SupportedVersion":null},{"Name":"service.yml","Files":["service.yml"],"SupportedVersion":null}]}`))
 		})
 	})
@@ -93,14 +93,16 @@ var _ = Describe("Running Starter in daemon mode", func() {
 		})
 	})
 
-	Context("analyse a ruby project and request a dockerfile, and service.yml", func() {
-		It("should respond with a dockerfile and service.yml", func() {
+	Context("analyse a ruby project and request a dockerfile, docker-compose.yml and service.yml", func() {
+		It("should respond with a dockerfile, docker-compose.yml and service.yml", func() {
 			path := "test/ruby/rails_mysql/src"
-			resp, err := resty.R().SetBody(`{"path":"` + path + `", "generate":"dockerfile,service "}`).Post("http://127.0.0.1:9090/analyze")
+			resp, err := resty.R().SetBody(`{"path":"` + path + `", "generate":"dockerfile,service,docker-compose "}`).Post("http://127.0.0.1:9090/analyze")
 			Expect(err).NotTo(HaveOccurred())
 			dockerfile, err := ioutil.ReadFile(path + "/Dockerfile")
 			Expect(err).NotTo(HaveOccurred())
 			serviceyml, err := ioutil.ReadFile(path + "/service.yml")
+			Expect(err).NotTo(HaveOccurred())
+			dockercomposeyml, err := ioutil.ReadFile(path + "/docker-compose.yml")
 			Expect(err).NotTo(HaveOccurred())
 
 			analysis := analysisResult{}
@@ -110,6 +112,7 @@ var _ = Describe("Running Starter in daemon mode", func() {
 			analysis.Framework = "rails"
 			analysis.Dockerfile = string(dockerfile)
 			analysis.Service = string(serviceyml)
+			analysis.DockerCompose = string(dockercomposeyml)
 			analysis.BuildCommands = []string{}
 			analysis.DeployCommands = []string{}
 			analysis.Databases = []string{}
@@ -118,12 +121,13 @@ var _ = Describe("Running Starter in daemon mode", func() {
 			Expect(string(resp.Body())).To(Equal(string(b)))
 			os.Remove(path + "/Dockerfile")
 			os.Remove(path + "/service.yml")
+			os.Remove(path + "/docker-compose.yml")
 
 		})
 	})
 
-	Context("analyse a ruby project through upload files and request a dockerfile, and service.yml and s", func() {
-		It("should respond with a dockerfile and service.yml", func() {
+	Context("analyse a ruby project through upload files and request a dockerfile, docker-compose.yml and service.yml and s", func() {
+		It("should respond with a dockerfile, docker-compose.yml and service.yml", func() {
 			path := "test/ruby/rails_mysql/src"
 			expected := "test/ruby/rails_mysql/expected/api"
 
@@ -136,6 +140,8 @@ var _ = Describe("Running Starter in daemon mode", func() {
 			Expect(err).NotTo(HaveOccurred())
 			dockerfile, err := ioutil.ReadFile(expected + "/Dockerfile")
 			Expect(err).NotTo(HaveOccurred())
+			dockercomposeyml, err := ioutil.ReadFile(expected + "/docker-compose.yml")
+			Expect(err).NotTo(HaveOccurred())
 			serviceyml, err := ioutil.ReadFile(expected + "/service.yml")
 			Expect(err).NotTo(HaveOccurred())
 
@@ -145,6 +151,7 @@ var _ = Describe("Running Starter in daemon mode", func() {
 			analysis.Language = "ruby"
 			analysis.Framework = "rails"
 			analysis.Dockerfile = string(dockerfile)
+			analysis.DockerCompose = string(dockercomposeyml)
 			analysis.Service = string(serviceyml)
 			analysis.BuildCommands = []string{}
 			analysis.DeployCommands = []string{}

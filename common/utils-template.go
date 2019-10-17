@@ -2,7 +2,6 @@ package common
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,7 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"errors"
 )
+
 
 type DownloadFile struct {
 	URL  string `json:"url"`
@@ -18,11 +19,13 @@ type DownloadFile struct {
 }
 
 type TemplateDefinition struct {
-	Version        string         `json:"version"`
-	Dockerfiles    []DownloadFile `json:"dockerfiles"`
-	ServiceYmls    []DownloadFile `json:"service-ymls"`
-	BundleManifest []DownloadFile `json:"bundle-manifest-jsons"`
+	Version           string         `json:"version"`
+	Dockerfiles       []DownloadFile `json:"dockerfiles"`
+	ServiceYmls       []DownloadFile `json:"service-ymls"`
+	DockerComposeYmls []DownloadFile `json:"docker-compose-ymls"`
+	BundleManifest    []DownloadFile `json:"bundle-manifest-jsons"`
 }
+
 
 func Fetch(url string, mod *time.Time) (io.ReadCloser, error) {
 	PrintlnL2("Downloading from %s", url)
@@ -64,6 +67,7 @@ func FetchJSON(url string, mod *time.Time, v interface{}) error {
 	return json.NewDecoder(r).Decode(v)
 }
 
+
 func DownloadTemplates(tempDir string, td TemplateDefinition, templatePath string, flagBranch string) error {
 	err := DownloadSingleFile(tempDir, DownloadFile{URL: strings.Replace(templatePath, "{{.branch}}", flagBranch, -1), Name: "templates.json"}, flagBranch)
 	if err != nil {
@@ -78,6 +82,13 @@ func DownloadTemplates(tempDir string, td TemplateDefinition, templatePath strin
 	}
 
 	for _, temp := range td.ServiceYmls {
+		err := DownloadSingleFile(tempDir, temp, flagBranch)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, temp := range td.DockerComposeYmls {
 		err := DownloadSingleFile(tempDir, temp, flagBranch)
 		if err != nil {
 			return err
@@ -114,3 +125,4 @@ func DownloadSingleFile(tempDir string, temp DownloadFile, flagBranch string) er
 
 	return nil
 }
+

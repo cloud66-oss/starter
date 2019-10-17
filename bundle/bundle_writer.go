@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-
 	"gopkg.in/go-yaml/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -79,8 +78,7 @@ type BundlePolicy struct {
 	Tags     []string `json:"tags"`
 }
 
-type BundleTransformation struct {
-	// this is just a placeholder for now
+type BundleTransformation struct { // this is just a placeholder for now
 	UID  string   `json:"uid"`
 	Name string   `json:"name"`
 	Tags []string `json:"tags"`
@@ -143,57 +141,6 @@ type ModifierTemplate struct {
 	Filename string `json:"filename"`
 }
 
-//func CreateBundleFromServiceFile(outputDir string,
-//	serviceFilePath string,
-//	branch string) error {
-//
-//	serviceYml := service_yml.ServiceYml{}
-//	err := serviceYml.UnmarshalFromFile(filepath.Join(serviceFilePath))
-//	if err != nil {
-//		return err
-//	}
-//
-//	var serviceContext packs.ServiceYAMLContextBase
-//	err = serviceContext.GenerateFromServiceYml(serviceYml)
-//	if err != nil {
-//		return err
-//	}
-//
-//	services := serviceContext.Services
-//	databases := serviceContext.Dbs
-//
-//	//Create .bundle directory structure if it doesn't exist
-//	tempFolder := os.TempDir()
-//	bundleFolder := filepath.Join(tempFolder, "bundle")
-//	defer os.RemoveAll(bundleFolder)
-//	err = CreateBundleFolderStructure(bundleFolder)
-//	if err != nil {
-//		return err
-//	}
-//
-//	for _, pack := range packs.GetSupportedBundlePacks() {
-//		packServices := make([]*common.Service, 0)
-//		for _, service := range services {
-//			if service.Tags["framework"] == pack.Name() {
-//				packServices = append(packServices, service)
-//			}
-//		}
-//		// generate the bundle for every supported tag
-//		err = GenerateBundle(outputDir, pack.StencilRepositoryPath(), branch, pack.Name(), pack.PackGithubUrl(), packServices, databases)
-//		if err != nil {
-//			return err
-//		}
-//	}
-//
-//	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))
-//	if err != nil {
-//		common.PrintError(err.Error())
-//	}
-//	fmt.Printf("Bundle is saved to starter.bundle\n")
-//
-//	return err
-//}
-
 func CreateSkycapFiles(outputDir string,
 	templateRepository string,
 	branch string,
@@ -201,44 +148,22 @@ func CreateSkycapFiles(outputDir string,
 	githubURL string,
 	services []*common.Service,
 	databases []common.Database) error {
-	//Create .bundle directory structure if it doesn't exist
-	tempFolder := os.TempDir()
-	bundleFolder := filepath.Join(tempFolder, "bundle")
-	defer os.RemoveAll(bundleFolder)
-	err := CreateBundleFolderStructure(bundleFolder)
-	if err != nil {
-		return err
-	}
 
-	err = GenerateBundle(bundleFolder, templateRepository, branch, packName, githubURL, services, databases)
-	if err != nil {
-		return err
-	}
-
-	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))
-	if err != nil {
-		common.PrintError(err.Error())
-	}
-	fmt.Printf("Bundle is saved to starter.bundle\n")
-
-	return err
-}
-
-func GenerateBundle(bundleFolder string,
-	templateRepository string,
-	branch string,
-	packName string,
-	githubURL string,
-	services []*common.Service,
-	databases []common.Database) error {
 	if templateRepository == "" {
 		//no stencil template defined for this pack, print an error and do nothing
 		fmt.Printf("Sorry but there is no stencil template for this language/framework yet\n")
 		return nil
 	}
-
+	//Create .bundle directory structure if it doesn't exist
+	tempFolder := os.TempDir()
+	bundleFolder := filepath.Join(tempFolder, "bundle")
+	defer os.RemoveAll(bundleFolder)
+	err := createBundleFolderStructure(bundleFolder)
+	if err != nil {
+		return err
+	}
 	//create manifest.json file and start filling
-	manifestFile, err := loadManifest(bundleFolder)
+	manifestFile, err := loadManifest()
 	if err != nil {
 		return err
 	}
@@ -267,6 +192,7 @@ func GenerateBundle(bundleFolder string,
 		templateJSON,
 		templateRepository,
 		branch,
+		outputDir,
 		services,
 		bundleFolder,
 		manifestFile,
@@ -276,7 +202,7 @@ func GenerateBundle(bundleFolder string,
 		return err
 	}
 
-	manifestFile, err = addPoliciesAndTransformations(manifestFile) //LUCA
+	manifestFile, err = addPoliciesAndTransformations(manifestFile)
 
 	if err != nil {
 		return err
@@ -297,9 +223,17 @@ func GenerateBundle(bundleFolder string,
 	if err != nil {
 		common.PrintError(err.Error())
 	}
+
+	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))
+	if err != nil {
+		common.PrintError(err.Error())
+	}
+	fmt.Printf("Bundle is saved to starter.bundle\n")
+
 	return err
 }
 
+// downloading templates from github and putting them into homedir
 func getEnvVars(servs []*common.Service, databases []common.Database) map[string]string {
 	var envas = make(map[string]string)
 	for _, envVarArray := range servs {
@@ -376,7 +310,7 @@ func setConfigStoreRecords(configStoreRecords []cloud66.BundledConfigStoreRecord
 	return nil
 }
 
-func CreateBundleFolderStructure(baseFolder string) error {
+func createBundleFolderStructure(baseFolder string) error {
 	var folders = []string{"stencils", "policies", "transformations", "stencil_groups", "helm_releases", "configurations", "configstore"}
 	for _, subfolder := range folders {
 		folder := filepath.Join(baseFolder, subfolder)
@@ -392,6 +326,7 @@ func getRequiredStencils(
 	templateJSON *TemplateJSON,
 	templateRepository string,
 	branch string,
+	outputDir string,
 	services []*common.Service,
 	bundleFolder string,
 	manifestFile *ManifestBundle,
@@ -452,44 +387,19 @@ func getRequiredStencils(
 	return manifestFile, nil
 }
 
-func loadManifest(bundleFolder string) (*ManifestBundle, error) {
-	// TODO: if manifest file present, pick that up instead
-	var manifest *ManifestBundle
-	manifestPath := filepath.Join(bundleFolder, "manifest.json")
-	if common.FileExists(manifestPath) {
-		//open manifest.json file and cast it into the struct
-		// open the template.json file and start downloading the stencils
-		manifestFile, err := os.Open(manifestPath)
-		if err != nil {
-			return nil, err
-		}
-
-		manifestFileData, err := ioutil.ReadAll(manifestFile)
-		if err != nil {
-			return nil, err
-		}
-
-		err = json.Unmarshal(manifestFileData, &manifest)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		manifest = &ManifestBundle{
-			Version:         "1",
-			Metadata:        nil,
-			UID:             "",
-			Name:            "",
-			StencilGroups:   make([]*BundleStencilGroup, 0),
-			BaseTemplates:   make([]*BundleBaseTemplates, 0),
-			Policies:        make([]*BundlePolicy, 0),
-			Transformations: make([]*BundleTransformation, 0),
-			Tags:            make([]string, 0),
-			HelmReleases:    make([]*BundleHelmRelease, 0),
-			Configurations:  make([]string, 0),
-			ConfigStore:     make([]string, 0),
-		}
+func loadManifest() (*ManifestBundle, error) {
+	manifest := &ManifestBundle{
+		Version:        "1",
+		Metadata:       nil,
+		UID:            "",
+		Name:           "",
+		StencilGroups:  make([]*BundleStencilGroup, 0),
+		BaseTemplates:  make([]*BundleBaseTemplates, 0),
+		Tags:           make([]string, 0),
+		HelmReleases:   make([]*BundleHelmRelease, 0),
+		Configurations: make([]string, 0),
+		ConfigStore:    make([]string, 0),
 	}
-
 	return manifest, nil
 }
 
@@ -583,13 +493,13 @@ func addMetadata(manifestFile *ManifestBundle) (*ManifestBundle, error) {
 
 func addPoliciesAndTransformations(manifestFile *ManifestBundle) (*ManifestBundle, error) {
 
-	// manifestFile.Policies = make([]*BundlePolicy, 0)
-	// manifestFile.Transformations = make([]*BundleTransformation, 0)
+	manifestFile.Policies = make([]*BundlePolicy, 0)
+	manifestFile.Transformations = make([]*BundleTransformation, 0)
 	return manifestFile, nil
 }
 
 func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleFolder string, manifestFile *ManifestBundle, databases []common.Database) (*ManifestBundle, error) {
-	var helmReleases = manifestFile.HelmReleases
+	var helmReleases = make([]*BundleHelmRelease, 0)
 	for _, db := range databases {
 		var release BundleHelmRelease
 

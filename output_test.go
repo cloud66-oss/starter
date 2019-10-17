@@ -18,14 +18,14 @@ func runStarter() (string, error) {
 }
 
 func runStarterWithProjectNoTemplates(projectFixture string) (string, error) {
-	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-g", "dockerfile, c66-service")
+	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-g", "dockerfile, c66-service, docker-compose")
 	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err
 }
 
 func runStarterWithProject(projectFixture string) (string, error) {
-	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-templates", "templates/", "-g", "dockerfile, c66-service")
+	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-templates", "templates/", "-g", "dockerfile, c66-service, docker-compose")
 	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err
@@ -33,6 +33,20 @@ func runStarterWithProject(projectFixture string) (string, error) {
 
 func runStarterWithProjectGeneratingOnlyDockerfile(projectFixture string) (string, error) {
 	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-templates", "templates/")
+	command_out, err := command.Output()
+	output := string(command_out)
+	return output, err
+}
+
+func runStarterWithProjectGeneratingOnlyDockerCompose(projectFixture string) (string, error) {
+	command := exec.Command(binPath, "-y", "-p", projectFixture+"/src", "-g", "docker-compose")
+	command_out, err := command.Output()
+	output := string(command_out)
+	return output, err
+}
+
+func runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath string) (string, error) {
+	command := exec.Command(binPath, "-y", "-p", projectFixturePath+"/src", "-g", "service.yml")
 	command_out, err := command.Output()
 	output := string(command_out)
 	return output, err
@@ -48,6 +62,7 @@ func runStarterWithProjectGeneratingKubernetesYmlFromServiceYml(projectFixturePa
 func cleanupGeneratedFiles(projectFixture string) {
 	os.Remove(projectFixture + "/src/Dockerfile")
 	os.Remove(projectFixture + "/src/service.yml")
+	os.Remove(projectFixture + "/src/docker-compose.yml")
 }
 
 // NOTE: starter will be detected as the test projects git repo, so in order
@@ -96,6 +111,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
 		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected,_ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated,_ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
 	})
 })*/
 
@@ -122,6 +143,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
 
@@ -175,6 +202,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
 		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
 	})
 	Context("using a NodeJS Express project with a mysql database", func() {
 		var projectFixturePath string = "test/node/express_bare_mysql"
@@ -198,6 +231,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
 	Context("using a NodeJS Express project with a mongo database", func() {
@@ -223,6 +262,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
 		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
 	})
 	Context("using a NodeJS Express project with Procfile and no database", func() {
 		var projectFixturePath string = "test/node/express_procfile"
@@ -246,6 +291,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
 	Context("using a Rails project with a Mysql database", func() {
@@ -318,6 +369,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			Expect(dockerfile_generated).To(Equal(dockerfile_expected))
 		})
 
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
+
 		It("should generate a service.yml", func() {
 			service_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
 			service_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
@@ -348,6 +405,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
 		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
 	})
 	Context("using a NodeJS Express project with a mongodb database", func() {
 		var projectFixturePath string = "test/node/express_mongodb"
@@ -371,6 +434,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
 	Context("using a NodeJS Express project with a mongodb database", func() {
@@ -396,6 +465,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
 		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
 	})
 	Context("using a NodeJS Express project with a mongodb and redis database", func() {
 		var projectFixturePath string = "test/node/express_mongodb_redis"
@@ -419,6 +494,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
+		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
 	Context("using a NodeJS Express project with a mysql and postgres database", func() {
@@ -444,6 +525,12 @@ var _ = Describe("Generating all files with Starter", func() {
 			service_yaml_generated = convertServiceYaml(service_yaml_generated)
 			Expect(service_yaml_generated).To(Equal(service_yaml_expected))
 		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
+		})
 	})
 })
 var _ = Describe("Generating only Dockerfile with Starter", func() {
@@ -467,6 +554,41 @@ var _ = Describe("Generating only Dockerfile with Starter", func() {
 
 		It("should not generate a service.yml", func() {
 			Expect(common.FileExists(projectFixturePath + "/src/service.yml")).To(BeFalse())
+		})
+
+		It("should not generate a docker-compose.yml", func() {
+			Expect(common.FileExists(projectFixturePath + "/src/docker-compose.yml")).To(BeFalse())
+		})
+	})
+
+})
+var _ = Describe("Generating only a docker-compose.yml with Starter", func() {
+	Context("using a Rails project with a Mysql database", func() {
+		var projectFixturePath string = "test/ruby/rails_mysql"
+
+		BeforeEach(func() {
+			_, err := runStarterWithProjectGeneratingOnlyDockerCompose(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			cleanupGeneratedFiles(projectFixturePath)
+		})
+
+		It("should generate a Dockerfile", func() {
+			dockerfile_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/Dockerfile")
+			dockerfile_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/Dockerfile")
+			Expect(dockerfile_generated).To(Equal(dockerfile_expected))
+		})
+
+		It("should not generate a service.yml", func() {
+			Expect(common.FileExists(projectFixturePath + "/src/service.yml")).To(BeFalse())
+		})
+
+		It("should generate a docker-compose.yml", func() {
+			dockercompose_yaml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/docker-compose.yml")
+			dockercompose_yaml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/docker-compose.yml")
+			Expect(dockercompose_yaml_generated).To(Equal(dockercompose_yaml_expected))
 		})
 	})
 
@@ -505,6 +627,45 @@ var _ = Describe("Generating kubernetes.yml from service.yml", func() {
 			kubernetes_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/kubernetes.yml")
 			kubernetes_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/kubernetes.yml")
 			Expect(kubernetes_generated).To(Equal(kubernetes_expected))
+		})
+	})
+})
+
+var _ = Describe("Generating service.yml from docker-compose.yml", func() {
+	Context("using an empty project - just docker-compose.yml", func() {
+		var projectFixturePath string = "test/docker_compose/just_compose"
+
+		BeforeEach(func() {
+			_, err := runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+		AfterEach(func() {
+			os.Remove(projectFixturePath + "/src/service.yml")
+		})
+
+		It("should generate a service.yml", func() {
+			service_yml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
+			service_yml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
+			service_yml_generated = convertServiceYaml(service_yml_generated)
+			Expect(service_yml_generated).To(Equal(service_yml_expected))
+		})
+	})
+	Context("using an empty project - just docker-compose.yml that calls .env files", func() {
+		var projectFixturePath string = "test/docker_compose/just_compose_2"
+
+		BeforeEach(func() {
+			_, err := runStarterWithProjectGeneratingServiceYmlFromDockerCompose(projectFixturePath)
+			Expect(err).NotTo(HaveOccurred())
+		})
+		AfterEach(func() {
+			os.Remove(projectFixturePath + "/src/service.yml")
+		})
+
+		It("should generate a service.yml", func() {
+			service_yml_expected, _ := ioutil.ReadFile(projectFixturePath + "/expected/service.yml")
+			service_yml_generated, _ := ioutil.ReadFile(projectFixturePath + "/src/service.yml")
+			service_yml_generated = convertServiceYaml(service_yml_generated)
+			Expect(service_yml_generated).To(Equal(service_yml_expected))
 		})
 	})
 })

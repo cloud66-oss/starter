@@ -2,6 +2,7 @@ package transform
 
 import (
 	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/definitions/docker-compose"
 	"github.com/cloud66-oss/starter/definitions/kubernetes"
 	"github.com/cloud66-oss/starter/definitions/service-yml"
 )
@@ -160,4 +161,8 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 
 func (s *ServiceYmlTransformer) ToServiceYml() service_yml.ServiceYml {
 	return s.Base
+}
+
+func (s *ServiceYmlTransformer) ToDockerCompose() docker_compose.DockerCompose {
+	return docker_compose.DockerCompose{}
 }
