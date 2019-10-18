@@ -47,6 +47,7 @@ func (s *ServiceYAMLContextBase) GenerateFromServiceYml(serviceYml service_yml.S
 			Command:       service.Command,
 			BuildCommand:  service.BuildCommand,
 			DeployCommand: service.DeployCommand,
+			Tags:          service.Tags,
 			Ports:         ports,
 			EnvVars:       envs,
 			BuildRoot:     service.BuildRoot,

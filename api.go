@@ -181,8 +181,8 @@ func (a *API) dockerfiles(w rest.ResponseWriter, r *rest.Request) {
 func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	uuid := uuid.NewV4().String()
 
-	git_repo := r.FormValue("git_repo")
-	git_branch := r.FormValue("git_branch")
+	gitRepo := r.FormValue("git_repo")
+	gitBranch := r.FormValue("git_branch")
 
 	//save the file to a random location
 	file, handler, err := r.FormFile("source")
@@ -212,7 +212,7 @@ func (a *API) upload(w rest.ResponseWriter, r *rest.Request) {
 	unzip(filename, source_dir)
 
 	//analyse
-	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose,service,skycap", git_repo, git_branch)
+	analysis := analyze_sourcecode(config, source_dir, "dockerfile,docker-compose,service,skycap", gitRepo, gitBranch)
 
 	//cleanup
 	err = os.RemoveAll(source_dir)
@@ -280,6 +280,7 @@ func (a *API) getService(w rest.ResponseWriter, r *rest.Request) {
 
 func (a *API) getBundle(w rest.ResponseWriter, r *rest.Request) {
 	uuid := uuid.NewV4().String()
+	result := new(analysisResult)
 
 	//save the file to a random location
 	file, handler, err := r.FormFile("source")
@@ -310,22 +311,27 @@ func (a *API) getBundle(w rest.ResponseWriter, r *rest.Request) {
 	unzip(filename, source_dir)
 
 	//analyze the service.yml file to get the bundle
-	bundle, err := generate_bundle(config, source_dir)
-	//old_analyse
-	//analysis := analyze_sourcecode(config, source_dir, "service", gitRepo, gitBranch)
-
-	//cleanup
-	err = os.RemoveAll(source_dir)
+	bundlePath, err := generate_bundle(source_dir)
 	if err != nil {
 		a.Error(w, err.Error(), 5, http.StatusInternalServerError)
 		return
 	}
 
-	if bundle != "" {
-		w.WriteJson(bundle)
+	bundle, e := ioutil.ReadFile(bundlePath)
+	if e != nil {
+		a.Error(w, err.Error(), 6, http.StatusInternalServerError)
+		return
 	} else {
-		a.Error(w, "No supported language and/or framework detected", 6, http.StatusOK)
+		result.SkycapBundle = base64.StdEncoding.EncodeToString(bundle)
 	}
+
+	// cleanup
+	err = os.RemoveAll(source_dir)
+	if err != nil {
+		a.Error(w, err.Error(), 7, http.StatusInternalServerError)
+		return
+	}
+	w.WriteJson(result)
 }
 
 // routes parsing
@@ -403,18 +409,18 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 
 }
 
-func generate_bundle(config *Config, sourcePath string) (string, error) {
+func generate_bundle(sourcePath string) (string, error) {
 
 	err := createBundleFromServiceFile(sourcePath, filepath.Join(sourcePath, "service.yml"), "master")
 
-	if err == nil {
+	if err != nil {
 		return "", err
 	}
 
 	return filepath.Join(sourcePath, "starter.bundle"), nil
 }
 
-func analyze_sourcecode(config *Config, path string, generate string, git_repo string, git_branch string) *analysisResult {
+func analyze_sourcecode(config *Config, path string, generate string, gitRepo string, gitBranch string) *analysisResult {
 
 	result, err := analyze(
 		false,
@@ -424,8 +430,8 @@ func analyze_sourcecode(config *Config, path string, generate string, git_repo s
 		true,
 		true,
 		generate,
-		git_repo,
-		git_branch,
+		gitRepo,
+		gitBranch,
 		true)
 
 	if err != nil {
@@ -577,7 +583,7 @@ func createBundleFromServiceFile(outputDir string,
 			}
 		}
 		// generate the bundle for every supported tag
-		err = bundle.GenerateBundle(outputDir, pack.StencilRepositoryPath(), branch, pack.Name(), pack.PackGithubUrl(), packServices, databases)
+		err = bundle.GenerateBundle(bundleFolder, pack.StencilRepositoryPath(), branch, pack.Name(), pack.PackGithubUrl(), packServices, databases)
 		if err != nil {
 			return err
 		}
@@ -586,9 +592,8 @@ func createBundleFromServiceFile(outputDir string,
 	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))
 	if err != nil {
 		common.PrintError(err.Error())
+		return err
 	}
-	fmt.Printf("Bundle is saved to starter.bundle\n")
-
 	return err
 }
 

@@ -18,8 +18,8 @@ services:
         {{if .UDP}}udp: {{.UDP}}{{end}}
     {{end}}{{end}}
 
-    {{if .Tags}}tags:{{range .Tags}}
-      {{.Key}}: {{.Value}}
+    {{if .Tags}}tags: {{ range $key, $value := .Tags}}
+      {{$key}}: {{$value}}
     {{end}}{{end}}
 
     {{if .EnvVars}}env_vars:{{range .EnvVars}}
