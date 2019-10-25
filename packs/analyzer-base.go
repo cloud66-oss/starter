@@ -52,6 +52,9 @@ func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Dat
 	}
 
 	var dbnames []string
+	if !a.ShouldPrompt {
+		return foundDbs
+	}
 	message = message + ". \nList the databases that you desire in your application as a comma separated list."
 	common.PrintlnL1(message)
 	common.PrintlnL1("  Use 'found' to select the found ones")
