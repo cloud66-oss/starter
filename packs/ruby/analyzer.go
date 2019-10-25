@@ -85,7 +85,7 @@ func (a *Analyzer) FillServices(services *[]*common.Service) error {
 		service.DeployCommand = a.AskForCommand("", "deployment")
 	}
 	for _, service := range *services {
-		service.Tags = map[string]string{"framework": "ruby"}
+		service.Tags = []string{"cloud66.framework:rails", "cloud66.language:ruby"}
 	}
 	return nil
 }

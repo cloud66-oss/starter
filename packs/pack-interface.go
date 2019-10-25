@@ -20,4 +20,6 @@ type Pack interface {
 	CreateSkycapFiles(outputDir string, templateDir string, branch string) error
 	StencilRepositoryPath() string
 	PackGithubUrl() string
+	FrameworkTag() string
+	LanguageTag() string
 }

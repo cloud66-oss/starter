@@ -578,7 +578,7 @@ func createBundleFromServiceFile(outputDir string,
 	for _, pack := range getSupportedBundlePacks() {
 		packServices := make([]*common.Service, 0)
 		for _, service := range services {
-			if service.Tags["framework"] == pack.Name() {
+			if contains(service.Tags, pack.FrameworkTag()) && contains(service.Tags, pack.LanguageTag()) {
 				packServices = append(packServices, service)
 			}
 		}
@@ -599,4 +599,13 @@ func createBundleFromServiceFile(outputDir string,
 
 func getSupportedBundlePacks() []packs.Pack {
 	return supportedBundlePacks
+}
+
+func contains(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
 }

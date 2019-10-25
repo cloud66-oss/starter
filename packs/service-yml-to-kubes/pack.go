@@ -115,3 +115,10 @@ func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string, branch st
 	common.PrintlnWarning("You can not generate the Skycap configuration files using this pack. Nothing to do.")
 	return nil
 }
+
+func (p *Pack) FrameworkTag() string {
+	return "" // Not supported
+}
+func (p *Pack) LanguageTag() string {
+	return "" // Not supported
+}

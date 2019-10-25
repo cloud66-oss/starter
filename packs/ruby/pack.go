@@ -14,6 +14,8 @@ type Pack struct {
 const (
 	rubyRailsStencilTemplatePath = "https://raw.githubusercontent.com/cloud66/stencils-ruby-rails/{{.branch}}/" // this way we only have to add the filename. We should start by download the templates.json, do a couples of checks and after that download the stuff
 	rubyRailsGithubURL           = "https://github.com/cloud66/stencils-ruby-rails.git"
+	frameworkTag                 = "cloud66.framework:rails"
+	languageTag                  = "cloud66.language:ruby"
 )
 
 func (p *Pack) Name() string {
@@ -123,4 +125,11 @@ func (p *Pack) StencilRepositoryPath() string {
 
 func (p *Pack) PackGithubUrl() string {
 	return rubyRailsGithubURL
+}
+
+func (p *Pack) FrameworkTag() string {
+	return frameworkTag
+}
+func (p *Pack) LanguageTag() string {
+	return languageTag
 }
