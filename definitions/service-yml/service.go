@@ -1,5 +1,9 @@
 package service_yml
 
+import (
+	"strings"
+)
+
 type Service struct {
 	GitUrl           string            `yaml:"git_url,omitempty"`
 	GitBranch        string            `yaml:"git_branch,omitempty"`
@@ -9,7 +13,7 @@ type Service struct {
 	Image            string            `yaml:"image,omitempty"`
 	Command          string            `yaml:"command,omitempty"`
 	Requires         []string          `yaml:"requires,omitempty"`
-	Tags             map[string]string `yaml:"tags,omitempty"`
+	Tags             []string          `yaml:"tags,omitempty"`
 	Ports            Ports             `yaml:"ports,omitempty"`
 	EnvVars          map[string]string `yaml:"env_vars,omitempty"`
 	Volumes          []string          `yaml:"volumes,omitempty"`
@@ -29,4 +33,14 @@ type Service struct {
 	PreStopSequence  string            `yaml:"pre_stop_sequence,omitempty"`
 	RestartOnDeploy  bool              `yaml:"restart_on_deploy,omitempty"`
 	TrafficMatches   TrafficMatches    `yaml:"traffic_matches,omitempty"`
+}
+
+func (s Service) TagsToMap() map[string]string {
+	result := make(map[string]string, len(s.Tags))
+
+	for _, tag := range s.Tags {
+		pair := strings.SplitN(tag, ":", 2)
+		result[pair[0]] = pair[1]
+	}
+	return result
 }

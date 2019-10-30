@@ -43,39 +43,48 @@ func (a *AnalyzerBase) ProjectMetadata() (string, string, string, error) {
 
 func (a *AnalyzerBase) ConfirmDatabases(foundDbs []common.Database) []common.Database {
 	var dbs []common.Database
-	for _, db := range foundDbs {
-		if !a.ShouldPrompt {
-			common.PrintlnL2("Found %s", db.Name)
+	message := "Found these databases: "
+	for i, db := range foundDbs {
+		if i != 0 {
+			message = message + ", "
 		}
-		if common.AskYesOrNo(fmt.Sprintf("Found %s, confirm?", db.Name), true, a.ShouldPrompt) {
-			dbs = append(dbs, db)
-		}
+		message = message + db.Name
 	}
 
-	var message string
-	var defaultValue bool
-	if len(foundDbs) > 0 {
-		message = "Add any other databases?"
-		defaultValue = false
-	} else {
-		message = "No databases found. Add manually?"
-		defaultValue = true
+	var dbnames []string
+	if !a.ShouldPrompt {
+		return foundDbs
 	}
+	message = message + ". \nList the databases that you desire in your application as a comma separated list."
+	common.PrintlnL1(message)
+	common.PrintlnL1("  Use 'found' to select the found ones")
+	common.PrintlnL1("  Example: 'mysql, redis' ")
+	common.PrintL1("> ")
+	reader := bufio.NewReader(os.Stdin)
+	wantedDbs, err := reader.ReadString('\n')
 
-	if common.AskYesOrNo(message, defaultValue, a.ShouldPrompt) && a.ShouldPrompt {
-		common.PrintlnL1("  See http://help.cloud66.com/building-your-stack/docker-service-configuration#database-configs for complete list of possible values")
-		common.PrintlnL1("  Example: 'mysql elasticsearch' ")
-		common.PrintL1("> ")
-
-		reader := bufio.NewReader(os.Stdin)
-		otherDbs, err := reader.ReadString('\n')
-		if err == nil {
-			listOtherDbs := strings.Fields(otherDbs)
-			for _, otherDb := range listOtherDbs {
-				dbs = append(dbs, common.Database{Name: otherDb, DockerImage: otherDb})
+	if err == nil {
+		listOtherDbs := strings.Split(wantedDbs, ",")
+		for _, db := range listOtherDbs {
+			db = strings.TrimSpace(db)
+			if db == "" {
+				continue
+			}
+			dbnames = append(dbnames, db)
+		}
+		if len(dbnames) == 0 {
+			return dbs
+		} else {
+			if len(dbnames) == 1 && strings.ToLower(dbnames[0]) == "found" {
+				return foundDbs
+			} else {
+				for _, newDb := range dbnames {
+					dbs = append(dbs, common.Database{Name: newDb, DockerImage: newDb})
+				}
 			}
 		}
 	}
+
 	return dbs
 }
 
@@ -105,6 +114,7 @@ func (b *AnalyzerBase) AnalyzeServices(a Analyzer, envVars []*common.EnvVar, git
 	if err != nil {
 		return nil, err
 	}
+
 	b.refineServices(&services)
 	b.inheritProjectContext(&services, envVars, gitBranch, gitURL, buildRoot)
 	return services, nil

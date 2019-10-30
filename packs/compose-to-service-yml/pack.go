@@ -14,6 +14,7 @@ type Pack struct {
 
 const (
 	StencilTemplatePath = "" //TODO: still not implemented
+	dockerGithubUrl     = "" //TODO: still not implemented
 )
 
 func (p *Pack) Name() string {
@@ -107,7 +108,18 @@ func (p *Pack) StencilRepositoryPath() string {
 	return StencilTemplatePath
 }
 
+func (p *Pack) PackGithubUrl() string {
+	return dockerGithubUrl
+}
+
 func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string, branch string) error {
 	common.PrintlnWarning("You can not generate the Skycap configuration files using this pack. Nothing to do.")
 	return nil
+}
+
+func (p *Pack) FrameworkTag() string {
+	return "" // Not supported
+}
+func (p *Pack) LanguageTag() string {
+	return "" // Not supported
 }

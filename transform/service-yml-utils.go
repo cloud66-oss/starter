@@ -198,7 +198,7 @@ func generateService(serviceType string, serviceSpecs service_yml.Service, servi
 		Kind: "Service",
 		Metadata: kubernetes.Metadata{
 			Name:   serviceName + "-sv" + strings.ToLower(serviceType[:1]),
-			Labels: serviceSpecs.Tags,
+			Labels: serviceSpecs.TagsToMap(),
 		},
 		Spec: kubernetes.Spec{
 			Type:  serviceType,

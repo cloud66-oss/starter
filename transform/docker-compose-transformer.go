@@ -66,7 +66,11 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 		serviceYamlService.StopGrace = dockerToServiceStopGrace(v.Stop_grace_period)
 		serviceYamlService.WorkDir = v.Working_dir
 		serviceYamlService.EnvVars = v.Environment
-		serviceYamlService.Tags = v.Labels
+		serviceYamlService.Tags = make([]string, 0)
+		for key, value := range v.Labels {
+			serviceYamlService.Tags = append(serviceYamlService.Tags, key+":"+value)
+		}
+		//serviceYamlService.Tags = v.Labels
 		serviceYamlService.Privileged = v.Privileged
 		serviceYamlService.Constraints = service_yml.Constraints{
 			Resources: service_yml.Resources{
@@ -83,9 +87,8 @@ func (d *DockerComposeTransformer) ToServiceYml(gitURL string, gitBranch string,
 			}
 		}
 
-		serviceYamlService.Tags = make(map[string]string, 1)
-		for key, w := range v.Deploy.Labels {
-			serviceYamlService.Tags[key] = w
+		for key, value := range v.Deploy.Labels {
+			serviceYamlService.Tags = append(serviceYamlService.Tags, key+":"+value)
 		}
 
 		if len(v.EnvFile) > 0 {

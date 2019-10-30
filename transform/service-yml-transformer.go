@@ -73,9 +73,9 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 
 		//required by the kubes format
 		if serviceSpecs.Tags == nil {
-			serviceSpecs.Tags = make(map[string]string, 1)
+			serviceSpecs.Tags = make([]string, 0)
 		}
-		serviceSpecs.Tags["app"] = serviceName
+		serviceSpecs.Tags = append(serviceSpecs.Tags, "app:"+serviceName)
 
 		deploy = kubernetes.KubesDeployment{
 			ApiVersion: "extensions/v1beta1",
@@ -86,7 +86,7 @@ func (s *ServiceYmlTransformer) ToKubernetes() kubernetes.Kubernetes {
 			Spec: kubernetes.Spec{
 				Template: kubernetes.Template{
 					Metadata: kubernetes.Metadata{
-						Labels: serviceSpecs.Tags,
+						Labels: serviceSpecs.TagsToMap(),
 					},
 					PodSpec: kubernetes.PodSpec{
 						TerminationGracePeriodSeconds: serviceSpecs.StopGrace,

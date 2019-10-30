@@ -12,5 +12,11 @@ type Detector struct {
 }
 
 func (d *Detector) Detect(rootDir string) bool {
-	return common.FileExists(filepath.Join(rootDir, "package.json"))
+	packageJSONFileLocation := filepath.Join(rootDir, "package.json")
+	if !common.FileExists(packageJSONFileLocation) {
+		return false
+	}
+
+	hasFound, _ := common.GetDependencyVersion(packageJSONFileLocation, common.GetSupportedNodeFrameworks()...)
+	return hasFound
 }
