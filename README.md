@@ -21,7 +21,7 @@ ___
 - Detects what **database** you’re using, to setup your databases in docker-compose.
 - Compatible with **Procfiles** to generate services for you.
 - Examines your application to generate appropriate `Dockerfile`, `docker-compose.yml`, and `service.yml` files.
-- Has an **API** to integrate Starter into you own product.
+- Has an **API** to integrate Starter into you own product
 
 
 ### Why Starter?
