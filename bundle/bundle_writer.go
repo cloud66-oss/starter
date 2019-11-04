@@ -165,13 +165,13 @@ func CreateSkycapFiles(outputDir string,
 		return err
 	}
 
-	err = GenerateBundle(bundleFolder, templateRepository, branch, packName, githubURL, services, databases)
+	err = GenerateBundle(bundleFolder, templateRepository, branch, packName, githubURL, services, databases, false)
 	if err != nil {
 		return err
 	}
 
 	if addGenericBtr {
-		err = GenerateBundle(bundleFolder, packs.GenericTemplateRepository(), branch, packs.GenericBundleSuffix(), packs.GithubURL(), services, databases)
+		err = GenerateBundle(bundleFolder, packs.GenericTemplateRepository(), branch, packs.GenericBundleSuffix(), packs.GithubURL(), services, databases, true)
 		if err != nil {
 			return err
 		}
@@ -192,7 +192,8 @@ func GenerateBundle(bundleFolder string,
 	packName string,
 	githubURL string,
 	services []*common.Service,
-	databases []common.Database) error {
+	databases []common.Database,
+	isGenericBtr bool) error {
 	if templateRepository == "" {
 		//no stencil template defined for this pack, print an error and do nothing
 		fmt.Printf("Sorry but there is no stencil template for this language/framework yet\n")
@@ -205,24 +206,26 @@ func GenerateBundle(bundleFolder string,
 		return err
 	}
 
-	manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, bundleFolder)
-	if err != nil {
-		return err
-	}
-
-	err = handleConfigStoreRecords(packName, services, databases, manifestFile, bundleFolder)
-	if err != nil {
-		return err
-	}
-
 	templateJSON, err := generateTemplateJSONFromUpstreamFile(templateRepository, branch)
 	if err != nil {
 		return err
 	}
 
-	manifestFile, err = addDatabase(templateJSON, templateRepository, branch, bundleFolder, manifestFile, databases)
-	if err != nil {
-		return err
+	if isGenericBtr {
+		manifestFile, err = addDatabase(templateJSON, templateRepository, branch, bundleFolder, manifestFile, databases)
+		if err != nil {
+			return err
+		}
+
+		err = handleConfigStoreRecords(packName, services, databases, manifestFile, bundleFolder)
+		if err != nil {
+			return err
+		}
+	} else {
+		manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, bundleFolder)
+		if err != nil {
+			return err
+		}
 	}
 
 	manifestFile, err = getRequiredStencils(
