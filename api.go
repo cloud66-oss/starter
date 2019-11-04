@@ -588,6 +588,10 @@ func createBundleFromServiceFile(outputDir string,
 			return err
 		}
 	}
+	err = bundle.GenerateBundle(bundleFolder, packs.GenericTemplateRepository(), branch, packs.GenericBundleSuffix(), packs.GithubURL(), services, databases)
+	if err != nil {
+		return err
+	}
 
 	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))
 	if err != nil {

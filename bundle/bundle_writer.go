@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/cloud66-oss/starter/packs"
 	"gopkg.in/go-yaml/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -147,7 +148,8 @@ func CreateSkycapFiles(outputDir string,
 	packName string,
 	githubURL string,
 	services []*common.Service,
-	databases []common.Database) error {
+	databases []common.Database,
+	addGenericBtr bool) error {
 
 	if templateRepository == "" {
 		//no stencil template defined for this pack, print an error and do nothing
@@ -166,6 +168,13 @@ func CreateSkycapFiles(outputDir string,
 	err = GenerateBundle(bundleFolder, templateRepository, branch, packName, githubURL, services, databases)
 	if err != nil {
 		return err
+	}
+
+	if addGenericBtr {
+		err = GenerateBundle(bundleFolder, packs.GenericTemplateRepository(), branch, packs.GenericBundleSuffix(), packs.GithubURL(), services, databases)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))

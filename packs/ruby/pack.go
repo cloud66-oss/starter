@@ -104,7 +104,7 @@ func (p *Pack) WriteKubesConfig(outputDir string, shouldPrompt bool) error {
 
 func (p *Pack) CreateSkycapFiles(outputDir string, templateDir string, branch string) error {
 	var templateRepository = p.StencilRepositoryPath()
-	return bundle.CreateSkycapFiles(outputDir, templateRepository, branch, p.Name(), rubyRailsGithubURL, p.Analysis.ServiceYAMLContext.Services, p.Analysis.ServiceYAMLContext.Dbs)
+	return bundle.CreateSkycapFiles(outputDir, templateRepository, branch, p.Name(), rubyRailsGithubURL, p.Analysis.ServiceYAMLContext.Services, p.Analysis.ServiceYAMLContext.Dbs, true)
 }
 
 func (p *Pack) GetMessages() []string {
