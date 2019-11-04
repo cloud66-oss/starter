@@ -26,6 +26,7 @@ type ManifestBundle struct {
 	BaseTemplates   []*BundleBaseTemplates  `json:"base_templates"`
 	Policies        []*BundlePolicy         `json:"policies"`
 	Transformations []*BundleTransformation `json:"transformations"`
+	Workflow        *BundleWorkflow         `json:"workflow"`
 	Tags            []string                `json:"tags"`
 	HelmReleases    []*BundleHelmRelease    `json:"helm_releases"`
 	Configurations  []string                `json:"configuration"`
@@ -84,6 +85,12 @@ type BundleTransformation struct { // this is just a placeholder for now
 	Tags []string `json:"tags"`
 }
 
+type BundleWorkflow struct {
+	Uid  string   `json:"uid"`
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
+}
+
 type TemplateJSON struct {
 	Version     string           `json:"version"`
 	Public      bool             `json:"public"`
@@ -99,6 +106,7 @@ type TemplatesStruct struct {
 	Policies        []*PolicyTemplate          `json:"policies"`
 	Transformations []*TransformationsTemplate `json:"transformations"`
 	HelmCharts      []*HelmChartTemplate       `json:"helm_charts"`
+	Workflows       []*WorkflowTemplate        `json:"workflows"`
 }
 
 type StencilTemplate struct {
@@ -122,6 +130,15 @@ type PolicyTemplate struct {
 
 type TransformationsTemplate struct {
 	Name         string   `json:"name"`
+	Dependencies []string `json:"dependencies"`
+}
+
+type WorkflowTemplate struct {
+	Name         string   `json:"name"`
+	Filename     string   `json:"filename"`
+	Description  string   `json:"description"`
+	Tags         []string `json:"tags"`
+	Suggested    bool     `json:"suggested"`
 	Dependencies []string `json:"dependencies"`
 }
 
@@ -230,6 +247,16 @@ func GenerateBundle(bundleFolder string,
 	}
 
 	manifestFile, err = addPoliciesAndTransformations(manifestFile)
+
+	if err != nil {
+		return err
+	}
+
+	manifestFile, err = addWorkflow(templateJSON,
+		templateRepository,
+		branch,
+		bundleFolder,
+		manifestFile)
 
 	if err != nil {
 		return err
@@ -405,6 +432,29 @@ func getRequiredStencils(
 	return manifestFile, nil
 }
 
+func addWorkflow(
+	templateJSON *TemplateJSON,
+	templateRepository string,
+	branch string,
+	bundleFolder string,
+	manifestFile *ManifestBundle) (*ManifestBundle, error) {
+
+	suggestedWorkflow := getSuggestedWorkflow(templateJSON)
+
+	manifestFile, err := downloadAndAddWorkflow(
+		suggestedWorkflow,
+		manifestFile,
+		bundleFolder,
+		templateRepository,
+		branch,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return manifestFile, nil
+}
+
 func loadManifest(bundleFolder string) (*ManifestBundle, error) {
 	// TODO: if manifest file present, pick that up instead
 	var manifest *ManifestBundle
@@ -518,6 +568,33 @@ func downloadAndAddStencil(context string,
 	manifestStencils = append(manifestStencils, &tempStencil)
 
 	return manifestFile, manifestStencils, nil
+}
+
+func downloadAndAddWorkflow(
+	workflow *WorkflowTemplate,
+	manifestFile *ManifestBundle,
+	bundleFolder string,
+	templateRepository string,
+	branch string) (*ManifestBundle, error) {
+
+	filename := workflow.Filename
+
+	//download the stencil file
+	workflowPath := templateRepository + "workflows/" + workflow.Filename // don't need to use filepath since it's a URL
+	workflowFolder := filepath.Join(bundleFolder, "workflow")
+	downErr := common.DownloadSingleFile(workflowFolder, common.DownloadFile{URL: workflowPath, Name: filename}, branch)
+	if downErr != nil {
+		return nil, downErr
+	}
+
+	// Add the entry to the manifest file
+	manifestFile.Workflow = &BundleWorkflow{
+		Uid:  "",
+		Name: filename,
+		Tags: []string{"starter"},
+	}
+
+	return manifestFile, nil
 }
 
 func addMetadata(manifestFile *ManifestBundle) (*ManifestBundle, error) {
@@ -778,6 +855,15 @@ func filterStencilsByRequiredComponentNames(templateJSON *TemplateJSON, required
 		}
 	}
 	return result
+}
+
+func getSuggestedWorkflow(templateJSON *TemplateJSON) *WorkflowTemplate {
+	for _, workflow := range templateJSON.Templates.Workflows {
+		if workflow.Suggested == true {
+			return workflow
+		}
+	}
+	return nil
 }
 
 func generateFullyQualifiedName(v DependencyInterface) (string, error) {
