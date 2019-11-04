@@ -216,16 +216,16 @@ func GenerateBundle(bundleFolder string,
 		if err != nil {
 			return err
 		}
-
-		err = handleConfigStoreRecords(packName, services, databases, manifestFile, bundleFolder)
-		if err != nil {
-			return err
-		}
 	} else {
 		manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, bundleFolder)
 		if err != nil {
 			return err
 		}
+	}
+
+	err = handleConfigStoreRecords(packName, services, databases, manifestFile, bundleFolder, isGenericBtr)
+	if err != nil {
+		return err
 	}
 
 	manifestFile, err = getRequiredStencils(
@@ -276,49 +276,52 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 	return envas
 }
 
-func getConfigStoreRecords(services []*common.Service, databases []common.Database) ([]cloud66.BundledConfigStoreRecord, error) {
+func getConfigStoreRecords(services []*common.Service, databases []common.Database, includeDatabases bool) ([]cloud66.BundledConfigStoreRecord, error) {
 	result := make([]cloud66.BundledConfigStoreRecord, 0)
-	for _, database := range databases {
-		result = append(result, cloud66.BundledConfigStoreRecord{
-			Scope: cloud66.BundledConfigStoreStackScope,
-			ConfigStoreRecord: cloud66.ConfigStoreRecord{
-				Key:      database.DockerImage + "." + "database",
-				RawValue: base64.StdEncoding.EncodeToString([]byte("database")),
-			},
-		})
+	if includeDatabases {
+		for _, database := range databases {
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "database",
+					RawValue: base64.StdEncoding.EncodeToString([]byte("database")),
+				},
+			})
 
-		generatedUsername, err := password.Generate(10, 5, 0, true, true)
-		if err != nil {
-			return nil, err
+			generatedUsername, err := password.Generate(10, 5, 0, true, true)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "username",
+					RawValue: base64.StdEncoding.EncodeToString([]byte(generatedUsername)),
+				},
+			})
+
+			generatedPassword, err := password.Generate(64, 20, 0, false, true)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "password",
+					RawValue: base64.StdEncoding.EncodeToString([]byte(generatedPassword)),
+				},
+			})
+
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "host",
+					RawValue: base64.StdEncoding.EncodeToString([]byte(database.DockerImage)),
+				},
+			})
 		}
-		result = append(result, cloud66.BundledConfigStoreRecord{
-			Scope: cloud66.BundledConfigStoreStackScope,
-			ConfigStoreRecord: cloud66.ConfigStoreRecord{
-				Key:      database.DockerImage + "." + "username",
-				RawValue: base64.StdEncoding.EncodeToString([]byte(generatedUsername)),
-			},
-		})
-
-		generatedPassword, err := password.Generate(64, 20, 0, false, true)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, cloud66.BundledConfigStoreRecord{
-			Scope: cloud66.BundledConfigStoreStackScope,
-			ConfigStoreRecord: cloud66.ConfigStoreRecord{
-				Key:      database.DockerImage + "." + "password",
-				RawValue: base64.StdEncoding.EncodeToString([]byte(generatedPassword)),
-			},
-		})
-
-		result = append(result, cloud66.BundledConfigStoreRecord{
-			Scope: cloud66.BundledConfigStoreStackScope,
-			ConfigStoreRecord: cloud66.ConfigStoreRecord{
-				Key:      database.DockerImage + "." + "host",
-				RawValue: base64.StdEncoding.EncodeToString([]byte(database.DockerImage)),
-			},
-		})
 	}
+
 	return result, nil
 }
 
@@ -481,15 +484,17 @@ func saveEnvVars(prefix string, envVars map[string]string, manifestFile *Manifes
 	return manifestFile, nil
 }
 
-func handleConfigStoreRecords(prefix string, services []*common.Service, databases []common.Database, manifestBundle *ManifestBundle, bundleFolder string) error {
-	configStoreRecords, err := getConfigStoreRecords(services, databases)
+func handleConfigStoreRecords(prefix string, services []*common.Service, databases []common.Database, manifestBundle *ManifestBundle, bundleFolder string, includeDatabases bool) error {
+	configStoreRecords, err := getConfigStoreRecords(services, databases, includeDatabases)
 	if err != nil {
 		return err
 	}
 
-	err = setConfigStoreRecords(configStoreRecords, prefix, manifestBundle, bundleFolder)
-	if err != nil {
-		return err
+	if len(configStoreRecords) > 0 {
+		err = setConfigStoreRecords(configStoreRecords, prefix, manifestBundle, bundleFolder)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
