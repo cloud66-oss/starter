@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/cloud66-oss/starter/packs"
 	"gopkg.in/go-yaml/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -147,7 +148,8 @@ func CreateSkycapFiles(outputDir string,
 	packName string,
 	githubURL string,
 	services []*common.Service,
-	databases []common.Database) error {
+	databases []common.Database,
+	addGenericBtr bool) error {
 
 	if templateRepository == "" {
 		//no stencil template defined for this pack, print an error and do nothing
@@ -163,9 +165,16 @@ func CreateSkycapFiles(outputDir string,
 		return err
 	}
 
-	err = GenerateBundle(bundleFolder, templateRepository, branch, packName, githubURL, services, databases)
+	err = GenerateBundle(bundleFolder, templateRepository, branch, packName, githubURL, services, databases, false)
 	if err != nil {
 		return err
+	}
+
+	if addGenericBtr {
+		err = GenerateBundle(bundleFolder, packs.GenericTemplateRepository(), branch, packs.GenericBundleSuffix(), packs.GithubURL(), services, databases, true)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))
@@ -183,7 +192,8 @@ func GenerateBundle(bundleFolder string,
 	packName string,
 	githubURL string,
 	services []*common.Service,
-	databases []common.Database) error {
+	databases []common.Database,
+	isGenericBtr bool) error {
 	if templateRepository == "" {
 		//no stencil template defined for this pack, print an error and do nothing
 		fmt.Printf("Sorry but there is no stencil template for this language/framework yet\n")
@@ -196,22 +206,24 @@ func GenerateBundle(bundleFolder string,
 		return err
 	}
 
-	manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, bundleFolder)
-	if err != nil {
-		return err
-	}
-
-	err = handleConfigStoreRecords(packName, services, databases, manifestFile, bundleFolder)
-	if err != nil {
-		return err
-	}
-
 	templateJSON, err := generateTemplateJSONFromUpstreamFile(templateRepository, branch)
 	if err != nil {
 		return err
 	}
 
-	manifestFile, err = addDatabase(templateJSON, templateRepository, branch, bundleFolder, manifestFile, databases)
+	if isGenericBtr {
+		manifestFile, err = addDatabase(templateJSON, templateRepository, branch, bundleFolder, manifestFile, databases)
+		if err != nil {
+			return err
+		}
+	} else {
+		manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, bundleFolder)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = handleConfigStoreRecords(packName, services, databases, manifestFile, bundleFolder, isGenericBtr)
 	if err != nil {
 		return err
 	}
@@ -264,49 +276,52 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 	return envas
 }
 
-func getConfigStoreRecords(services []*common.Service, databases []common.Database) ([]cloud66.BundledConfigStoreRecord, error) {
+func getConfigStoreRecords(services []*common.Service, databases []common.Database, includeDatabases bool) ([]cloud66.BundledConfigStoreRecord, error) {
 	result := make([]cloud66.BundledConfigStoreRecord, 0)
-	for _, database := range databases {
-		result = append(result, cloud66.BundledConfigStoreRecord{
-			Scope: cloud66.BundledConfigStoreStackScope,
-			ConfigStoreRecord: cloud66.ConfigStoreRecord{
-				Key:      database.DockerImage + "." + "database",
-				RawValue: base64.StdEncoding.EncodeToString([]byte("database")),
-			},
-		})
+	if includeDatabases {
+		for _, database := range databases {
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "database",
+					RawValue: base64.StdEncoding.EncodeToString([]byte("database")),
+				},
+			})
 
-		generatedUsername, err := password.Generate(10, 5, 0, true, true)
-		if err != nil {
-			return nil, err
+			generatedUsername, err := password.Generate(10, 5, 0, true, true)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "username",
+					RawValue: base64.StdEncoding.EncodeToString([]byte(generatedUsername)),
+				},
+			})
+
+			generatedPassword, err := password.Generate(64, 20, 0, false, true)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "password",
+					RawValue: base64.StdEncoding.EncodeToString([]byte(generatedPassword)),
+				},
+			})
+
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "host",
+					RawValue: base64.StdEncoding.EncodeToString([]byte(database.DockerImage)),
+				},
+			})
 		}
-		result = append(result, cloud66.BundledConfigStoreRecord{
-			Scope: cloud66.BundledConfigStoreStackScope,
-			ConfigStoreRecord: cloud66.ConfigStoreRecord{
-				Key:      database.DockerImage + "." + "username",
-				RawValue: base64.StdEncoding.EncodeToString([]byte(generatedUsername)),
-			},
-		})
-
-		generatedPassword, err := password.Generate(64, 20, 0, false, true)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, cloud66.BundledConfigStoreRecord{
-			Scope: cloud66.BundledConfigStoreStackScope,
-			ConfigStoreRecord: cloud66.ConfigStoreRecord{
-				Key:      database.DockerImage + "." + "password",
-				RawValue: base64.StdEncoding.EncodeToString([]byte(generatedPassword)),
-			},
-		})
-
-		result = append(result, cloud66.BundledConfigStoreRecord{
-			Scope: cloud66.BundledConfigStoreStackScope,
-			ConfigStoreRecord: cloud66.ConfigStoreRecord{
-				Key:      database.DockerImage + "." + "host",
-				RawValue: base64.StdEncoding.EncodeToString([]byte(database.DockerImage)),
-			},
-		})
 	}
+
 	return result, nil
 }
 
@@ -469,15 +484,17 @@ func saveEnvVars(prefix string, envVars map[string]string, manifestFile *Manifes
 	return manifestFile, nil
 }
 
-func handleConfigStoreRecords(prefix string, services []*common.Service, databases []common.Database, manifestBundle *ManifestBundle, bundleFolder string) error {
-	configStoreRecords, err := getConfigStoreRecords(services, databases)
+func handleConfigStoreRecords(prefix string, services []*common.Service, databases []common.Database, manifestBundle *ManifestBundle, bundleFolder string, includeDatabases bool) error {
+	configStoreRecords, err := getConfigStoreRecords(services, databases, includeDatabases)
 	if err != nil {
 		return err
 	}
 
-	err = setConfigStoreRecords(configStoreRecords, prefix, manifestBundle, bundleFolder)
-	if err != nil {
-		return err
+	if len(configStoreRecords) > 0 {
+		err = setConfigStoreRecords(configStoreRecords, prefix, manifestBundle, bundleFolder)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

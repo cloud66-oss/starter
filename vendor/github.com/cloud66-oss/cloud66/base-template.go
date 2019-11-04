@@ -16,15 +16,29 @@ var baseTemplateStatus = map[int]string{
 	7: "Failed to verify the repository",  // ST_VERIFICATION_ERROR
 }
 
+type StencilTemplate struct {
+	BaseTemplate      string   `json:"base_template"`
+	Filename          string   `json:"filename"`
+	FilenamePattern   string   `json:"filename_pattern"`
+	Name              string   `json:"name"`
+	Description       string   `json:"description"`
+	ContextType       string   `json:"context_type"`
+	Tags              []string `json:"tags"`
+	PreferredSequence int      `json:"preferred_sequence"`
+	Content           string   `json:"content"`
+}
+
 type BaseTemplate struct {
-	Uid        string     `json:"uid"`
-	Name       string     `json:"name"`
-	GitRepo    string     `json:"git_repo"`
-	GitBranch  string     `json:"git_branch"`
-	StatusCode int        `json:"status"`
-	LastSync   *time.Time `json:"last_sync_iso"`
-	CreatedAt  time.Time  `json:"created_at_iso"`
-	UpdatedAt  time.Time  `json:"updated_at_iso"`
+	Uid        string            `json:"uid"`
+	Name       string            `json:"name"`
+	ShortName  string            `json:"short_name"`
+	GitRepo    string            `json:"git_repo"`
+	GitBranch  string            `json:"git_branch"`
+	StatusCode int               `json:"status"`
+	Stencils   []StencilTemplate `json:"stencils"`
+	LastSync   *time.Time        `json:"last_sync_iso"`
+	CreatedAt  time.Time         `json:"created_at_iso"`
+	UpdatedAt  time.Time         `json:"updated_at_iso"`
 }
 
 type wrappedBaseTemplate struct {
@@ -70,8 +84,17 @@ func (c *Client) ListBaseTemplates() ([]BaseTemplate, error) {
 	return result, nil
 }
 
-func (c *Client) GetBaseTemplate(baseTemplateUID string) (*BaseTemplate, error) {
-	req, err := c.NewRequest("GET", fmt.Sprintf("/base_templates/%s.json", baseTemplateUID), nil, nil)
+func (c *Client) GetBaseTemplate(baseTemplateUID string, includeStencils bool, includeContent bool) (*BaseTemplate, error) {
+	queryStrings := make(map[string]string)
+	if includeStencils {
+		queryStrings["include_stencils"] = "1"
+	}
+
+	if includeContent {
+		queryStrings["include_content"] = "1"
+	}
+
+	req, err := c.NewRequest("GET", fmt.Sprintf("/base_templates/%s.json", baseTemplateUID), nil, queryStrings)
 	if err != nil {
 		return nil, err
 	}

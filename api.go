@@ -583,10 +583,14 @@ func createBundleFromServiceFile(outputDir string,
 			}
 		}
 		// generate the bundle for every supported tag
-		err = bundle.GenerateBundle(bundleFolder, pack.StencilRepositoryPath(), branch, pack.Name(), pack.PackGithubUrl(), packServices, databases)
+		err = bundle.GenerateBundle(bundleFolder, pack.StencilRepositoryPath(), branch, pack.Name(), pack.PackGithubUrl(), packServices, databases, false)
 		if err != nil {
 			return err
 		}
+	}
+	err = bundle.GenerateBundle(bundleFolder, packs.GenericTemplateRepository(), branch, packs.GenericBundleSuffix(), packs.GithubURL(), services, databases, true)
+	if err != nil {
+		return err
 	}
 
 	err = common.Tar(bundleFolder, filepath.Join(outputDir, "starter.bundle"))

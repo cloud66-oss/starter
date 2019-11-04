@@ -18,6 +18,17 @@ var stackStatus = map[int]string{
 	7: "Unable to analyze",     //STK_TERMINAL_FAILURE
 }
 
+var skycapStatus = map[int]string{
+	0: "Pending analysis",   //STK_QUEUED
+	1: "Built successfully", //STK_SUCCESS
+	2: "Build failed",       //STK_FAILED
+	3: "Analyzing",          //STK_ANALYSING
+	4: "Analyzed",           //STK_ANALYSED
+	5: "Queued for build",   //STK_QUEUED_FOR_DEPLOYING
+	6: "Building",           //STK_DEPLOYING
+	7: "Unable to analyze",  //STK_TERMINAL_FAILURE
+}
+
 var healthStatus = map[int]string{
 	0: "Unknown",  //HLT_UNKNOWN
 	1: "Building", //HLT_BUILDING
@@ -86,6 +97,9 @@ type RedeployResponse struct {
 }
 
 func (s Stack) Status() string {
+	if s.Framework == "skycap" {
+		return skycapStatus[s.StatusCode]
+	}
 	return stackStatus[s.StatusCode]
 }
 
