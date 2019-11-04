@@ -382,6 +382,7 @@ func getRequiredStencils(
 				manifestFile, manifestStencils, err = downloadAndAddStencil(
 					service.Name,
 					stencil,
+					templateJSON.Name,
 					manifestFile,
 					bundleFolder,
 					templateRepository,
@@ -398,6 +399,7 @@ func getRequiredStencils(
 			manifestFile, manifestStencils, err = downloadAndAddStencil(
 				"",
 				stencil,
+				templateJSON.Name,
 				manifestFile,
 				bundleFolder,
 				templateRepository,
@@ -502,6 +504,7 @@ func handleConfigStoreRecords(prefix string, services []*common.Service, databas
 
 func downloadAndAddStencil(context string,
 	stencil *StencilTemplate,
+	btrShortname string,
 	manifestFile *ManifestBundle,
 	bundleFolder string,
 	templateRepository string,
@@ -512,7 +515,7 @@ func downloadAndAddStencil(context string,
 	if context != "" {
 		filename = context + "_"
 	}
-	filename = filename + stencil.Filename
+	filename = btrShortname + "@" + filename + stencil.Filename
 
 	//download the stencil file
 	stencilPath := templateRepository + "stencils/" + stencil.Filename // don't need to use filepath since it's a URL
