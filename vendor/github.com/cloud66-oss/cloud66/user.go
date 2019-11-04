@@ -33,9 +33,16 @@ type AccountProfileType struct {
 	DefaultRoles                []string `json:"default_roles"`
 }
 
+type AclsType struct {
+	AccountId int    `json:"account_id"`
+	EntityUrl string `json:"entity_uri"`
+	Action    string `json:"action"`
+}
+
 type AccessProfileType struct {
 	AccountProfile AccountProfileType `json:"account_profile"`
 	StackProfiles  []StackProfileType `json:"stack_profiles"`
+	AclsProfile    []AclsType         `json:"acls_profile"`
 	Override       bool               `json:"override"`
 }
 
