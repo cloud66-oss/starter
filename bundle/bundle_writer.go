@@ -3,6 +3,7 @@ package bundle
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/cloud66-oss/starter/packs"
 	"gopkg.in/go-yaml/yaml.v2"
@@ -211,18 +212,6 @@ func GenerateBundle(bundleFolder string,
 		return err
 	}
 
-	if isGenericBtr {
-		manifestFile, err = addDatabase(templateJSON, templateRepository, branch, bundleFolder, manifestFile, databases)
-		if err != nil {
-			return err
-		}
-	} else {
-		manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, bundleFolder)
-		if err != nil {
-			return err
-		}
-	}
-
 	err = handleConfigStoreRecords(packName, services, databases, manifestFile, bundleFolder, isGenericBtr)
 	if err != nil {
 		return err
@@ -239,6 +228,18 @@ func GenerateBundle(bundleFolder string,
 
 	if err != nil {
 		return err
+	}
+
+	if isGenericBtr {
+		manifestFile, err = addDatabase(templateJSON, templateRepository, branch, bundleFolder, manifestFile, databases, githubURL)
+		if err != nil {
+			return err
+		}
+	} else {
+		manifestFile, err = saveEnvVars(packName, getEnvVars(services, databases), manifestFile, bundleFolder)
+		if err != nil {
+			return err
+		}
 	}
 
 	manifestFile, err = addPoliciesAndTransformations(manifestFile)
@@ -285,6 +286,14 @@ func getConfigStoreRecords(services []*common.Service, databases []common.Databa
 				ConfigStoreRecord: cloud66.ConfigStoreRecord{
 					Key:      database.DockerImage + "." + "database",
 					RawValue: base64.StdEncoding.EncodeToString([]byte("database")),
+				},
+			})
+
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "present",
+					RawValue: base64.StdEncoding.EncodeToString([]byte("true")),
 				},
 			})
 
@@ -382,6 +391,7 @@ func getRequiredStencils(
 				manifestFile, manifestStencils, err = downloadAndAddStencil(
 					service.Name,
 					stencil,
+					templateJSON.Name,
 					manifestFile,
 					bundleFolder,
 					templateRepository,
@@ -398,6 +408,7 @@ func getRequiredStencils(
 			manifestFile, manifestStencils, err = downloadAndAddStencil(
 				"",
 				stencil,
+				templateJSON.Name,
 				manifestFile,
 				bundleFolder,
 				templateRepository,
@@ -502,17 +513,21 @@ func handleConfigStoreRecords(prefix string, services []*common.Service, databas
 
 func downloadAndAddStencil(context string,
 	stencil *StencilTemplate,
+	btrShortname string,
 	manifestFile *ManifestBundle,
 	bundleFolder string,
 	templateRepository string,
 	branch string,
 	manifestStencils []*BundleStencil) (*ManifestBundle, []*BundleStencil, error) {
 
-	var filename = ""
+	filename := ""
 	if context != "" {
 		filename = context + "_"
+		if strings.HasPrefix(stencil.Filename, "_") {
+			filename = "_" + filename + stencil.Filename[1:]
+		}
 	}
-	filename = filename + stencil.Filename
+	filename = filename + stencil.Filename + "@" + btrShortname
 
 	//download the stencil file
 	stencilPath := templateRepository + "stencils/" + stencil.Filename // don't need to use filepath since it's a URL
@@ -555,7 +570,7 @@ func addPoliciesAndTransformations(manifestFile *ManifestBundle) (*ManifestBundl
 	return manifestFile, nil
 }
 
-func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleFolder string, manifestFile *ManifestBundle, databases []common.Database) (*ManifestBundle, error) {
+func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleFolder string, manifestFile *ManifestBundle, databases []common.Database, githubURL string) (*ManifestBundle, error) {
 	var helmReleases = manifestFile.HelmReleases
 	for _, db := range databases {
 		var release BundleHelmRelease
@@ -611,6 +626,41 @@ func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleF
 					break
 				}
 			}
+
+			for _, dependency := range applicableHelmChartTemplate.Dependencies {
+				temp := strings.SplitN(dependency, "/", 2)
+				obj_type := temp[0]
+				obj_name := temp[1]
+
+				switch obj_type {
+				case "stencils":
+					stencilTemplate, err := getStencilTemplate(templateJSON, obj_name)
+					if err != nil {
+						return nil, err
+					}
+
+					baseTemplateRepoIndex, err := findIndexByRepoAndBranch(manifestFile.BaseTemplates, githubURL, branch)
+					if err != nil {
+						return nil, err
+					}
+
+					manifestFile, manifestFile.BaseTemplates[baseTemplateRepoIndex].Stencils, err = downloadAndAddStencil(
+						"",
+						stencilTemplate,
+						templateJSON.Name,
+						manifestFile,
+						bundleFolder,
+						templateRepository,
+						branch,
+						manifestFile.BaseTemplates[baseTemplateRepoIndex].Stencils)
+					if err != nil {
+						return nil, err
+					}
+				default:
+					common.PrintlnWarning("Helm release dependency type %s not supported\n", obj_type)
+					continue
+				}
+			}
 		}
 
 		release.UID = ""
@@ -620,6 +670,26 @@ func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleF
 	}
 	manifestFile.HelmReleases = helmReleases
 	return manifestFile, nil
+}
+
+func getStencilTemplate(templateJSON *TemplateJSON, stencil_name string) (*StencilTemplate, error) {
+	for _, stencil := range templateJSON.Templates.Stencils {
+		if stencil.Name == stencil_name {
+			return stencil, nil
+		}
+	}
+	return nil, errors.New("Stencil not found")
+}
+
+func findIndexByRepoAndBranch(base_templates []*BundleBaseTemplates, repo string, branch string) (int, error) {
+	repo = strings.TrimSpace(repo)
+	branch = strings.TrimSpace(branch)
+	for index, btr := range base_templates {
+		if strings.TrimSpace(btr.Repo) == repo && strings.TrimSpace(btr.Branch) == branch {
+			return index, nil
+		}
+	}
+	return -1, errors.New("Base Template Repository not found inside the Bundle")
 }
 
 type color int
