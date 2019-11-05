@@ -289,6 +289,14 @@ func getConfigStoreRecords(services []*common.Service, databases []common.Databa
 				},
 			})
 
+			result = append(result, cloud66.BundledConfigStoreRecord{
+				Scope: cloud66.BundledConfigStoreStackScope,
+				ConfigStoreRecord: cloud66.ConfigStoreRecord{
+					Key:      database.DockerImage + "." + "present",
+					RawValue: base64.StdEncoding.EncodeToString([]byte("true")),
+				},
+			})
+
 			generatedUsername, err := password.Generate(10, 5, 0, true, true)
 			if err != nil {
 				return nil, err
