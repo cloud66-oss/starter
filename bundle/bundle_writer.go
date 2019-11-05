@@ -115,7 +115,6 @@ type StencilTemplate struct {
 	MinUsage          int      `json:"min_usage"`
 	MaxUsage          int      `json:"max_usage"`
 	Dependencies      []string `json:"dependencies"`
-	Inline            bool     `json:"inline"`
 }
 
 type PolicyTemplate struct {
@@ -513,15 +512,14 @@ func downloadAndAddStencil(context string,
 	branch string,
 	manifestStencils []*BundleStencil) (*ManifestBundle, []*BundleStencil, error) {
 
-	var filename = ""
+	filename := ""
 	if context != "" {
 		filename = context + "_"
+		if strings.HasPrefix(stencil.Filename, "_") {
+			filename = "_" + filename + stencil.Filename[1:]
+		}
 	}
-	filename = btrShortname + "@" + filename + stencil.Filename
-
-	if stencil.Inline {
-		filename = "_" + filename
-	}
+	filename = filename + stencil.Filename + "@" + btrShortname
 
 	//download the stencil file
 	stencilPath := templateRepository + "stencils/" + stencil.Filename // don't need to use filepath since it's a URL
@@ -679,8 +677,6 @@ func findIndexByRepoAndBranch(base_templates []*BundleBaseTemplates, repo string
 	repo = strings.TrimSpace(repo)
 	branch = strings.TrimSpace(branch)
 	for index, btr := range base_templates {
-		fmt.Println("repos ", strings.TrimSpace(btr.Repo), "==", repo)
-		fmt.Println("branches ", strings.TrimSpace(btr.Branch), "==", branch)
 		if strings.TrimSpace(btr.Repo) == repo && strings.TrimSpace(btr.Branch) == branch {
 			return index, nil
 		}
