@@ -289,14 +289,6 @@ func getConfigStoreRecords(services []*common.Service, databases []common.Databa
 				},
 			})
 
-			result = append(result, cloud66.BundledConfigStoreRecord{
-				Scope: cloud66.BundledConfigStoreStackScope,
-				ConfigStoreRecord: cloud66.ConfigStoreRecord{
-					Key:      database.DockerImage + "." + "present",
-					RawValue: base64.StdEncoding.EncodeToString([]byte("true")),
-				},
-			})
-
 			generatedUsername, err := password.Generate(10, 5, 0, true, true)
 			if err != nil {
 				return nil, err
@@ -672,9 +664,9 @@ func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleF
 	return manifestFile, nil
 }
 
-func getStencilTemplate(templateJSON *TemplateJSON, stencil_name string) (*StencilTemplate, error) {
+func getStencilTemplate(templateJSON *TemplateJSON, stencil_filename string) (*StencilTemplate, error) {
 	for _, stencil := range templateJSON.Templates.Stencils {
-		if stencil.Name == stencil_name {
+		if stencil.Filename == stencil_filename {
 			return stencil, nil
 		}
 	}
