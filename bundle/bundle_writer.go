@@ -26,7 +26,7 @@ type ManifestBundle struct {
 	BaseTemplates   []*BundleBaseTemplates  `json:"base_templates"`
 	Policies        []*BundlePolicy         `json:"policies"`
 	Transformations []*BundleTransformation `json:"transformations"`
-	Workflow        *BundleWorkflow         `json:"workflow"`
+	Workflows       []*BundleWorkflow       `json:"workflows"`
 	Tags            []string                `json:"tags"`
 	HelmReleases    []*BundleHelmRelease    `json:"helm_releases"`
 	Configurations  []string                `json:"configuration"`
@@ -138,7 +138,6 @@ type WorkflowTemplate struct {
 	Filename     string   `json:"filename"`
 	Description  string   `json:"description"`
 	Tags         []string `json:"tags"`
-	Suggested    bool     `json:"suggested"`
 	Dependencies []string `json:"dependencies"`
 }
 
@@ -171,6 +170,8 @@ func CreateSkycapFiles(outputDir string,
 		fmt.Printf("Sorry but there is no stencil template for this language/framework yet\n")
 		return nil
 	}
+
+	branch = "workflow"
 	//Create .bundle directory structure if it doesn't exist
 	tempFolder := os.TempDir()
 	bundleFolder := filepath.Join(tempFolder, "bundle")
@@ -252,7 +253,7 @@ func GenerateBundle(bundleFolder string,
 		return err
 	}
 
-	manifestFile, err = addWorkflow(templateJSON,
+	manifestFile, err = addWorkflows(templateJSON,
 		templateRepository,
 		branch,
 		bundleFolder,
@@ -261,6 +262,13 @@ func GenerateBundle(bundleFolder string,
 	if err != nil {
 		return err
 	}
+
+	manifestFile, err = addWorkflows(templateJSON, templateRepository, branch, bundleFolder, manifestFile)
+
+	if err != nil {
+		return err
+	}
+
 	manifestFile, err = addMetadata(manifestFile)
 
 	if err != nil {
@@ -357,7 +365,7 @@ func setConfigStoreRecords(configStoreRecords []cloud66.BundledConfigStoreRecord
 }
 
 func CreateBundleFolderStructure(baseFolder string) error {
-	var folders = []string{"stencils", "policies", "transformations", "stencil_groups", "helm_releases", "configurations", "configstore"}
+	var folders = []string{"stencils", "policies", "transformations", "stencil_groups", "helm_releases", "configurations", "configstore", "workflows"}
 	for _, subfolder := range folders {
 		folder := filepath.Join(baseFolder, subfolder)
 		err := os.MkdirAll(folder, 0777)
@@ -432,25 +440,31 @@ func getRequiredStencils(
 	return manifestFile, nil
 }
 
-func addWorkflow(
+func addWorkflows(
 	templateJSON *TemplateJSON,
 	templateRepository string,
 	branch string,
 	bundleFolder string,
 	manifestFile *ManifestBundle) (*ManifestBundle, error) {
 
-	suggestedWorkflow := getSuggestedWorkflow(templateJSON)
+	var manifestWorkflows = manifestFile.Workflows
+	var finalmanifestWorkflows = make([]*BundleWorkflow, 0)
+	var err error
+	for _, workflow := range templateJSON.Templates.Workflows {
+		finalmanifestWorkflows, err = downloadAndAddWorkflow(
+			workflow,
+			templateJSON.Name,
+			bundleFolder,
+			templateRepository,
+			branch,
+			manifestWorkflows,
+		)
 
-	manifestFile, err := downloadAndAddWorkflow(
-		suggestedWorkflow,
-		manifestFile,
-		bundleFolder,
-		templateRepository,
-		branch,
-	)
-	if err != nil {
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
 	}
+	manifestFile.Workflows = finalmanifestWorkflows
 
 	return manifestFile, nil
 }
@@ -485,6 +499,7 @@ func loadManifest(bundleFolder string) (*ManifestBundle, error) {
 			BaseTemplates:   make([]*BundleBaseTemplates, 0),
 			Policies:        make([]*BundlePolicy, 0),
 			Transformations: make([]*BundleTransformation, 0),
+			Workflows:       make([]*BundleWorkflow, 0),
 			Tags:            make([]string, 0),
 			HelmReleases:    make([]*BundleHelmRelease, 0),
 			Configurations:  make([]string, 0),
@@ -572,29 +587,30 @@ func downloadAndAddStencil(context string,
 
 func downloadAndAddWorkflow(
 	workflow *WorkflowTemplate,
-	manifestFile *ManifestBundle,
+	btrShortname string,
 	bundleFolder string,
 	templateRepository string,
-	branch string) (*ManifestBundle, error) {
+	branch string,
+	manifestWorkflows []*BundleWorkflow) ([]*BundleWorkflow, error) {
 
-	filename := workflow.Filename
+	filename := workflow.Filename + "@" + btrShortname
 
 	//download the stencil file
 	workflowPath := templateRepository + "workflows/" + workflow.Filename // don't need to use filepath since it's a URL
-	workflowFolder := filepath.Join(bundleFolder, "workflow")
-	downErr := common.DownloadSingleFile(workflowFolder, common.DownloadFile{URL: workflowPath, Name: filename}, branch)
+	workflowsFolder := filepath.Join(bundleFolder, "workflows")
+	downErr := common.DownloadSingleFile(workflowsFolder, common.DownloadFile{URL: workflowPath, Name: filename}, branch)
+
 	if downErr != nil {
 		return nil, downErr
 	}
 
-	// Add the entry to the manifest file
-	manifestFile.Workflow = &BundleWorkflow{
+	manifestWorkflows = append(manifestWorkflows, &BundleWorkflow{
 		Uid:  "",
 		Name: filename,
 		Tags: []string{"starter"},
-	}
+	})
 
-	return manifestFile, nil
+	return manifestWorkflows, nil
 }
 
 func addMetadata(manifestFile *ManifestBundle) (*ManifestBundle, error) {
@@ -855,15 +871,6 @@ func filterStencilsByRequiredComponentNames(templateJSON *TemplateJSON, required
 		}
 	}
 	return result
-}
-
-func getSuggestedWorkflow(templateJSON *TemplateJSON) *WorkflowTemplate {
-	for _, workflow := range templateJSON.Templates.Workflows {
-		if workflow.Suggested == true {
-			return workflow
-		}
-	}
-	return nil
 }
 
 func generateFullyQualifiedName(v DependencyInterface) (string, error) {
