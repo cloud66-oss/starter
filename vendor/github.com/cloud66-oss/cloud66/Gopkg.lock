@@ -3,38 +3,44 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:feeee3a69c4f9e8a685d8b7438c34a2db019cd96b99b28a13a7a76497c626b3c"
   name = "github.com/cloud66/fayego"
   packages = [
     "fayeclient",
-    "fayeserver"
+    "fayeserver",
   ]
+  pruneopts = "UT"
   revision = "62f173dff4c0eaf5686464384fcd3b11415b4310"
 
 [[projects]]
+  digest = "1:3b3c418e9b9d646c509643f2b39e532338e1e6a66f79856aa5512bb6a0f68e2b"
   name = "github.com/gorilla/websocket"
   packages = ["."]
+  pruneopts = "UT"
   revision = "b6ab76f1fe9803ee1d59e7e5b2a797c1fe897ce5"
 
 [[projects]]
   branch = "master"
+  digest = "1:041b1df118bc77031d26f3ad0bec538f3e1f76106a47d7657e20a6b56604de14"
   name = "github.com/khash/oauth"
   packages = ["oauth"]
+  pruneopts = "UT"
   revision = "29933d91e1e3d670d91953d364064f5edb0a8b85"
 
 [[projects]]
+  digest = "1:8143fe1dcbe652399965fd2181b4e9bfd2fa1b4f7b9f993a8b10529af5beb6c9"
   name = "github.com/pborman/uuid"
   packages = ["."]
+  pruneopts = "UT"
   revision = "3d4f2ba23642d3cfd06bd4b54cf03d99d95c0f1b"
-
-[[projects]]
-  name = "github.com/toqueteos/webbrowser"
-  packages = ["."]
-  revision = "21fc9f95c83442fd164094666f7cb4f9fdd56cd6"
-  version = "v1.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "becc4b4891318bd23dea383c3373540044a94690675826faddb335ad759a16a8"
+  input-imports = [
+    "github.com/cloud66/fayego/fayeclient",
+    "github.com/khash/oauth/oauth",
+    "github.com/pborman/uuid",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -12,11 +12,8 @@ type Detector struct {
 }
 
 func (d *Detector) Detect(rootDir string) bool {
-	packageJSONFileLocation := filepath.Join(rootDir, "package.json")
-	if !common.FileExists(packageJSONFileLocation) {
+	if common.FileExists(filepath.Join(rootDir, "Gemfile")) || common.FileExists(filepath.Join(rootDir, "config", "database.yml")) {
 		return false
 	}
-
-	hasFound, _ := common.GetDependencyVersion(packageJSONFileLocation, common.GetSupportedNodeFrameworks()...)
-	return hasFound
+	return common.FileExists(filepath.Join(rootDir, "package.json"))
 }
