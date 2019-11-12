@@ -263,12 +263,6 @@ func GenerateBundle(bundleFolder string,
 		return err
 	}
 
-	manifestFile, err = addWorkflows(templateJSON, templateRepository, branch, bundleFolder, manifestFile)
-
-	if err != nil {
-		return err
-	}
-
 	manifestFile, err = addMetadata(manifestFile)
 
 	if err != nil {
