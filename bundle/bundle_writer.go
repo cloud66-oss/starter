@@ -174,7 +174,6 @@ func CreateSkycapFiles(outputDir string,
 		return nil
 	}
 
-	branch = "workflow"
 	//Create .bundle directory structure if it doesn't exist
 	tempFolder := os.TempDir()
 	bundleFolder := filepath.Join(tempFolder, "bundle")
