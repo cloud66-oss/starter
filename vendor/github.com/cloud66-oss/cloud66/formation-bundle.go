@@ -17,6 +17,7 @@ type FormationBundle struct {
 	BaseTemplates   []*BundleBaseTemplates  `json:"base_templates"`
 	Policies        []*BundlePolicy         `json:"policies"`
 	Transformations []*BundleTransformation `json:"transformations"`
+	Workflows       []*BundleWorkflow       `json:"workflows"`
 	Tags            []string                `json:"tags"`
 	HelmReleases    []*BundleHelmRelease    `json:"helm_releases"`
 	Configurations  []string                `json:"configuration"`
@@ -77,6 +78,12 @@ type BundleTransformation struct { // this is just a placeholder for now
 	Tags     []string `json:"tags"`
 }
 
+type BundleWorkflow struct {
+	Uid  string   `json:"uid"`
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
+}
+
 func CreateFormationBundle(formation Formation, app string, configurations []string, configstore []string) *FormationBundle {
 	bundle := &FormationBundle{
 		Version: "1",
@@ -92,6 +99,7 @@ func CreateFormationBundle(formation Formation, app string, configurations []str
 		Policies:        createPolicies(formation.Policies),
 		Transformations: createTransformations(formation.Transformations),
 		StencilGroups:   createStencilGroups(formation.StencilGroups),
+		Workflows:       createWorkflows(formation.Workflows),
 		Configurations:  configurations,
 		HelmReleases:    createHelmReleases(formation.HelmReleases),
 		ConfigStore:     configstore,
@@ -173,6 +181,19 @@ func createPolicies(policies []Policy) []*BundlePolicy {
 	return result
 }
 
+func createWorkflows(workflows []Workflow) []*BundleWorkflow {
+	result := make([]*BundleWorkflow, len(workflows))
+	for idx, st := range workflows {
+		result[idx] = &BundleWorkflow{
+			Uid:  st.Uid,
+			Name: st.Name,
+			Tags: st.Tags,
+		}
+	}
+
+	return result
+}
+
 func createTransformations(transformations []Transformation) []*BundleTransformation {
 	result := make([]*BundleTransformation, len(transformations))
 	for idx, tr := range transformations {
@@ -223,6 +244,22 @@ func (b *BundlePolicy) AsPolicy(bundlePath string) (*Policy, error) {
 		Sequence: b.Sequence,
 		Body:     string(body),
 		Tags:     b.Tags,
+	}, nil
+}
+
+func (b *BundleWorkflow) AsWorkflow(bundlePath string) (*Workflow, error) {
+	filePath := filepath.Join(filepath.Join(bundlePath, "workflow"), b.Name)
+	body, err := ioutil.ReadFile(filePath)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &Workflow{
+		Uid:  b.Uid,
+		Name: b.Name,
+		Body: string(body),
+		Tags: b.Tags,
 	}, nil
 }
 
