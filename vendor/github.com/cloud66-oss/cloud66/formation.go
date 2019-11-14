@@ -15,6 +15,7 @@ type Formation struct {
 	BaseTemplates   []BaseTemplate   `json:"base_templates"`
 	Policies        []Policy         `json:"policies"`
 	Transformations []Transformation `json:"transformations"`
+	Workflows       []Workflow       `json:"workflows"`
 	HelmReleases    []HelmRelease    `json:"helm_releases"`
 	CreatedAt       time.Time        `json:"created_at_iso"`
 	UpdatedAt       time.Time        `json:"updated_at_iso"`
