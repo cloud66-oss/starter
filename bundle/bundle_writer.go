@@ -467,10 +467,9 @@ func addWorkflows(
 	manifestFile *ManifestBundle) (*ManifestBundle, error) {
 
 	var manifestWorkflows = manifestFile.Workflows
-	var finalmanifestWorkflows = make([]*BundleWorkflow, 0)
 	var err error
 	for _, workflow := range templateJSON.Templates.Workflows {
-		finalmanifestWorkflows, err = downloadAndAddWorkflow(
+		manifestWorkflows, err = downloadAndAddWorkflow(
 			workflow,
 			templateJSON.Name,
 			bundleFolder,
@@ -483,7 +482,7 @@ func addWorkflows(
 			return nil, err
 		}
 	}
-	manifestFile.Workflows = finalmanifestWorkflows
+	manifestFile.Workflows = manifestWorkflows
 
 	return manifestFile, nil
 }
