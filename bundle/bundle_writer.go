@@ -584,7 +584,16 @@ func downloadAndAddStencil(context string,
 			filename = "_" + filename + stencil.Filename[1:]
 		}
 	}
-	filename = filename + stencil.Filename + "@" + btrShortname
+	filename = filename + stencil.Filename
+	parts := strings.Split(filename, ".")
+	if len(parts) > 1 {
+		ext := parts[len(parts)-1]
+		nameParts := parts[:len(parts)-1]
+		name := strings.Join(nameParts[:], ".")
+		filename = name + "@" + btrShortname + "." + ext
+	} else {
+		filename = filename + "@" + btrShortname
+	}
 
 	//download the stencil file
 	stencilPath := templateRepository + "stencils/" + stencil.Filename // don't need to use filepath since it's a URL
@@ -617,8 +626,17 @@ func downloadAndAddWorkflow(
 	branch string,
 	manifestWorkflows []*BundleWorkflow) ([]*BundleWorkflow, error) {
 
-	filename := workflow.Filename + "@" + btrShortname
+	filename := workflow.Filename
+	parts := strings.Split(filename, ".")
 
+	if len(parts) > 1 {
+		ext := parts[len(parts)-1]
+		nameParts := parts[:len(parts)-1]
+		name := strings.Join(nameParts[:], ".")
+		filename = name + "@" + btrShortname + "." + ext
+	} else {
+		filename = filename + "@" + btrShortname
+	}
 	//download the stencil file
 	workflowPath := templateRepository + "workflows/" + workflow.Filename // don't need to use filepath since it's a URL
 	workflowsFolder := filepath.Join(bundleFolder, "workflows")
