@@ -26,7 +26,7 @@ func (s Stencil) String() string {
 	return s.Filename
 }
 
-func (c *Client) AddStencils(stackUid string, formationUid string, baseTemplateUid string, stencils []*Stencil, message string) ([]Stencil, error) {
+func (c *Client) AddStencils(stackUid string, formationUid string, baseTemplateUid string, stencils []*Stencil, message string) (*AsyncResult, error) {
 	params := struct {
 		Message      string     `json:"message"`
 		BaseTemplate string     `json:"btr_uuid"`
@@ -37,21 +37,17 @@ func (c *Client) AddStencils(stackUid string, formationUid string, baseTemplateU
 		Stencils:     stencils,
 	}
 
-	var stencilRes []Stencil
-
 	if len(stencils) > 0 {
 		req, err := c.NewRequest("POST", "/stacks/"+stackUid+"/formations/"+formationUid+"/stencils.json", params, nil)
 		if err != nil {
 			return nil, err
 		}
 
-		stencilRes = nil
-		err = c.DoReq(req, &stencilRes, nil)
-		if err != nil {
-			return nil, err
-		}
+		var asyncRes *AsyncResult
+		return asyncRes, c.DoReq(req, &asyncRes, nil)
 	}
-	return stencilRes, nil
+
+	return nil, nil
 }
 
 func (c *Client) RenderStencil(stackUID, snapshotUID, formationUID, stencilUID string, body []byte) (*Renders, error) {
