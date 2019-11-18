@@ -455,7 +455,7 @@ func getRequiredStencils(
 					return nil, err
 				}
 			} else {
-				fmt.Printf("Skipping adding stencil '%s' stencil max_usage exceeded\n", stencil.Name)
+				fmt.Printf("Skipping adding stencil '%s' stencil because max_usage exceeded\n", stencil.Name)
 
 			}
 		}
