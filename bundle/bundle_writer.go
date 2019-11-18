@@ -413,11 +413,35 @@ func getRequiredStencils(
 
 	var manifestStencils = make([]*BundleStencil, 0)
 	requiredStencils := filterStencilsByRequiredComponentNames(templateJSON, requiredComponentNames)
+	stencilUsageMap := make(map[string]int)
 	for _, stencil := range requiredStencils {
 		if stencil.ContextType == "service" {
 			for _, service := range services {
+				if stencilUsageMap[stencil.Filename] < stencil.MaxUsage {
+					manifestFile, manifestStencils, err = downloadAndAddStencil(
+						service.Name,
+						stencil,
+						templateJSON.Name,
+						manifestFile,
+						bundleFolder,
+						templateRepository,
+						branch,
+						manifestStencils,
+					)
+					stencilUsageMap[stencil.Filename] += 1
+					if err != nil {
+						return nil, err
+					}
+					// create entry in manifest file with formatted name
+					// download and rename stencil file
+				} else {
+					fmt.Printf("Skipping adding stencil '%s' for service '%s' because stencil max_usage exceeded\n", stencil.Name, service.Name)
+				}
+			}
+		} else {
+			if stencilUsageMap[stencil.Filename] < stencil.MaxUsage {
 				manifestFile, manifestStencils, err = downloadAndAddStencil(
-					service.Name,
+					"",
 					stencil,
 					templateJSON.Name,
 					manifestFile,
@@ -426,25 +450,13 @@ func getRequiredStencils(
 					branch,
 					manifestStencils,
 				)
+				stencilUsageMap[stencil.Filename] += 1
 				if err != nil {
 					return nil, err
 				}
-				// create entry in manifest file with formatted name
-				// download and rename stencil file
-			}
-		} else {
-			manifestFile, manifestStencils, err = downloadAndAddStencil(
-				"",
-				stencil,
-				templateJSON.Name,
-				manifestFile,
-				bundleFolder,
-				templateRepository,
-				branch,
-				manifestStencils,
-			)
-			if err != nil {
-				return nil, err
+			} else {
+				fmt.Printf("Skipping adding stencil '%s' stencil max_usage exceeded\n", stencil.Name)
+
 			}
 		}
 	}
