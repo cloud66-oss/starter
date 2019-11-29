@@ -88,9 +88,10 @@ type BundleTransformation struct { // this is just a placeholder for now
 }
 
 type BundleWorkflow struct {
-	Uid  string   `json:"uid"`
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
+	Uid     string   `json:"uid"`
+	Name    string   `json:"name"`
+	Default bool     `json:"default"`
+	Tags    []string `json:"tags"`
 }
 
 type TemplateJSON struct {
@@ -269,7 +270,8 @@ func GenerateBundle(bundleFolder string,
 		templateRepository,
 		branch,
 		bundleFolder,
-		manifestFile)
+		manifestFile,
+		isGenericBtr)
 
 	if err != nil {
 		return err
@@ -476,7 +478,8 @@ func addWorkflows(
 	templateRepository string,
 	branch string,
 	bundleFolder string,
-	manifestFile *ManifestBundle) (*ManifestBundle, error) {
+	manifestFile *ManifestBundle,
+	isGenericBtr bool) (*ManifestBundle, error) {
 
 	var manifestWorkflows = manifestFile.Workflows
 	var err error
@@ -488,6 +491,7 @@ func addWorkflows(
 			templateRepository,
 			branch,
 			manifestWorkflows,
+			isGenericBtr,
 		)
 
 		if err != nil {
@@ -636,7 +640,8 @@ func downloadAndAddWorkflow(
 	bundleFolder string,
 	templateRepository string,
 	branch string,
-	manifestWorkflows []*BundleWorkflow) ([]*BundleWorkflow, error) {
+	manifestWorkflows []*BundleWorkflow,
+	isGenericBtr bool) ([]*BundleWorkflow, error) {
 
 	filename := workflow.Filename
 	parts := strings.Split(filename, ".")
@@ -658,11 +663,26 @@ func downloadAndAddWorkflow(
 		return nil, downErr
 	}
 
-	manifestWorkflows = append(manifestWorkflows, &BundleWorkflow{
-		Uid:  "",
-		Name: filename,
-		Tags: []string{"starter"},
-	})
+	var wk *BundleWorkflow
+	if isGenericBtr {
+		wk = &BundleWorkflow{
+			Uid:     "",
+			Name:    filename,
+			Default: false,
+			Tags:    []string{"starter"},
+		}
+	} else {
+		wk = &BundleWorkflow{
+			Uid:     "",
+			Name:    filename,
+			Default: false,
+			Tags:    []string{"starter"},
+		}
+		if workflow.Filename == "default.yml" {
+			wk.Default = true
+		}
+	}
+	manifestWorkflows = append(manifestWorkflows, wk)
 
 	return manifestWorkflows, nil
 }
