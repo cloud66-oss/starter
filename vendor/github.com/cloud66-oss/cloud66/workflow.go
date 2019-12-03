@@ -8,6 +8,7 @@ type Workflow struct {
 	Uid       string    `json:"uid"`
 	Name      string    `json:"name"`
 	Body      string    `json:"body"`
+	Default   bool      `json:"default"`
 	CreatedAt time.Time `json:"created_at_iso"`
 	UpdatedAt time.Time `json:"updated_at_iso"`
 	Tags      []string  `json:"tags"`

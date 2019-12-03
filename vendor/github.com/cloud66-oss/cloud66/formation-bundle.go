@@ -79,9 +79,10 @@ type BundleTransformation struct { // this is just a placeholder for now
 }
 
 type BundleWorkflow struct {
-	Uid  string   `json:"uid"`
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
+	Uid     string   `json:"uid"`
+	Name    string   `json:"name"`
+	Default bool     `json:"default"`
+	Tags    []string `json:"tags"`
 }
 
 func CreateFormationBundle(formation Formation, app string, configurations []string, configstore []string) *FormationBundle {
@@ -185,9 +186,10 @@ func createWorkflows(workflows []Workflow) []*BundleWorkflow {
 	result := make([]*BundleWorkflow, len(workflows))
 	for idx, st := range workflows {
 		result[idx] = &BundleWorkflow{
-			Uid:  st.Uid,
-			Name: st.Name,
-			Tags: st.Tags,
+			Uid:     st.Uid,
+			Name:    st.Name,
+			Default: st.Default,
+			Tags:    st.Tags,
 		}
 	}
 
@@ -248,7 +250,7 @@ func (b *BundlePolicy) AsPolicy(bundlePath string) (*Policy, error) {
 }
 
 func (b *BundleWorkflow) AsWorkflow(bundlePath string) (*Workflow, error) {
-	filePath := filepath.Join(filepath.Join(bundlePath, "workflow"), b.Name)
+	filePath := filepath.Join(filepath.Join(bundlePath, "workflows"), b.Name)
 	body, err := ioutil.ReadFile(filePath)
 
 	if err != nil {
@@ -256,10 +258,11 @@ func (b *BundleWorkflow) AsWorkflow(bundlePath string) (*Workflow, error) {
 	}
 
 	return &Workflow{
-		Uid:  b.Uid,
-		Name: b.Name,
-		Body: string(body),
-		Tags: b.Tags,
+		Uid:     b.Uid,
+		Name:    b.Name,
+		Default: b.Default,
+		Body:    string(body),
+		Tags:    b.Tags,
 	}, nil
 }
 
