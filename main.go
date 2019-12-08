@@ -5,12 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/cloud66-oss/starter/common"
-	"github.com/cloud66-oss/starter/packs"
-	"github.com/cloud66-oss/starter/utils"
-	"github.com/getsentry/raven-go"
-	"github.com/heroku/docker-registry-client/registry"
-	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
 	"os"
 	"os/signal"
@@ -19,6 +13,13 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/packs"
+	"github.com/cloud66-oss/starter/utils"
+	"github.com/getsentry/raven-go"
+	"github.com/heroku/docker-registry-client/registry"
+	"github.com/mitchellh/go-homedir"
 )
 
 type analysisResult struct {
@@ -54,6 +55,8 @@ var (
 	flagDaemon      bool
 	flagRegistry    bool
 	flagChannel     string
+	flagBTRBranch   string
+
 	//flags are gone
 
 	config = &Config{}
@@ -80,6 +83,7 @@ func init() {
 	flag.StringVar(&flagBranch, "branch", "master", "template branch in github")
 	flag.BoolVar(&flagDaemon, "daemon", false, "runs Starter in daemon mode")
 	flag.BoolVar(&flagRegistry, "registry", false, "check base images against docker registry")
+	flag.StringVar(&flagBTRBranch, "btr-branch", "master", "use a different branch for the BTR other than master")
 
 	flag.StringVar(&flagVersion, "v", "", "version of starter")
 	flag.StringVar(&flagChannel, "channel", "", "release channel")

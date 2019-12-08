@@ -5,6 +5,16 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+	"text/template"
+
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/cloud66-oss/starter/bundle"
 	"github.com/cloud66-oss/starter/common"
@@ -15,16 +25,7 @@ import (
 	"github.com/cloud66-oss/starter/packs/ruby"
 	"github.com/cloud66-oss/starter/utils"
 	"github.com/heroku/docker-registry-client/registry"
-	"github.com/satori/go.uuid"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strconv"
-	"strings"
-	"text/template"
+	uuid "github.com/satori/go.uuid"
 )
 
 // API holds starter API
@@ -411,7 +412,7 @@ func (a *API) analyze(w rest.ResponseWriter, r *rest.Request) {
 
 func generate_bundle(sourcePath string) (string, error) {
 
-	err := createBundleFromServiceFile(sourcePath, filepath.Join(sourcePath, "service.yml"), "master")
+	err := createBundleFromServiceFile(sourcePath, filepath.Join(sourcePath, "service.yml"), flagBTRBranch)
 
 	if err != nil {
 		return "", err
