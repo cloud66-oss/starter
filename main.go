@@ -434,7 +434,7 @@ func analyze(
 		if err == nil && !overwrite {
 			return nil, fmt.Errorf("Starter bundle file already exist. Use flag to overwrite.")
 		}
-		err = pack.CreateSkycapFiles(path, templates, flagBranch)
+		err = pack.CreateSkycapFiles(path, templates, flagBTRBranch)
 
 		if err != nil {
 			return nil, fmt.Errorf("Failed to write Starter bundle file due to: %s", err.Error())
