@@ -345,10 +345,8 @@ func mustSkipStencil(templateStencil *templates.Stencil, service *common.Service
 	// if we have a service.yml template and the service we are dealing with
 	// doesn't have external ports then we should ignore it
 	if templateStencil.Filename == "service.yml" {
-		if service.Ports == nil || len(service.Ports) == 0 {
-			mustSkip = true
-		} else {
-			mustSkip = true
+		mustSkip = true
+		if service.Ports != nil || len(service.Ports) > 0 {
 			for _, portMapping := range service.Ports {
 				if portMapping.HTTP != "" || portMapping.HTTPS != "" || portMapping.TCP != "" || portMapping.UDP != "" {
 					mustSkip = false
