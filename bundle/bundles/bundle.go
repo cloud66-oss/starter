@@ -10,8 +10,9 @@ type Bundle struct {
 	Policies        []*Policy         `json:"policies"`
 	Transformations []*Transformation `json:"transformations"`
 	Workflows       []*Workflow       `json:"workflows"`
-	Tags            []string          `json:"tags"`
 	HelmReleases    []*HelmRelease    `json:"helm_releases"`
+	Filters         []*Filter         `json:"filters"`
+	Tags            []string          `json:"tags"`
 	Configurations  []string          `json:"configuration"`
 	ConfigStore     []string          `json:"configstore"`
 }

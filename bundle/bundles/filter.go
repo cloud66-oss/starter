@@ -1,6 +1,6 @@
 package bundles
 
-type Policy struct {
+type Filter struct {
 	UID      string   `json:"uid"`
 	Name     string   `json:"name"`
 	Filename string   `json:"filename"`

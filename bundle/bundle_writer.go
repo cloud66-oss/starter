@@ -71,7 +71,7 @@ func CreateSkycapFiles(outputDir, templateRepository, branch, packName, githubUR
 }
 
 func GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, githubURL string, services []*common.Service,
-	databases []common.Database, isGenericBtr bool) error {
+	databases []common.Database, isGenericBTR bool) error {
 
 	if templateRepository == "" {
 		//no stencil template defined for this pack, print an error and do nothing
@@ -91,7 +91,7 @@ func GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, git
 		return err
 	}
 
-	err = handleConfigStoreRecords(packName, databases, bundle, bundleFolder, isGenericBtr)
+	err = handleConfigStoreRecords(packName, databases, bundle, bundleFolder, isGenericBTR)
 	if err != nil {
 		return err
 	}
@@ -103,46 +103,50 @@ func GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, git
 	}
 
 	// find dependencies of the components above
-	requiredComponentNames, err := getDependencyComponents(template, minUsageComponents)
+	requiredComponents, err := getDependencyComponents(template, minUsageComponents)
 	if err != nil {
 		return err
 	}
 
 	// add stencils to the bundle
-	bundle, err = addStencils(template, templateRepository, branch, services, bundleFolder, bundle, githubURL, requiredComponentNames)
+	bundle, err = addStencils(template, templateRepository, branch, services, bundleFolder, bundle, githubURL, requiredComponents)
 	if err != nil {
 		return err
 	}
 
-	if isGenericBtr {
+	if isGenericBTR {
 		bundle, err = addDatabase(template, templateRepository, branch, bundleFolder, bundle, databases, githubURL)
 		if err != nil {
 			return err
 		}
 	} else {
-		bundle, err = saveEnvVars(packName, getEnvVars(services, databases), bundle, bundleFolder)
+		bundle, err = saveEnvVars(packName, getEnvVars(services), bundle, bundleFolder)
 		if err != nil {
 			return err
 		}
 	}
 
-	bundle, err = addPolicies(template, templateRepository, branch, bundleFolder, bundle, requiredComponentNames)
+	err = addPolicies(bundle, template, templateRepository, branch, bundleFolder, requiredComponents)
 	if err != nil {
 		return err
 	}
 
-	bundle, err = addTransformations(template, templateRepository, branch, bundleFolder, bundle, requiredComponentNames)
+	err = addTransformations(bundle, template, templateRepository, branch, bundleFolder, requiredComponents)
 	if err != nil {
 		return err
 	}
 
-	bundle, err = addWorkflows(template, templateRepository, branch, bundleFolder, bundle, isGenericBtr)
+	err = addFilters(bundle, template, templateRepository, branch, bundleFolder, requiredComponents)
 	if err != nil {
 		return err
 	}
 
-	bundle, err = addMetadata(bundle)
+	err = addWorkflows(bundle, template, templateRepository, branch, bundleFolder, isGenericBTR)
+	if err != nil {
+		return err
+	}
 
+	err = addMetadata(bundle)
 	if err != nil {
 		return err
 	}
@@ -160,14 +164,14 @@ func GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, git
 	return err
 }
 
-func getEnvVars(servs []*common.Service, databases []common.Database) map[string]string {
-	var envas = make(map[string]string)
-	for _, envVarArray := range servs {
+func getEnvVars(services []*common.Service) map[string]string {
+	var result = make(map[string]string)
+	for _, envVarArray := range services {
 		for _, envs := range envVarArray.EnvVars {
-			envas[envs.Key] = envs.Value
+			result[envs.Key] = envs.Value
 		}
 	}
-	return envas
+	return result
 }
 
 func getConfigStoreRecords(databases []common.Database, includeDatabases bool) ([]cloud66.BundledConfigStoreRecord, error) {
@@ -259,38 +263,38 @@ func CreateBundleFolderStructure(baseFolder string) error {
 }
 
 func addStencils(template *templates.Template, templateRepository string, branch string, services []*common.Service, bundleFolder string,
-	bundle *bundles.Bundle, githubURL string, requiredComponentNames []string) (*bundles.Bundle, error) {
+	bundle *bundles.Bundle, githubURL string, requiredComponents []string) (*bundles.Bundle, error) {
 
 	var bundleStencils = make([]*bundles.Stencil, 0)
-	stencilTemplates := filterStencilsByRequiredComponentNames(template, requiredComponentNames)
+	templateStencils := filterStencilsByRequiredComponentNames(template, requiredComponents)
 
 	stencilUsageMap := make(map[string]int)
-	for _, stencilTemplate := range stencilTemplates {
-		if stencilTemplate.Contextemplates == "service" {
+	for _, templateStencil := range templateStencils {
+		if templateStencil.Contextemplates == "service" {
 			for _, service := range services {
-				if stencilUsageMap[stencilTemplate.Filename] < stencilTemplate.MaxUsage {
-					bundleStencil, err := downloadStencil(service.Name, stencilTemplate, template.Name, bundleFolder, templateRepository, branch)
+				if stencilUsageMap[templateStencil.Filename] < templateStencil.MaxUsage {
+					bundleStencil, err := downloadStencil(service.Name, templateStencil, template.Name, bundleFolder, templateRepository, branch)
 					if err != nil {
 						return nil, err
 					}
-					stencilUsageMap[stencilTemplate.Filename] += 1
+					stencilUsageMap[templateStencil.Filename] += 1
 					bundleStencils = append(bundleStencils, bundleStencil)
 					// create entry in manifest file with formatted name
 					// download and rename stencil file
 				} else {
-					fmt.Printf("Skipping adding stencil '%s' for service '%s' because stencil max_usage exceeded\n", stencilTemplate.Name, service.Name)
+					fmt.Printf("Skipping adding stencil '%s' for service '%s' because stencil max_usage exceeded\n", templateStencil.Name, service.Name)
 				}
 			}
 		} else {
-			if stencilUsageMap[stencilTemplate.Filename] < stencilTemplate.MaxUsage {
-				bundleStencil, err := downloadStencil("", stencilTemplate, template.Name, bundleFolder, templateRepository, branch)
+			if stencilUsageMap[templateStencil.Filename] < templateStencil.MaxUsage {
+				bundleStencil, err := downloadStencil("", templateStencil, template.Name, bundleFolder, templateRepository, branch)
 				if err != nil {
 					return nil, err
 				}
-				stencilUsageMap[stencilTemplate.Filename] += 1
+				stencilUsageMap[templateStencil.Filename] += 1
 				bundleStencils = append(bundleStencils, bundleStencil)
 			} else {
-				fmt.Printf("Skipping adding stencil '%s' stencil because max_usage exceeded\n", stencilTemplate.Name)
+				fmt.Printf("Skipping adding stencil '%s' stencil because max_usage exceeded\n", templateStencil.Name)
 			}
 		}
 	}
@@ -303,54 +307,59 @@ func addStencils(template *templates.Template, templateRepository string, branch
 	return bundle, nil
 }
 
-func addPolicies(template *templates.Template, templateRepository string, branch string, bundleFolder string, bundle *bundles.Bundle, requiredComponentNames []string) (*bundles.Bundle, error) {
+func addPolicies(bundle *bundles.Bundle, template *templates.Template, templateRepository, branch, bundleFolder string, requiredComponents []string) error {
 	var bundlePolicies = bundle.Policies
-	policyTemplates := filterPoliciesByRequiredComponentNames(template, requiredComponentNames)
-	for _, policyTemplate := range policyTemplates {
-		bundlePolicy, err := downloadPolicy(policyTemplate, template.Name, bundleFolder, templateRepository, branch)
+	templatePolicys := filterPoliciesByRequiredComponentNames(template, requiredComponents)
+	for _, templatePolicy := range templatePolicys {
+		bundlePolicy, err := downloadPolicy(templatePolicy, template.Name, bundleFolder, templateRepository, branch)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		bundlePolicies = append(bundlePolicies, bundlePolicy)
 	}
 	bundle.Policies = bundlePolicies
-	return bundle, nil
+	return nil
 }
 
-func addTransformations(template *templates.Template, templateRepository string, branch string, bundleFolder string, bundle *bundles.Bundle, requiredComponentNames []string) (*bundles.Bundle, error) {
+func addTransformations(bundle *bundles.Bundle, template *templates.Template, templateRepository, branch, bundleFolder string, requiredComponents []string) error {
 	var bundleTransformations = bundle.Transformations
-	transformationTemplates := filterTransformationsByRequiredComponentNames(template, requiredComponentNames)
-	for _, transformationTemplate := range transformationTemplates {
-		bundleTransformation, err := downloadTransformation(transformationTemplate, template.Name, bundleFolder, templateRepository, branch)
+	templateTransformations := filterTransformationsByRequiredComponentNames(template, requiredComponents)
+	for _, templateTransformation := range templateTransformations {
+		bundleTransformation, err := downloadTransformation(templateTransformation, template.Name, bundleFolder, templateRepository, branch)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		bundleTransformations = append(bundleTransformations, bundleTransformation)
 	}
 	bundle.Transformations = bundleTransformations
-	return bundle, nil
+	return nil
 }
 
-func addWorkflows(template *templates.Template, templateRepository string, branch string, bundleFolder string, bundle *bundles.Bundle, isGenericBtr bool) (*bundles.Bundle, error) {
-	var manifestWorkflows = bundle.Workflows
-	var err error
-	for _, workflow := range template.Templates.Workflows {
-		manifestWorkflows, err = downloadAndAddWorkflow(
-			workflow,
-			template.Name,
-			bundleFolder,
-			templateRepository,
-			branch,
-			manifestWorkflows,
-			isGenericBtr,
-		)
-
+func addFilters(bundle *bundles.Bundle, template *templates.Template, templateRepository, branch, bundleFolder string, requiredComponents []string) error {
+	var bundleFilters = bundle.Filters
+	templateFilters := filterFiltersByRequiredComponentNames(template, requiredComponents)
+	for _, templateFilter := range templateFilters {
+		bundleFilter, err := downloadFilter(templateFilter, template.Name, bundleFolder, templateRepository, branch)
 		if err != nil {
-			return nil, err
+			return err
 		}
+		bundleFilters = append(bundleFilters, bundleFilter)
 	}
-	bundle.Workflows = manifestWorkflows
-	return bundle, nil
+	bundle.Filters = bundleFilters
+	return nil
+}
+
+func addWorkflows(bundle *bundles.Bundle, template *templates.Template, templateRepository, branch, bundleFolder string, isGenericBTR bool) error {
+	var bundleWorkflows = bundle.Workflows
+	for _, templateWorkflow := range template.Templates.Workflows {
+		bundleWorkflow, err := downloadWorkflow(templateWorkflow, template.Name, bundleFolder, templateRepository, branch, isGenericBTR)
+		if err != nil {
+			return err
+		}
+		bundleWorkflows = append(bundleWorkflows, bundleWorkflow)
+	}
+	bundle.Workflows = bundleWorkflows
+	return nil
 }
 
 func loadBundle(bundleFolder string) (*bundles.Bundle, error) {
@@ -433,16 +442,16 @@ func handleConfigStoreRecords(prefix string, databases []common.Database, bundle
 	return nil
 }
 
-func downloadStencil(context string, stencilTemplate *templates.Stencil, btrShortName string, bundleFolder string, templateRepository string, branch string) (*bundles.Stencil, error) {
+func downloadStencil(context string, templateStencil *templates.Stencil, btrShortName string, bundleFolder string, templateRepository string, branch string) (*bundles.Stencil, error) {
 	filename := ""
 	if context != "" {
 		filename = context + "_"
-		if strings.HasPrefix(stencilTemplate.Filename, "_") {
-			filename = "_" + filename + stencilTemplate.Filename[1:]
+		if strings.HasPrefix(templateStencil.Filename, "_") {
+			filename = "_" + filename + templateStencil.Filename[1:]
 		}
 	}
-	filename = filename + stencilTemplate.Filename
-	filename, err := downloadComponent(stencilTemplate.Filename, filename, btrShortName, templateRepository, "stencils", bundleFolder, branch)
+	filename = filename + templateStencil.Filename
+	filename, err := downloadComponent(templateStencil.Filename, filename, btrShortName, templateRepository, "stencils", bundleFolder, branch)
 	if err != nil {
 		return nil, err
 	}
@@ -451,41 +460,74 @@ func downloadStencil(context string, stencilTemplate *templates.Stencil, btrShor
 	var bundleStencil bundles.Stencil
 	bundleStencil.UID = ""
 	bundleStencil.Filename = filename
-	bundleStencil.TemplateFilename = stencilTemplate.Filename
+	bundleStencil.TemplateFilename = templateStencil.Filename
 	bundleStencil.ContextID = context
 	bundleStencil.Status = 2 // it means that the stencils still need to be deployed
-	bundleStencil.Tags = stencilTemplate.Tags
-	bundleStencil.Sequence = stencilTemplate.PreferredSequence
+	bundleStencil.Tags = templateStencil.Tags
+	bundleStencil.Sequence = templateStencil.PreferredSequence
 
 	return &bundleStencil, nil
 }
 
-func downloadPolicy(policyTemplate *templates.Policy, btrShortName string, bundleFolder string, templateRepository string, branch string) (*bundles.Policy, error) {
-	filename := policyTemplate.Filename
-	filename, err := downloadComponent(filename, filename, btrShortName, templateRepository, "policies", bundleFolder, branch)
+func downloadPolicy(templatePolicy *templates.Policy, btrShortName string, bundleFolder string, templateRepository string, branch string) (*bundles.Policy, error) {
+	remoteFilename := templatePolicy.Filename
+	localFilename := templatePolicy.Filename
+	filename, err := downloadComponent(remoteFilename, localFilename, btrShortName, templateRepository, "policies", bundleFolder, branch)
 	if err != nil {
 		return nil, err
 	}
 	bundlePolicy := &bundles.Policy{
 		UID:  "",
 		Name: filename,
-		Tags: policyTemplate.Tags,
+		Tags: templatePolicy.Tags,
 	}
 	return bundlePolicy, nil
 }
 
-func downloadTransformation(transformationTemplate *templates.Transformation, btrShortName string, bundleFolder string, templateRepository string, branch string) (*bundles.Transformation, error) {
-	filename := transformationTemplate.Filename
-	filename, err := downloadComponent(filename, filename, btrShortName, templateRepository, "transformations", bundleFolder, branch)
+func downloadTransformation(templateTransformation *templates.Transformation, btrShortName string, bundleFolder string, templateRepository string, branch string) (*bundles.Transformation, error) {
+	remoteFilename := templateTransformation.Filename
+	localFilename := templateTransformation.Filename
+	filename, err := downloadComponent(remoteFilename, localFilename, btrShortName, templateRepository, "transformations", bundleFolder, branch)
 	if err != nil {
 		return nil, err
 	}
 	bundleTransformation := &bundles.Transformation{
 		UID:  "",
 		Name: filename,
-		Tags: transformationTemplate.Tags,
+		Tags: templateTransformation.Tags,
 	}
 	return bundleTransformation, nil
+}
+
+func downloadFilter(templateFilter *templates.Filter, btrShortName, bundleFolder, templateRepository, branch string) (*bundles.Filter, error) {
+	remoteFilename := templateFilter.Filename
+	localFilename := templateFilter.Filename
+	filename, err := downloadComponent(remoteFilename, localFilename, btrShortName, templateRepository, "filters", bundleFolder, branch)
+	if err != nil {
+		return nil, err
+	}
+	bundleFilter := &bundles.Filter{
+		UID:  "",
+		Name: filename,
+		Tags: templateFilter.Tags,
+	}
+	return bundleFilter, nil
+}
+
+func downloadWorkflow(templateWorkflow *templates.Workflow, btrShortName, bundleFolder, templateRepository, branch string, isGenericBTR bool) (*bundles.Workflow, error) {
+	remoteFilename := templateWorkflow.Filename
+	localFilename := templateWorkflow.Filename
+	filename, err := downloadComponent(remoteFilename, localFilename, btrShortName, templateRepository, "workflows", bundleFolder, branch)
+	if err != nil {
+		return nil, err
+	}
+	bundleWorkflow := &bundles.Workflow{
+		Uid:     "",
+		Name:    filename,
+		Default: !isGenericBTR && templateWorkflow.Filename == "default.yml",
+		Tags:    templateWorkflow.Tags,
+	}
+	return bundleWorkflow, nil
 }
 
 func downloadComponent(remoteFilename, localFilename string, btrShortName string, templateRepository string, componentName string, bundleFolder string, branch string) (string, error) {
@@ -505,60 +547,7 @@ func downloadComponent(remoteFilename, localFilename string, btrShortName string
 	return localFilename, downErr
 }
 
-func downloadAndAddWorkflow(
-	workflowTemplate *templates.Workflow,
-	btrShortname string,
-	bundleFolder string,
-	templateRepository string,
-	branch string,
-	manifestWorkflows []*bundles.Workflow,
-	isGenericBtr bool) ([]*bundles.Workflow, error) {
-
-	filename := workflowTemplate.Filename
-	parts := strings.Split(filename, ".")
-
-	if len(parts) > 1 {
-		ext := parts[len(parts)-1]
-		nameParts := parts[:len(parts)-1]
-		name := strings.Join(nameParts[:], ".")
-		filename = name + "@" + btrShortname + "." + ext
-	} else {
-		filename = filename + "@" + btrShortname
-	}
-	//download the stencil file
-	workflowPath := templateRepository + "workflows/" + workflowTemplate.Filename // don't need to use filepath since it's a URL
-	workflowsFolder := filepath.Join(bundleFolder, "workflows")
-	downErr := common.DownloadSingleFile(workflowsFolder, common.DownloadFile{URL: workflowPath, Name: filename}, branch)
-
-	if downErr != nil {
-		return nil, downErr
-	}
-
-	var wk *bundles.Workflow
-	if isGenericBtr {
-		wk = &bundles.Workflow{
-			Uid:     "",
-			Name:    filename,
-			Default: false,
-			Tags:    workflowTemplate.Tags,
-		}
-	} else {
-		wk = &bundles.Workflow{
-			Uid:     "",
-			Name:    filename,
-			Default: false,
-			Tags:    workflowTemplate.Tags,
-		}
-		if workflowTemplate.Filename == "default.yml" {
-			wk.Default = true
-		}
-	}
-	manifestWorkflows = append(manifestWorkflows, wk)
-
-	return manifestWorkflows, nil
-}
-
-func addMetadata(bundle *bundles.Bundle) (*bundles.Bundle, error) {
+func addMetadata(bundle *bundles.Bundle) error {
 	var metadata = &bundles.Metadata{
 		Annotations: []string{"Generated by Cloud 66 starter"},
 		App:         "starter",
@@ -567,7 +556,7 @@ func addMetadata(bundle *bundles.Bundle) (*bundles.Bundle, error) {
 	bundle.Metadata = metadata
 	bundle.Name = "starter-formation"
 	bundle.Tags = []string{"starter"}
-	return bundle, nil
+	return nil
 }
 
 func addDatabase(template *templates.Template, templateRepository, branch, bundleFolder string, bundle *bundles.Bundle, databases []common.Database, githubURL string) (*bundles.Bundle, error) {
@@ -629,12 +618,12 @@ func addDatabase(template *templates.Template, templateRepository, branch, bundl
 
 			for _, dependency := range applicableHelmChartTemplate.Dependencies {
 				temp := strings.SplitN(dependency, "/", 2)
-				obj_type := temp[0]
-				obj_name := temp[1]
+				objType := temp[0]
+				objName := temp[1]
 
-				switch obj_type {
+				switch objType {
 				case "stencils":
-					stencilTemplate, err := getStencilTemplate(template, obj_name)
+					templateStencil, err := getStencilTemplate(template, objName)
 					if err != nil {
 						return nil, err
 					}
@@ -644,13 +633,13 @@ func addDatabase(template *templates.Template, templateRepository, branch, bundl
 						return nil, err
 					}
 
-					bundleStencil, err := downloadStencil("", stencilTemplate, template.Name, bundleFolder, templateRepository, branch)
+					bundleStencil, err := downloadStencil("", templateStencil, template.Name, bundleFolder, templateRepository, branch)
 					if err != nil {
 						return nil, err
 					}
 					bundle.BaseTemplates[baseTemplateRepoIndex].Stencils = append(bundle.BaseTemplates[baseTemplateRepoIndex].Stencils, bundleStencil)
 				default:
-					common.PrintlnWarning("Helm release dependency type %s not supported\n", obj_type)
+					common.PrintlnWarning("Helm release dependency type %s not supported\n", objType)
 					continue
 				}
 			}
@@ -671,18 +660,18 @@ func getStencilTemplate(template *templates.Template, stencilFilename string) (*
 			return stencil, nil
 		}
 	}
-	return nil, errors.New("Stencil not found")
+	return nil, errors.New("stencil not found")
 }
 
-func findIndexByRepoAndBranch(base_templates []*bundles.BaseTemplate, repo string, branch string) (int, error) {
+func findIndexByRepoAndBranch(baseTemplates []*bundles.BaseTemplate, repo string, branch string) (int, error) {
 	repo = strings.TrimSpace(repo)
 	branch = strings.TrimSpace(branch)
-	for index, btr := range base_templates {
+	for index, btr := range baseTemplates {
 		if strings.TrimSpace(btr.Repo) == repo && strings.TrimSpace(btr.Branch) == branch {
 			return index, nil
 		}
 	}
-	return -1, errors.New("Base Template Repository not found inside the Bundle")
+	return -1, errors.New("base template repository not found inside the Bundle")
 }
 
 type color int
@@ -696,9 +685,9 @@ const (
 func getMinUsageComponents(template *templates.Template) ([]string, error) {
 	result := make([]string, 0)
 	// stencils
-	for _, stencilTemplate := range template.Templates.Stencils {
-		if stencilTemplate.MinUsage > 0 {
-			fullyQualifiedStencilName, err := generateFullyQualifiedName(stencilTemplate)
+	for _, templateStencil := range template.Templates.Stencils {
+		if templateStencil.MinUsage > 0 {
+			fullyQualifiedStencilName, err := generateFullyQualifiedName(templateStencil)
 			if err != nil {
 				return nil, err
 			}
@@ -706,9 +695,9 @@ func getMinUsageComponents(template *templates.Template) ([]string, error) {
 		}
 	}
 	// policies
-	for _, policyTemplate := range template.Templates.Policies {
-		if policyTemplate.MinUsage > 0 {
-			fullyQualifiedPolicyName, err := generateFullyQualifiedName(policyTemplate)
+	for _, templatePolicy := range template.Templates.Policies {
+		if templatePolicy.MinUsage > 0 {
+			fullyQualifiedPolicyName, err := generateFullyQualifiedName(templatePolicy)
 			if err != nil {
 				return nil, err
 			}
@@ -716,9 +705,9 @@ func getMinUsageComponents(template *templates.Template) ([]string, error) {
 		}
 	}
 	// transformations
-	for _, transformationTemplate := range template.Templates.Transformations {
-		if transformationTemplate.MinUsage > 0 {
-			fullyQualifiedTransformationName, err := generateFullyQualifiedName(transformationTemplate)
+	for _, templateTransformation := range template.Templates.Transformations {
+		if templateTransformation.MinUsage > 0 {
+			fullyQualifiedTransformationName, err := generateFullyQualifiedName(templateTransformation)
 			if err != nil {
 				return nil, err
 			}
@@ -742,11 +731,11 @@ func getDependencyComponents(template *templates.Template, initialComponentNames
 		}
 	}
 	// get unique required component names
-	requiredComponentNames := make([]string, 0)
+	requiredComponents := make([]string, 0)
 	for requiredComponentName := range requiredComponentNameMap {
-		requiredComponentNames = append(requiredComponentNames, requiredComponentName)
+		requiredComponents = append(requiredComponents, requiredComponentName)
 	}
-	return requiredComponentNames, nil
+	return requiredComponents, nil
 }
 
 func getDependencyComponentsInternal(template *templates.Template, rootName string, name string, visited map[string]color) error {
@@ -818,61 +807,81 @@ func getTemplateDependencies(template *templates.Template, name string) ([]strin
 	return nil, fmt.Errorf("could not find dependency with name '%s'", name)
 }
 
-func filterStencilsByRequiredComponentNames(template *templates.Template, requiredComponentNames []string) []*templates.Stencil {
+func filterStencilsByRequiredComponentNames(template *templates.Template, requiredComponents []string) []*templates.Stencil {
 	result := make([]*templates.Stencil, 0)
-	for _, stencilTemplate := range template.Templates.Stencils {
+	for _, templateStencil := range template.Templates.Stencils {
 		required := false
-		for _, requiredComponentName := range requiredComponentNames {
+		for _, requiredComponentName := range requiredComponents {
 			nameParts := strings.Split(requiredComponentName, "/")
 			templateType := nameParts[0]
 			templateName := nameParts[1]
-			if templateType == "stencils" && templateName == stencilTemplate.Name {
+			if templateType == "stencils" && templateName == templateStencil.Name {
 				required = true
 				break
 			}
 		}
 		if required {
-			result = append(result, stencilTemplate)
+			result = append(result, templateStencil)
 		}
 	}
 	return result
 }
 
-func filterPoliciesByRequiredComponentNames(template *templates.Template, requiredComponentNames []string) []*templates.Policy {
+func filterPoliciesByRequiredComponentNames(template *templates.Template, requiredComponents []string) []*templates.Policy {
 	result := make([]*templates.Policy, 0)
-	for _, policyTemplate := range template.Templates.Policies {
+	for _, templatePolicy := range template.Templates.Policies {
 		required := false
-		for _, requiredComponentName := range requiredComponentNames {
+		for _, requiredComponentName := range requiredComponents {
 			nameParts := strings.Split(requiredComponentName, "/")
 			templateType := nameParts[0]
 			templateName := nameParts[1]
-			if templateType == "policies" && templateName == policyTemplate.Name {
+			if templateType == "policies" && templateName == templatePolicy.Name {
 				required = true
 				break
 			}
 		}
 		if required {
-			result = append(result, policyTemplate)
+			result = append(result, templatePolicy)
 		}
 	}
 	return result
 }
 
-func filterTransformationsByRequiredComponentNames(template *templates.Template, requiredComponentNames []string) []*templates.Transformation {
+func filterTransformationsByRequiredComponentNames(template *templates.Template, requiredComponents []string) []*templates.Transformation {
 	result := make([]*templates.Transformation, 0)
-	for _, transformationTemplate := range template.Templates.Transformations {
+	for _, templateTransformation := range template.Templates.Transformations {
 		required := false
-		for _, requiredComponentName := range requiredComponentNames {
+		for _, requiredComponentName := range requiredComponents {
 			nameParts := strings.Split(requiredComponentName, "/")
 			templateType := nameParts[0]
 			templateName := nameParts[1]
-			if templateType == "transformations" && templateName == transformationTemplate.Name {
+			if templateType == "transformations" && templateName == templateTransformation.Name {
 				required = true
 				break
 			}
 		}
 		if required {
-			result = append(result, transformationTemplate)
+			result = append(result, templateTransformation)
+		}
+	}
+	return result
+}
+
+func filterFiltersByRequiredComponentNames(template *templates.Template, requiredComponents []string) []*templates.Filter {
+	result := make([]*templates.Filter, 0)
+	for _, templateFilter := range template.Templates.Filters {
+		required := false
+		for _, requiredComponentName := range requiredComponents {
+			nameParts := strings.Split(requiredComponentName, "/")
+			templateType := nameParts[0]
+			templateName := nameParts[1]
+			if templateType == "filters" && templateName == templateFilter.Name {
+				required = true
+				break
+			}
+		}
+		if required {
+			result = append(result, templateFilter)
 		}
 	}
 	return result
@@ -914,7 +923,14 @@ func readStencilTemplateFile(templateRepository, branch, filename string) ([]byt
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(temporaryFolder)
+
+	// cleanup the bundle folder
+	defer func() {
+		err := os.RemoveAll(temporaryFolder)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	//start download the template.json file
 	downloadedFilePath, err := downloadStencilTemplateFile(templateRepository, branch, filename, temporaryFolder)

@@ -1,8 +1,9 @@
 package bundles
 
 type Transformation struct {
-	// this is just a placeholder for now
-	UID  string   `json:"uid"`
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
+	UID      string   `json:"uid"`
+	Name     string   `json:"name"`
+	Filename string   `json:"filename"`
+	Sequence int      `json:"sequence"`
+	Tags     []string `json:"tags"`
 }
