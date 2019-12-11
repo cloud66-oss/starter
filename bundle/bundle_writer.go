@@ -278,9 +278,9 @@ func setConfigStoreRecords(configStoreRecords []cloud66.BundledConfigStoreRecord
 }
 
 func CreateBundleFolderStructure(baseFolder string) error {
-	var folders = []string{"stencils", "policies", "transformations", "stencil_groups", "helm_releases", "configurations", "configstore", "workflows"}
-	for _, subfolder := range folders {
-		folder := filepath.Join(baseFolder, subfolder)
+	var folders = []string{"stencils", "policies", "transformations", "stencil_groups", "helm_releases", "configurations", "configstore", "workflows", "filters"}
+	for _, subFolder := range folders {
+		folder := filepath.Join(baseFolder, subFolder)
 		err := os.MkdirAll(folder, 0777)
 		if err != nil {
 			return err
