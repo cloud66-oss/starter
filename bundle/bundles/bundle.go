@@ -1,6 +1,6 @@
 package bundles
 
-type Manifest struct {
+type Bundle struct {
 	Version         string            `json:"version"`
 	Metadata        *Metadata         `json:"metadata"`
 	UID             string            `json:"uid"`

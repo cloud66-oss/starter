@@ -36,7 +36,7 @@ func CreateSkycapFiles(outputDir, templateRepository, branch, packName, githubUR
 	tempFolder := os.TempDir()
 	bundleFolder := filepath.Join(tempFolder, "bundle")
 
-	// cleanup the bundlefolder
+	// cleanup the bundle folder
 	defer func() {
 		err := os.RemoveAll(bundleFolder)
 		if err != nil {
@@ -49,13 +49,13 @@ func CreateSkycapFiles(outputDir, templateRepository, branch, packName, githubUR
 		return err
 	}
 
-	err = GenerateBundle(bundleFolder, templateRepository, branch, packName, githubURL, services, databases, false)
+	err = GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, githubURL, services, databases, false)
 	if err != nil {
 		return err
 	}
 
 	if addGenericBtr {
-		err = GenerateBundle(bundleFolder, packs.GenericTemplateRepository(), branch, packs.GenericBundleSuffix(), packs.GithubURL(), services, databases, true)
+		err = GenerateBundleFiles(bundleFolder, packs.GenericTemplateRepository(), branch, packs.GenericBundleSuffix(), packs.GithubURL(), services, databases, true)
 		if err != nil {
 			return err
 		}
@@ -70,7 +70,7 @@ func CreateSkycapFiles(outputDir, templateRepository, branch, packName, githubUR
 	return err
 }
 
-func GenerateBundle(bundleFolder, templateRepository, branch, packName, githubURL string, services []*common.Service,
+func GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, githubURL string, services []*common.Service,
 	databases []common.Database, isGenericBtr bool) error {
 
 	if templateRepository == "" {
@@ -79,18 +79,19 @@ func GenerateBundle(bundleFolder, templateRepository, branch, packName, githubUR
 		return nil
 	}
 
-	//create manifest.json file and start filling
-	manifest, err := loadManifest(bundleFolder)
-	if err != nil {
-		return err
-	}
-
+	// load the template file
 	template, err := loadTemplate(templateRepository, branch)
 	if err != nil {
 		return err
 	}
 
-	err = handleConfigStoreRecords(packName, services, databases, manifest, bundleFolder, isGenericBtr)
+	// create bundle file to hold our structure
+	bundle, err := loadBundle(bundleFolder)
+	if err != nil {
+		return err
+	}
+
+	err = handleConfigStoreRecords(packName, databases, bundle, bundleFolder, isGenericBtr)
 	if err != nil {
 		return err
 	}
@@ -100,57 +101,53 @@ func GenerateBundle(bundleFolder, templateRepository, branch, packName, githubUR
 	if err != nil {
 		return err
 	}
-	//fmt.Println("MINUSAGE")
-	//fmt.Println(minUsageComponents)
 
 	// find dependencies of the components above
 	requiredComponentNames, err := getDependencyComponents(template, minUsageComponents)
 	if err != nil {
 		return err
 	}
-	//fmt.Println("REQUIRED")
-	//fmt.Println(requiredComponentNames)
 
 	// add stencils to the bundle
-	manifest, err = addStencils(template, templateRepository, branch, services, bundleFolder, manifest, githubURL, requiredComponentNames)
+	bundle, err = addStencils(template, templateRepository, branch, services, bundleFolder, bundle, githubURL, requiredComponentNames)
 	if err != nil {
 		return err
 	}
 
 	if isGenericBtr {
-		manifest, err = addDatabase(template, templateRepository, branch, bundleFolder, manifest, databases, githubURL)
+		bundle, err = addDatabase(template, templateRepository, branch, bundleFolder, bundle, databases, githubURL)
 		if err != nil {
 			return err
 		}
 	} else {
-		manifest, err = saveEnvVars(packName, getEnvVars(services, databases), manifest, bundleFolder)
+		bundle, err = saveEnvVars(packName, getEnvVars(services, databases), bundle, bundleFolder)
 		if err != nil {
 			return err
 		}
 	}
 
-	manifest, err = addPolicies(template, templateRepository, branch, bundleFolder, manifest, requiredComponentNames)
+	bundle, err = addPolicies(template, templateRepository, branch, bundleFolder, bundle, requiredComponentNames)
 	if err != nil {
 		return err
 	}
 
-	manifest, err = addTransformations(template, templateRepository, branch, bundleFolder, manifest, requiredComponentNames)
+	bundle, err = addTransformations(template, templateRepository, branch, bundleFolder, bundle, requiredComponentNames)
 	if err != nil {
 		return err
 	}
 
-	manifest, err = addWorkflows(template, templateRepository, branch, bundleFolder, manifest, isGenericBtr)
+	bundle, err = addWorkflows(template, templateRepository, branch, bundleFolder, bundle, isGenericBtr)
 	if err != nil {
 		return err
 	}
 
-	manifest, err = addMetadata(manifest)
+	bundle, err = addMetadata(bundle)
 
 	if err != nil {
 		return err
 	}
 
-	err = saveManifest(bundleFolder, manifest)
+	err = saveManifest(bundleFolder, bundle)
 	if err != nil {
 		return err
 	}
@@ -170,11 +167,10 @@ func getEnvVars(servs []*common.Service, databases []common.Database) map[string
 			envas[envs.Key] = envs.Value
 		}
 	}
-
 	return envas
 }
 
-func getConfigStoreRecords(services []*common.Service, databases []common.Database, includeDatabases bool) ([]cloud66.BundledConfigStoreRecord, error) {
+func getConfigStoreRecords(databases []common.Database, includeDatabases bool) ([]cloud66.BundledConfigStoreRecord, error) {
 	result := make([]cloud66.BundledConfigStoreRecord, 0)
 	if includeDatabases {
 		for _, database := range databases {
@@ -231,7 +227,7 @@ func getConfigStoreRecords(services []*common.Service, databases []common.Databa
 	return result, nil
 }
 
-func setConfigStoreRecords(configStoreRecords []cloud66.BundledConfigStoreRecord, prefix string, manifestBundle *bundles.Manifest, bundleFolder string) error {
+func setConfigStoreRecords(configStoreRecords []cloud66.BundledConfigStoreRecord, prefix string, bundle *bundles.Bundle, bundleFolder string) error {
 	unmarshalledOutput := cloud66.BundledConfigStoreRecords{Records: configStoreRecords}
 	marshalledOutput, err := yaml.Marshal(&unmarshalledOutput)
 	if err != nil {
@@ -246,7 +242,7 @@ func setConfigStoreRecords(configStoreRecords []cloud66.BundledConfigStoreRecord
 		return err
 	}
 
-	manifestBundle.ConfigStore = append(manifestBundle.ConfigStore, fileName)
+	bundle.ConfigStore = append(bundle.ConfigStore, fileName)
 	return nil
 }
 
@@ -263,7 +259,7 @@ func CreateBundleFolderStructure(baseFolder string) error {
 }
 
 func addStencils(template *templates.Template, templateRepository string, branch string, services []*common.Service, bundleFolder string,
-	manifest *bundles.Manifest, githubURL string, requiredComponentNames []string) (*bundles.Manifest, error) {
+	bundle *bundles.Bundle, githubURL string, requiredComponentNames []string) (*bundles.Bundle, error) {
 
 	var bundleStencils = make([]*bundles.Stencil, 0)
 	stencilTemplates := filterStencilsByRequiredComponentNames(template, requiredComponentNames)
@@ -273,7 +269,7 @@ func addStencils(template *templates.Template, templateRepository string, branch
 		if stencilTemplate.Contextemplates == "service" {
 			for _, service := range services {
 				if stencilUsageMap[stencilTemplate.Filename] < stencilTemplate.MaxUsage {
-					bundleStencil, err := downloadStencil(service.Name, stencilTemplate, template.Name, manifest, bundleFolder, templateRepository, branch)
+					bundleStencil, err := downloadStencil(service.Name, stencilTemplate, template.Name, bundleFolder, templateRepository, branch)
 					if err != nil {
 						return nil, err
 					}
@@ -287,7 +283,7 @@ func addStencils(template *templates.Template, templateRepository string, branch
 			}
 		} else {
 			if stencilUsageMap[stencilTemplate.Filename] < stencilTemplate.MaxUsage {
-				bundleStencil, err := downloadStencil("", stencilTemplate, template.Name, manifest, bundleFolder, templateRepository, branch)
+				bundleStencil, err := downloadStencil("", stencilTemplate, template.Name, bundleFolder, templateRepository, branch)
 				if err != nil {
 					return nil, err
 				}
@@ -303,12 +299,12 @@ func addStencils(template *templates.Template, templateRepository string, branch
 	newTemplate.Repo = githubURL
 	newTemplate.Branch = branch
 	newTemplate.Stencils = bundleStencils
-	manifest.BaseTemplates = append(manifest.BaseTemplates, &newTemplate)
-	return manifest, nil
+	bundle.BaseTemplates = append(bundle.BaseTemplates, &newTemplate)
+	return bundle, nil
 }
 
-func addPolicies(template *templates.Template, templateRepository string, branch string, bundleFolder string, manifest *bundles.Manifest, requiredComponentNames []string) (*bundles.Manifest, error) {
-	var bundlePolicies = manifest.Policies
+func addPolicies(template *templates.Template, templateRepository string, branch string, bundleFolder string, bundle *bundles.Bundle, requiredComponentNames []string) (*bundles.Bundle, error) {
+	var bundlePolicies = bundle.Policies
 	policyTemplates := filterPoliciesByRequiredComponentNames(template, requiredComponentNames)
 	for _, policyTemplate := range policyTemplates {
 		bundlePolicy, err := downloadPolicy(policyTemplate, template.Name, bundleFolder, templateRepository, branch)
@@ -317,12 +313,12 @@ func addPolicies(template *templates.Template, templateRepository string, branch
 		}
 		bundlePolicies = append(bundlePolicies, bundlePolicy)
 	}
-	manifest.Policies = bundlePolicies
-	return manifest, nil
+	bundle.Policies = bundlePolicies
+	return bundle, nil
 }
 
-func addTransformations(template *templates.Template, templateRepository string, branch string, bundleFolder string, manifest *bundles.Manifest, requiredComponentNames []string) (*bundles.Manifest, error) {
-	var bundleTransformations = manifest.Transformations
+func addTransformations(template *templates.Template, templateRepository string, branch string, bundleFolder string, bundle *bundles.Bundle, requiredComponentNames []string) (*bundles.Bundle, error) {
+	var bundleTransformations = bundle.Transformations
 	transformationTemplates := filterTransformationsByRequiredComponentNames(template, requiredComponentNames)
 	for _, transformationTemplate := range transformationTemplates {
 		bundleTransformation, err := downloadTransformation(transformationTemplate, template.Name, bundleFolder, templateRepository, branch)
@@ -331,12 +327,12 @@ func addTransformations(template *templates.Template, templateRepository string,
 		}
 		bundleTransformations = append(bundleTransformations, bundleTransformation)
 	}
-	manifest.Transformations = bundleTransformations
-	return manifest, nil
+	bundle.Transformations = bundleTransformations
+	return bundle, nil
 }
 
-func addWorkflows(template *templates.Template, templateRepository string, branch string, bundleFolder string, manifest *bundles.Manifest, isGenericBtr bool) (*bundles.Manifest, error) {
-	var manifestWorkflows = manifest.Workflows
+func addWorkflows(template *templates.Template, templateRepository string, branch string, bundleFolder string, bundle *bundles.Bundle, isGenericBtr bool) (*bundles.Bundle, error) {
+	var manifestWorkflows = bundle.Workflows
 	var err error
 	for _, workflow := range template.Templates.Workflows {
 		manifestWorkflows, err = downloadAndAddWorkflow(
@@ -353,13 +349,13 @@ func addWorkflows(template *templates.Template, templateRepository string, branc
 			return nil, err
 		}
 	}
-	manifest.Workflows = manifestWorkflows
-	return manifest, nil
+	bundle.Workflows = manifestWorkflows
+	return bundle, nil
 }
 
-func loadManifest(bundleFolder string) (*bundles.Manifest, error) {
+func loadBundle(bundleFolder string) (*bundles.Bundle, error) {
 	// TODO: if manifest file present, pick that up instead
-	var manifest *bundles.Manifest
+	var bundle *bundles.Bundle
 	manifestPath := filepath.Join(bundleFolder, "manifest.json")
 	if common.FileExists(manifestPath) {
 		//open manifest.json file and cast it into the struct
@@ -378,7 +374,7 @@ func loadManifest(bundleFolder string) (*bundles.Manifest, error) {
 			return nil, err
 		}
 	} else {
-		manifest = &bundles.Manifest{
+		bundle = &bundles.Bundle{
 			Version:         "1",
 			Metadata:        nil,
 			UID:             "",
@@ -394,10 +390,10 @@ func loadManifest(bundleFolder string) (*bundles.Manifest, error) {
 			ConfigStore:     make([]string, 0),
 		}
 	}
-	return manifest, nil
+	return bundle, nil
 }
 
-func saveManifest(bundleFolder string, content *bundles.Manifest) error {
+func saveManifest(bundleFolder string, content *bundles.Bundle) error {
 	out, err := json.MarshalIndent(content, "", "  ")
 	if err != nil {
 		return err
@@ -406,7 +402,7 @@ func saveManifest(bundleFolder string, content *bundles.Manifest) error {
 	return ioutil.WriteFile(manifestPath, out, 0600)
 }
 
-func saveEnvVars(prefix string, envVars map[string]string, manifest *bundles.Manifest, bundleFolder string) (*bundles.Manifest, error) {
+func saveEnvVars(prefix string, envVars map[string]string, bundle *bundles.Bundle, bundleFolder string) (*bundles.Bundle, error) {
 	filename := prefix + "-config"
 	varsPath := filepath.Join(filepath.Join(bundleFolder, "configurations"), prefix+"-config")
 	var fileOut string
@@ -417,19 +413,18 @@ func saveEnvVars(prefix string, envVars map[string]string, manifest *bundles.Man
 	if err != nil {
 		return nil, err
 	}
-	var configs = manifest.Configurations
-	manifest.Configurations = append(configs, filename)
-	return manifest, nil
+	var configs = bundle.Configurations
+	bundle.Configurations = append(configs, filename)
+	return bundle, nil
 }
 
-func handleConfigStoreRecords(prefix string, services []*common.Service, databases []common.Database, manifestBundle *bundles.Manifest, bundleFolder string, includeDatabases bool) error {
-	configStoreRecords, err := getConfigStoreRecords(services, databases, includeDatabases)
+func handleConfigStoreRecords(prefix string, databases []common.Database, bundle *bundles.Bundle, bundleFolder string, includeDatabases bool) error {
+	configStoreRecords, err := getConfigStoreRecords(databases, includeDatabases)
 	if err != nil {
 		return err
 	}
-
 	if len(configStoreRecords) > 0 {
-		err = setConfigStoreRecords(configStoreRecords, prefix, manifestBundle, bundleFolder)
+		err = setConfigStoreRecords(configStoreRecords, prefix, bundle, bundleFolder)
 		if err != nil {
 			return err
 		}
@@ -438,7 +433,7 @@ func handleConfigStoreRecords(prefix string, services []*common.Service, databas
 	return nil
 }
 
-func downloadStencil(context string, stencilTemplate *templates.Stencil, btrShortName string, manifest *bundles.Manifest, bundleFolder string, templateRepository string, branch string) (*bundles.Stencil, error) {
+func downloadStencil(context string, stencilTemplate *templates.Stencil, btrShortName string, bundleFolder string, templateRepository string, branch string) (*bundles.Stencil, error) {
 	filename := ""
 	if context != "" {
 		filename = context + "_"
@@ -563,20 +558,20 @@ func downloadAndAddWorkflow(
 	return manifestWorkflows, nil
 }
 
-func addMetadata(manifest *bundles.Manifest) (*bundles.Manifest, error) {
+func addMetadata(bundle *bundles.Bundle) (*bundles.Bundle, error) {
 	var metadata = &bundles.Metadata{
 		Annotations: []string{"Generated by Cloud 66 starter"},
 		App:         "starter",
 		Timestamp:   time.Now().UTC(),
 	}
-	manifest.Metadata = metadata
-	manifest.Name = "starter-formation"
-	manifest.Tags = []string{"starter"}
-	return manifest, nil
+	bundle.Metadata = metadata
+	bundle.Name = "starter-formation"
+	bundle.Tags = []string{"starter"}
+	return bundle, nil
 }
 
-func addDatabase(template *templates.Template, templateRepository, branch, bundleFolder string, manifest *bundles.Manifest, databases []common.Database, githubURL string) (*bundles.Manifest, error) {
-	var helmReleases = manifest.HelmReleases
+func addDatabase(template *templates.Template, templateRepository, branch, bundleFolder string, bundle *bundles.Bundle, databases []common.Database, githubURL string) (*bundles.Bundle, error) {
+	var helmReleases = bundle.HelmReleases
 	for _, db := range databases {
 		var release bundles.HelmRelease
 
@@ -644,16 +639,16 @@ func addDatabase(template *templates.Template, templateRepository, branch, bundl
 						return nil, err
 					}
 
-					baseTemplateRepoIndex, err := findIndexByRepoAndBranch(manifest.BaseTemplates, githubURL, branch)
+					baseTemplateRepoIndex, err := findIndexByRepoAndBranch(bundle.BaseTemplates, githubURL, branch)
 					if err != nil {
 						return nil, err
 					}
 
-					bundleStencil, err := downloadStencil("", stencilTemplate, template.Name, manifest, bundleFolder, templateRepository, branch)
+					bundleStencil, err := downloadStencil("", stencilTemplate, template.Name, bundleFolder, templateRepository, branch)
 					if err != nil {
 						return nil, err
 					}
-					manifest.BaseTemplates[baseTemplateRepoIndex].Stencils = append(manifest.BaseTemplates[baseTemplateRepoIndex].Stencils, bundleStencil)
+					bundle.BaseTemplates[baseTemplateRepoIndex].Stencils = append(bundle.BaseTemplates[baseTemplateRepoIndex].Stencils, bundleStencil)
 				default:
 					common.PrintlnWarning("Helm release dependency type %s not supported\n", obj_type)
 					continue
@@ -666,8 +661,8 @@ func addDatabase(template *templates.Template, templateRepository, branch, bundl
 		release.ValuesFile = valuesFile
 		helmReleases = append(helmReleases, &release)
 	}
-	manifest.HelmReleases = helmReleases
-	return manifest, nil
+	bundle.HelmReleases = helmReleases
+	return bundle, nil
 }
 
 func getStencilTemplate(template *templates.Template, stencilFilename string) (*templates.Stencil, error) {
@@ -738,7 +733,7 @@ func getDependencyComponents(template *templates.Template, initialComponentNames
 	requiredComponentNameMap := make(map[string]bool)
 	for _, initialComponentName := range initialComponentNames {
 		visited := make(map[string]color)
-		err := getRequiredComponentNamesInternal(template, initialComponentName, initialComponentName, visited)
+		err := getDependencyComponentsInternal(template, initialComponentName, initialComponentName, visited)
 		if err != nil {
 			return nil, err
 		}
@@ -754,7 +749,7 @@ func getDependencyComponents(template *templates.Template, initialComponentNames
 	return requiredComponentNames, nil
 }
 
-func getRequiredComponentNamesInternal(template *templates.Template, rootName string, name string, visited map[string]color) error {
+func getDependencyComponentsInternal(template *templates.Template, rootName string, name string, visited map[string]color) error {
 	_, present := visited[name]
 	if !present {
 		visited[name] = white
@@ -774,7 +769,7 @@ func getRequiredComponentNamesInternal(template *templates.Template, rootName st
 		return err
 	}
 	for _, templateDependency := range templateDependencies {
-		err := getRequiredComponentNamesInternal(template, rootName, templateDependency, visited)
+		err := getDependencyComponentsInternal(template, rootName, templateDependency, visited)
 		if err != nil {
 			return err
 		}
