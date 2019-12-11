@@ -299,6 +299,13 @@ func addStencils(template *templates.Template, templateRepository string, branch
 	for _, templateStencil := range templateStencils {
 		if templateStencil.Contextemplates == "service" {
 			for _, service := range services {
+
+				// check if we need this specific stencil
+				if mustSkipStencil(templateStencil, service) {
+					// this stencil isn't valid for this service
+					continue
+				}
+
 				if stencilUsageMap[templateStencil.Filename] < templateStencil.MaxUsage {
 					bundleStencil, err := downloadStencil(service.Name, templateStencil, template.Name, bundleFolder, templateRepository, branch)
 					if err != nil {
@@ -306,8 +313,6 @@ func addStencils(template *templates.Template, templateRepository string, branch
 					}
 					stencilUsageMap[templateStencil.Filename] += 1
 					bundleStencils = append(bundleStencils, bundleStencil)
-					// create entry in manifest file with formatted name
-					// download and rename stencil file
 				} else {
 					fmt.Printf("Skipping adding stencil '%s' for service '%s' because stencil max_usage exceeded\n", templateStencil.Name, service.Name)
 				}
@@ -332,6 +337,27 @@ func addStencils(template *templates.Template, templateRepository string, branch
 	newTemplate.Stencils = bundleStencils
 	bundle.BaseTemplates = append(bundle.BaseTemplates, &newTemplate)
 	return bundle, nil
+}
+
+func mustSkipStencil(templateStencil *templates.Stencil, service *common.Service) bool {
+	// custom business logic for services in K8s
+	mustSkip := false
+	// if we have a service.yml template and the service we are dealing with
+	// doesn't have external ports then we should ignore it
+	if templateStencil.Filename == "service.yml" {
+		if service.Ports == nil || len(service.Ports) == 0 {
+			mustSkip = true
+		} else {
+			mustSkip = true
+			for _, portMapping := range service.Ports {
+				if portMapping.HTTP != "" || portMapping.HTTPS != "" || portMapping.TCP != "" || portMapping.UDP != "" {
+					mustSkip = false
+					continue
+				}
+			}
+		}
+	}
+	return mustSkip
 }
 
 func addPolicies(bundle *bundles.Bundle, template *templates.Template, templateRepository, branch, bundleFolder string, requiredComponents []string) error {
