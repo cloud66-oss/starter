@@ -1,10 +1,29 @@
 package bundle
 
 import (
+	"github.com/cloud66-oss/starter/bundle/templates"
+	"github.com/cloud66-oss/starter/common"
 	"reflect"
 	"sort"
 	"testing"
 )
+
+func TestServiceSorting(t *testing.T) {
+	services := []*common.Service{
+		{Name: "test1"},
+		{Name: "test3"},
+		{Name: "web"},
+		{Name: "test2"},
+	}
+	if services[0].Name != "test1" {
+		t.Errorf("Construction seems to have failed!")
+	}
+	// sort the services
+	sortServices(services)
+	if services[0].Name != "web" || services[1].Name != "test1" || services[2].Name != "test2" || services[3].Name != "test3" {
+		t.Errorf("Sorting Failed!")
+	}
+}
 
 func TestTemplateJSONDependencyTraversal(t *testing.T) {
 	templateJSON := generateTemplateJSON()
@@ -35,8 +54,8 @@ func TestTemplateJSONDependencyTraversal(t *testing.T) {
 	testTemplateJSONDependencyTraversalError(t, &anotherTemplateJSON, []string{"stencils/nonexistent"})
 }
 
-func testTemplateJSONDependencyTraversal(t *testing.T, templateJSON *TemplateJSON, initialComponentNames []string, expectedComponentNames []string) {
-	requiredComponentNames, err := getRequiredComponentNames(templateJSON, initialComponentNames)
+func testTemplateJSONDependencyTraversal(t *testing.T, template *templates.Template, initialComponentNames []string, expectedComponentNames []string) {
+	requiredComponentNames, err := getDependencyComponents(template, initialComponentNames)
 	if err != nil {
 		t.Errorf("Obtained error when determining dependency tree: %s\n", err)
 		return
@@ -49,120 +68,120 @@ func testTemplateJSONDependencyTraversal(t *testing.T, templateJSON *TemplateJSO
 	}
 }
 
-func testTemplateJSONDependencyTraversalError(t *testing.T, templateJSON *TemplateJSON, initialComponentNames []string) {
-	_, err := getRequiredComponentNames(templateJSON, initialComponentNames)
+func testTemplateJSONDependencyTraversalError(t *testing.T, templateJSON *templates.Template, initialComponentNames []string) {
+	_, err := getDependencyComponents(templateJSON, initialComponentNames)
 	if err != nil {
 		return
 	}
 	t.Errorf("Expected error when determining dependency tree")
 }
 
-func generateTemplateJSON() TemplateJSON {
-	stencilOne := StencilTemplate{
+func generateTemplateJSON() templates.Template {
+	stencilOne := templates.Stencil{
 		Name:         "one",
 		Dependencies: []string{"stencils/two"},
 	}
 
-	stencilTwo := StencilTemplate{
+	stencilTwo := templates.Stencil{
 		Name:         "two",
 		Dependencies: []string{"stencils/three"},
 	}
 
-	stencilThree := StencilTemplate{
+	stencilThree := templates.Stencil{
 		Name:         "three",
 		Dependencies: []string{"stencils/one"},
 	}
 
-	templateStruct := TemplatesStruct{
-		Stencils: []*StencilTemplate{&stencilOne, &stencilTwo, &stencilThree},
+	theTemplates := templates.Templates{
+		Stencils: []*templates.Stencil{&stencilOne, &stencilTwo, &stencilThree},
 	}
 
-	return TemplateJSON{
-		Templates: &templateStruct,
+	return templates.Template{
+		Templates: &theTemplates,
 	}
 }
 
-func generateAnotherTemplateJSON() TemplateJSON {
-	stencilOne := StencilTemplate{
+func generateAnotherTemplateJSON() templates.Template {
+	stencilOne := templates.Stencil{
 		Name:         "one",
 		Dependencies: []string{"stencils/two", "stencils/three"},
 	}
 
-	stencilTwo := StencilTemplate{
+	stencilTwo := templates.Stencil{
 		Name:         "two",
 		Dependencies: []string{"stencils/three"},
 	}
 
-	stencilThree := StencilTemplate{
+	stencilThree := templates.Stencil{
 		Name:         "three",
 		Dependencies: []string{"stencils/one", "stencils/three", "stencils/four"},
 	}
 
-	stencilFour := StencilTemplate{
+	stencilFour := templates.Stencil{
 		Name:         "four",
 		Dependencies: []string{"stencils/five", "stencils/six"},
 	}
 
-	stencilFive := StencilTemplate{
+	stencilFive := templates.Stencil{
 		Name:         "five",
 		Dependencies: []string{},
 	}
 
-	stencilSix := StencilTemplate{
+	stencilSix := templates.Stencil{
 		Name:         "six",
 		Dependencies: []string{},
 	}
 
-	stencilSeven := StencilTemplate{
+	stencilSeven := templates.Stencil{
 		Name:         "seven",
 		Dependencies: []string{"stencils/eight", "stencils/nine"},
 	}
 
-	stencilEight := StencilTemplate{
+	stencilEight := templates.Stencil{
 		Name:         "eight",
 		Dependencies: []string{"stencils/nine"},
 	}
 
-	stencilNine := StencilTemplate{
+	stencilNine := templates.Stencil{
 		Name:         "nine",
 		Dependencies: []string{},
 	}
 
-	stencilTen := StencilTemplate{
+	stencilTen := templates.Stencil{
 		Name:         "ten",
 		Dependencies: []string{},
 	}
 
-	stencilEleven := StencilTemplate{
+	stencilEleven := templates.Stencil{
 		Name:         "eleven",
 		Dependencies: []string{},
 	}
 
-	templateStruct := TemplatesStruct{
-		Stencils: []*StencilTemplate{&stencilOne, &stencilTwo, &stencilThree, &stencilFour, &stencilFive, &stencilSix, &stencilSeven, &stencilEight, &stencilNine, &stencilTen, &stencilEleven},
+	theTemplates := templates.Templates{
+		Stencils: []*templates.Stencil{&stencilOne, &stencilTwo, &stencilThree, &stencilFour, &stencilFive, &stencilSix, &stencilSeven, &stencilEight, &stencilNine, &stencilTen, &stencilEleven},
 	}
 
-	return TemplateJSON{
-		Templates: &templateStruct,
+	return templates.Template{
+		Templates: &theTemplates,
 	}
 }
 
-func generateYetAnotherTemplateJSON() TemplateJSON {
-	stencilOne := StencilTemplate{
+func generateYetAnotherTemplateJSON() templates.Template {
+	stencilOne := templates.Stencil{
 		Name:         "one",
 		Dependencies: []string{"stencils/two"},
 	}
 
-	stencilTwo := StencilTemplate{
+	stencilTwo := templates.Stencil{
 		Name:         "two",
 		Dependencies: []string{"stencils/nonexistent"},
 	}
 
-	templateStruct := TemplatesStruct{
-		Stencils: []*StencilTemplate{&stencilOne, &stencilTwo},
+	theTemplates := templates.Templates{
+		Stencils: []*templates.Stencil{&stencilOne, &stencilTwo},
 	}
 
-	return TemplateJSON{
-		Templates: &templateStruct,
+	return templates.Template{
+		Templates: &theTemplates,
 	}
 }
