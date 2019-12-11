@@ -8,6 +8,7 @@ import (
 	"github.com/cloud66-oss/starter/bundle/bundles"
 	"github.com/cloud66-oss/starter/bundle/templates"
 	"log"
+	"sort"
 
 	"github.com/cloud66-oss/starter/packs"
 	"gopkg.in/go-yaml/yaml.v2"
@@ -92,6 +93,9 @@ func GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, git
 		return err
 	}
 
+	// ensure our services are sorted (web first!)
+	sortServices(services)
+
 	// find components with min-usage 1
 	minUsageComponents, err := getMinUsageComponents(template)
 	if err != nil {
@@ -163,6 +167,30 @@ func GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, git
 		common.PrintError(err.Error())
 	}
 	return err
+}
+
+func sortServices(services []*common.Service) {
+	// sort services!
+	sort.Slice(services[:], func(i, j int) bool {
+		serviceName1 := strings.ToLower(services[i].Name)
+		serviceName2 := strings.ToLower(services[j].Name)
+
+		if serviceName1 == serviceName2 {
+			// shouldn't happen?
+			return false
+		}
+
+		// "web" should come out on top!
+		if serviceName1 == "web" {
+			return true
+		}
+		if serviceName2 == "web" {
+			return false
+		}
+
+		// normal sort
+		return serviceName1 < serviceName2
+	})
 }
 
 func getEnvVars(services []*common.Service) map[string]string {

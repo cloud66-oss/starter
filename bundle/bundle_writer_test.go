@@ -2,10 +2,28 @@ package bundle
 
 import (
 	"github.com/cloud66-oss/starter/bundle/templates"
+	"github.com/cloud66-oss/starter/common"
 	"reflect"
 	"sort"
 	"testing"
 )
+
+func TestServiceSorting(t *testing.T) {
+	services := []*common.Service{
+		{Name: "test1"},
+		{Name: "test3"},
+		{Name: "web"},
+		{Name: "test2"},
+	}
+	if services[0].Name != "test1" {
+		t.Errorf("Construction seems to have failed!")
+	}
+	// sort the services
+	sortServices(services)
+	if services[0].Name != "web" || services[1].Name != "test1" || services[2].Name != "test2" || services[3].Name != "test3" {
+		t.Errorf("Sorting Failed!")
+	}
+}
 
 func TestTemplateJSONDependencyTraversal(t *testing.T) {
 	templateJSON := generateTemplateJSON()
