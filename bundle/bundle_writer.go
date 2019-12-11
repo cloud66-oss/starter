@@ -35,6 +35,7 @@ func CreateSkycapFiles(outputDir, templateRepository, branch, packName, githubUR
 	//Create .bundle directory structure if it doesn't exist
 	tempFolder := os.TempDir()
 	bundleFolder := filepath.Join(tempFolder, "bundle")
+	//bundleFolder := "/tmp/bundle"
 
 	// cleanup the bundle folder
 	defer func() {
@@ -91,11 +92,6 @@ func GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, git
 		return err
 	}
 
-	err = handleConfigStoreRecords(packName, databases, bundle, bundleFolder, isGenericBTR)
-	if err != nil {
-		return err
-	}
-
 	// find components with min-usage 1
 	minUsageComponents, err := getMinUsageComponents(template)
 	if err != nil {
@@ -104,6 +100,11 @@ func GenerateBundleFiles(bundleFolder, templateRepository, branch, packName, git
 
 	// find dependencies of the components above
 	requiredComponents, err := getDependencyComponents(template, minUsageComponents)
+	if err != nil {
+		return err
+	}
+
+	err = handleConfigStoreRecords(packName, databases, bundle, bundleFolder, isGenericBTR)
 	if err != nil {
 		return err
 	}
@@ -232,20 +233,18 @@ func getConfigStoreRecords(databases []common.Database, includeDatabases bool) (
 }
 
 func setConfigStoreRecords(configStoreRecords []cloud66.BundledConfigStoreRecord, prefix string, bundle *bundles.Bundle, bundleFolder string) error {
-	unmarshalledOutput := cloud66.BundledConfigStoreRecords{Records: configStoreRecords}
-	marshalledOutput, err := yaml.Marshal(&unmarshalledOutput)
+	bundledConfigStoreRecords := cloud66.BundledConfigStoreRecords{Records: configStoreRecords}
+	outputs, err := yaml.Marshal(&bundledConfigStoreRecords)
 	if err != nil {
 		return err
 	}
-
 	fileName := prefix + "-configstore.yml"
 	filePath := filepath.Join(filepath.Join(bundleFolder, "configstore"), fileName)
-
-	err = ioutil.WriteFile(filePath, marshalledOutput, 0600)
+	err = ioutil.WriteFile(filePath, outputs, 0600)
 	if err != nil {
+
 		return err
 	}
-
 	bundle.ConfigStore = append(bundle.ConfigStore, fileName)
 	return nil
 }
@@ -363,22 +362,19 @@ func addWorkflows(bundle *bundles.Bundle, template *templates.Template, template
 }
 
 func loadBundle(bundleFolder string) (*bundles.Bundle, error) {
-	// TODO: if manifest file present, pick that up instead
 	var bundle *bundles.Bundle
 	manifestPath := filepath.Join(bundleFolder, "manifest.json")
 	if common.FileExists(manifestPath) {
 		//open manifest.json file and cast it into the struct
-		// open the template.json file and start downloading the stencils
-		manifest, err := os.Open(manifestPath)
+		manifestFile, err := os.Open(manifestPath)
 		if err != nil {
 			return nil, err
 		}
-		manifestData, err := ioutil.ReadAll(manifest)
+		manifestData, err := ioutil.ReadAll(manifestFile)
 		if err != nil {
 			return nil, err
 		}
-
-		err = json.Unmarshal(manifestData, &manifest)
+		err = json.Unmarshal(manifestData, &bundle)
 		if err != nil {
 			return nil, err
 		}
@@ -388,13 +384,13 @@ func loadBundle(bundleFolder string) (*bundles.Bundle, error) {
 			Metadata:        nil,
 			UID:             "",
 			Name:            "",
-			StencilGroups:   make([]*bundles.StencilGroup, 0),
 			BaseTemplates:   make([]*bundles.BaseTemplate, 0),
 			Policies:        make([]*bundles.Policy, 0),
 			Transformations: make([]*bundles.Transformation, 0),
 			Workflows:       make([]*bundles.Workflow, 0),
-			Tags:            make([]string, 0),
 			HelmReleases:    make([]*bundles.HelmRelease, 0),
+			Filters:         make([]*bundles.Filter, 0),
+			Tags:            make([]string, 0),
 			Configurations:  make([]string, 0),
 			ConfigStore:     make([]string, 0),
 		}
@@ -469,7 +465,7 @@ func downloadStencil(context string, templateStencil *templates.Stencil, btrShor
 	return &bundleStencil, nil
 }
 
-func downloadPolicy(templatePolicy *templates.Policy, btrShortName string, bundleFolder string, templateRepository string, branch string) (*bundles.Policy, error) {
+func downloadPolicy(templatePolicy *templates.Policy, btrShortName, bundleFolder, templateRepository, branch string) (*bundles.Policy, error) {
 	remoteFilename := templatePolicy.Filename
 	localFilename := templatePolicy.Filename
 	filename, err := downloadComponent(remoteFilename, localFilename, btrShortName, templateRepository, "policies", bundleFolder, branch)
@@ -484,7 +480,7 @@ func downloadPolicy(templatePolicy *templates.Policy, btrShortName string, bundl
 	return bundlePolicy, nil
 }
 
-func downloadTransformation(templateTransformation *templates.Transformation, btrShortName string, bundleFolder string, templateRepository string, branch string) (*bundles.Transformation, error) {
+func downloadTransformation(templateTransformation *templates.Transformation, btrShortName, bundleFolder, templateRepository, branch string) (*bundles.Transformation, error) {
 	remoteFilename := templateTransformation.Filename
 	localFilename := templateTransformation.Filename
 	filename, err := downloadComponent(remoteFilename, localFilename, btrShortName, templateRepository, "transformations", bundleFolder, branch)
@@ -714,6 +710,16 @@ func getMinUsageComponents(template *templates.Template) ([]string, error) {
 			result = append(result, fullyQualifiedTransformationName)
 		}
 	}
+	// filters
+	for _, templateFilter := range template.Templates.Filters {
+		if templateFilter.MinUsage > 0 {
+			fullyQualifiedFilterName, err := generateFullyQualifiedName(templateFilter)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, fullyQualifiedFilterName)
+		}
+	}
 	return result, nil
 }
 
@@ -770,7 +776,7 @@ func getDependencyComponentsInternal(template *templates.Template, rootName stri
 func getTemplateDependencies(template *templates.Template, name string) ([]string, error) {
 	nameParts := strings.Split(name, "/")
 	if len(nameParts) != 2 {
-		return nil, fmt.Errorf("dependency name '%s' should be 'TEMPLATE_TYPE/TEMPLATE_NAME', where TEMPLATE_TYPE is one of 'stencils', 'policies', 'transformations', or 'helm_charts'", name)
+		return nil, fmt.Errorf("dependency name '%s' should be 'TEMPLATE_TYPE/TEMPLATE_NAME', where TEMPLATE_TYPE is one of 'stencils', 'policies', 'transformations', 'filters' or 'helm_charts'", name)
 	}
 
 	templateType := nameParts[0]
@@ -796,6 +802,12 @@ func getTemplateDependencies(template *templates.Template, name string) ([]strin
 		}
 	case "helm_charts":
 		for _, v := range template.Templates.HelmCharts {
+			if v.Name == templateName {
+				return v.Dependencies, nil
+			}
+		}
+	case "filters":
+		for _, v := range template.Templates.Filters {
 			if v.Name == templateName {
 				return v.Dependencies, nil
 			}
@@ -900,6 +912,8 @@ func generateFullyQualifiedName(v templates.TemplateInterface) (string, error) {
 		return "helm_releases" + "/" + name, nil
 	case templates.Workflow, *templates.Workflow:
 		return "workflows" + "/" + name, nil
+	case templates.Filter, *templates.Filter:
+		return "filters" + "/" + name, nil
 	default:
 		return "", fmt.Errorf("generateFullyQualifiedName missing definition for %T", vt)
 	}

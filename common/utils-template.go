@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,9 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	"errors"
 )
-
 
 type DownloadFile struct {
 	URL  string `json:"url"`
@@ -26,10 +25,8 @@ type TemplateDefinition struct {
 	BundleManifest    []DownloadFile `json:"bundle-manifest-jsons"`
 }
 
-
 func Fetch(url string, mod *time.Time) (io.ReadCloser, error) {
 	PrintlnL2("Downloading from %s", url)
-
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -66,7 +63,6 @@ func FetchJSON(url string, mod *time.Time, v interface{}) error {
 	defer r.Close()
 	return json.NewDecoder(r).Decode(v)
 }
-
 
 func DownloadTemplates(tempDir string, td TemplateDefinition, templatePath string, flagBranch string) error {
 	err := DownloadSingleFile(tempDir, DownloadFile{URL: strings.Replace(templatePath, "{{.branch}}", flagBranch, -1), Name: "templates.json"}, flagBranch)
@@ -125,4 +121,3 @@ func DownloadSingleFile(tempDir string, temp DownloadFile, flagBranch string) er
 
 	return nil
 }
-

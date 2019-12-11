@@ -5,7 +5,6 @@ type Bundle struct {
 	Metadata        *Metadata         `json:"metadata"`
 	UID             string            `json:"uid"`
 	Name            string            `json:"name"`
-	StencilGroups   []*StencilGroup   `json:"stencil_groups"`
 	BaseTemplates   []*BaseTemplate   `json:"base_templates"`
 	Policies        []*Policy         `json:"policies"`
 	Transformations []*Transformation `json:"transformations"`
