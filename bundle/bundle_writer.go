@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	btype "github.com/cloud66-oss/starter/bundle/bundle-types"
+	ttype "github.com/cloud66-oss/starter/bundle/template-types"
+
 	"github.com/cloud66-oss/starter/packs"
 	"gopkg.in/go-yaml/yaml.v2"
 	"io/ioutil"
@@ -18,156 +21,6 @@ import (
 	"github.com/cloud66-oss/starter/common"
 	"github.com/sethvargo/go-password/password"
 )
-
-type ManifestBundle struct {
-	Version         string                  `json:"version"`
-	Metadata        *Metadata               `json:"metadata"`
-	UID             string                  `json:"uid"`
-	Name            string                  `json:"name"`
-	StencilGroups   []*BundleStencilGroup   `json:"stencil_groups"`
-	BaseTemplates   []*BundleBaseTemplates  `json:"base_templates"`
-	Policies        []*BundlePolicy         `json:"policies"`
-	Transformations []*BundleTransformation `json:"transformations"`
-	Workflows       []*BundleWorkflow       `json:"workflows"`
-	Tags            []string                `json:"tags"`
-	HelmReleases    []*BundleHelmRelease    `json:"helm_releases"`
-	Configurations  []string                `json:"configuration"`
-	ConfigStore     []string                `json:"configstore"`
-}
-
-type BundleHelmRelease struct {
-	UID           string `json:"uid"`
-	ChartName     string `json:"chart_name"`
-	DisplayName   string `json:"display_name"`
-	Version       string `json:"version"`
-	RepositoryURL string `json:"repository_url"`
-	ValuesFile    string `json:"values_file"`
-}
-
-type BundleBaseTemplates struct {
-	Name     string           `json:"name"`
-	Repo     string           `json:"repo"`
-	Branch   string           `json:"branch"`
-	Stencils []*BundleStencil `json:"stencils"`
-}
-
-type Metadata struct {
-	App         string    `json:"app"`
-	Timestamp   time.Time `json:"timestamp"`
-	Annotations []string  `json:"annotations"`
-}
-
-type BundleStencil struct {
-	UID              string   `json:"uid"`
-	Filename         string   `json:"filename"`
-	TemplateFilename string   `json:"template_filename"`
-	ContextID        string   `json:"context_id"`
-	Status           int      `json:"status"`
-	Tags             []string `json:"tags"`
-	Sequence         int      `json:"sequence"`
-}
-
-type BundleStencilGroup struct {
-	UID  string   `json:"uid"`
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
-}
-
-type BundlePolicy struct {
-	UID      string   `json:"uid"`
-	Name     string   `json:"name"`
-	Selector string   `json:"selector"`
-	Sequence int      `json:"sequence"`
-	Tags     []string `json:"tags"`
-}
-
-type BundleTransformation struct {
-	// this is just a placeholder for now
-	UID  string   `json:"uid"`
-	Name string   `json:"name"`
-	Tags []string `json:"tags"`
-}
-
-type BundleWorkflow struct {
-	Uid     string   `json:"uid"`
-	Name    string   `json:"name"`
-	Default bool     `json:"default"`
-	Tags    []string `json:"tags"`
-}
-
-type TemplateJSON struct {
-	Version     string           `json:"version"`
-	Public      bool             `json:"public"`
-	Name        string           `json:"name"`
-	Icon        string           `json:"icon"`
-	LongName    string           `json:"long_name"`
-	Description string           `json:"description"`
-	Templates   *TemplatesStruct `json:"templates"`
-}
-
-type TemplatesStruct struct {
-	Stencils        []*StencilTemplate        `json:"stencils"`
-	Policies        []*PolicyTemplate         `json:"policies"`
-	Transformations []*TransformationTemplate `json:"transformations"`
-	HelmCharts      []*HelmChartTemplate      `json:"helm_charts"`
-	Workflows       []*WorkflowTemplate       `json:"workflows"`
-}
-
-type StencilTemplate struct {
-	Name              string   `json:"name"`
-	FilenamePattern   string   `json:"filename_pattern"`
-	Filename          string   `json:"filename"`
-	Description       string   `json:"description"`
-	ContextType       string   `json:"context_type"`
-	Tags              []string `json:"tags"`
-	PreferredSequence int      `json:"preferred_sequence"`
-	Suggested         bool     `json:"suggested"`
-	MinUsage          int      `json:"min_usage"`
-	MaxUsage          int      `json:"max_usage"`
-	Dependencies      []string `json:"dependencies"`
-}
-
-type PolicyTemplate struct {
-	Name         string   `json:"name"`
-	Filename     string   `json:"filename"`
-	Dependencies []string `json:"dependencies"`
-	MinUsage     int      `json:"min_usage"`
-	MaxUsage     int      `json:"max_usage"`
-	Tags         []string `json:"tags"`
-}
-
-type TransformationTemplate struct {
-	Name         string   `json:"name"`
-	Filename     string   `json:"filename"`
-	Dependencies []string `json:"dependencies"`
-	MinUsage     int      `json:"min_usage"`
-	MaxUsage     int      `json:"max_usage"`
-	Tags         []string `json:"tags"`
-}
-
-type WorkflowTemplate struct {
-	Name         string   `json:"name"`
-	Filename     string   `json:"filename"`
-	Description  string   `json:"description"`
-	Tags         []string `json:"tags"`
-	Dependencies []string `json:"dependencies"`
-}
-
-type HelmChartTemplate struct {
-	Name               string              `json:"name"`
-	Description        string              `json:"description"`
-	Tags               []string            `json:"tags"`
-	ChartRepositoryUrl string              `json:"chart_repository_url"`
-	ChartName          string              `json:"chart_name"`
-	ChartVersion       string              `json:"chart_version"`
-	Dependencies       []string            `json:"dependencies"`
-	Modifiers          []*ModifierTemplate `json:"modifiers"`
-}
-
-type ModifierTemplate struct {
-	Type     string `json:"type"`
-	Filename string `json:"filename"`
-}
 
 func CreateSkycapFiles(outputDir string,
 	templateRepository string,
@@ -380,7 +233,7 @@ func getConfigStoreRecords(services []*common.Service, databases []common.Databa
 	return result, nil
 }
 
-func setConfigStoreRecords(configStoreRecords []cloud66.BundledConfigStoreRecord, prefix string, manifestBundle *ManifestBundle, bundleFolder string) error {
+func setConfigStoreRecords(configStoreRecords []cloud66.BundledConfigStoreRecord, prefix string, manifestBundle *btype.ManifestBundle, bundleFolder string) error {
 	unmarshalledOutput := cloud66.BundledConfigStoreRecords{Records: configStoreRecords}
 	marshalledOutput, err := yaml.Marshal(&unmarshalledOutput)
 	if err != nil {
@@ -411,10 +264,10 @@ func CreateBundleFolderStructure(baseFolder string) error {
 	return nil
 }
 
-func addStencils(templateJSON *TemplateJSON, templateRepository string, branch string, services []*common.Service, bundleFolder string,
-	manifestFile *ManifestBundle, githubURL string, requiredComponentNames []string) (*ManifestBundle, error) {
+func addStencils(templateJSON *ttype.JSON, templateRepository string, branch string, services []*common.Service, bundleFolder string,
+	manifestFile *btype.ManifestBundle, githubURL string, requiredComponentNames []string) (*btype.ManifestBundle, error) {
 
-	var bundleStencils = make([]*BundleStencil, 0)
+	var bundleStencils = make([]*btype.BundleStencil, 0)
 	stencilTemplates := filterStencilsByRequiredComponentNames(templateJSON, requiredComponentNames)
 
 	stencilUsageMap := make(map[string]int)
@@ -447,7 +300,7 @@ func addStencils(templateJSON *TemplateJSON, templateRepository string, branch s
 			}
 		}
 	}
-	var newTemplate BundleBaseTemplates
+	var newTemplate btype.BundleBaseTemplates
 	newTemplate.Name = templateJSON.Name
 	newTemplate.Repo = githubURL
 	newTemplate.Branch = branch
@@ -456,7 +309,7 @@ func addStencils(templateJSON *TemplateJSON, templateRepository string, branch s
 	return manifestFile, nil
 }
 
-func addPolicies(templateJSON *TemplateJSON, templateRepository string, branch string, bundleFolder string, manifestFile *ManifestBundle, requiredComponentNames []string) (*ManifestBundle, error) {
+func addPolicies(templateJSON *ttype.JSON, templateRepository string, branch string, bundleFolder string, manifestFile *btype.ManifestBundle, requiredComponentNames []string) (*btype.ManifestBundle, error) {
 	var bundlePolicies = manifestFile.Policies
 	policyTemplates := filterPoliciesByRequiredComponentNames(templateJSON, requiredComponentNames)
 	for _, policyTemplate := range policyTemplates {
@@ -470,7 +323,7 @@ func addPolicies(templateJSON *TemplateJSON, templateRepository string, branch s
 	return manifestFile, nil
 }
 
-func addTransformations(templateJSON *TemplateJSON, templateRepository string, branch string, bundleFolder string, manifestFile *ManifestBundle, requiredComponentNames []string) (*ManifestBundle, error) {
+func addTransformations(templateJSON *ttype.JSON, templateRepository string, branch string, bundleFolder string, manifestFile *btype.ManifestBundle, requiredComponentNames []string) (*btype.ManifestBundle, error) {
 	var bundleTransformations = manifestFile.Transformations
 	transformationTemplates := filterTransformationsByRequiredComponentNames(templateJSON, requiredComponentNames)
 	for _, transformationTemplate := range transformationTemplates {
@@ -484,7 +337,7 @@ func addTransformations(templateJSON *TemplateJSON, templateRepository string, b
 	return manifestFile, nil
 }
 
-func addWorkflows(templateJSON *TemplateJSON, templateRepository string, branch string, bundleFolder string, manifestFile *ManifestBundle, isGenericBtr bool) (*ManifestBundle, error) {
+func addWorkflows(templateJSON *ttype.JSON, templateRepository string, branch string, bundleFolder string, manifestFile *btype.ManifestBundle, isGenericBtr bool) (*btype.ManifestBundle, error) {
 	var manifestWorkflows = manifestFile.Workflows
 	var err error
 	for _, workflow := range templateJSON.Templates.Workflows {
@@ -506,9 +359,9 @@ func addWorkflows(templateJSON *TemplateJSON, templateRepository string, branch 
 	return manifestFile, nil
 }
 
-func loadManifest(bundleFolder string) (*ManifestBundle, error) {
+func loadManifest(bundleFolder string) (*btype.ManifestBundle, error) {
 	// TODO: if manifest file present, pick that up instead
-	var manifest *ManifestBundle
+	var manifest *btype.ManifestBundle
 	manifestPath := filepath.Join(bundleFolder, "manifest.json")
 	if common.FileExists(manifestPath) {
 		//open manifest.json file and cast it into the struct
@@ -527,18 +380,18 @@ func loadManifest(bundleFolder string) (*ManifestBundle, error) {
 			return nil, err
 		}
 	} else {
-		manifest = &ManifestBundle{
+		manifest = &btype.ManifestBundle{
 			Version:         "1",
 			Metadata:        nil,
 			UID:             "",
 			Name:            "",
-			StencilGroups:   make([]*BundleStencilGroup, 0),
-			BaseTemplates:   make([]*BundleBaseTemplates, 0),
-			Policies:        make([]*BundlePolicy, 0),
-			Transformations: make([]*BundleTransformation, 0),
-			Workflows:       make([]*BundleWorkflow, 0),
+			StencilGroups:   make([]*btype.StencilGroupBundle, 0),
+			BaseTemplates:   make([]*btype.BundleBaseTemplates, 0),
+			Policies:        make([]*btype.BundlePolicy, 0),
+			Transformations: make([]*btype.BundleTransformation, 0),
+			Workflows:       make([]*btype.BundleWorkflow, 0),
 			Tags:            make([]string, 0),
-			HelmReleases:    make([]*BundleHelmRelease, 0),
+			HelmReleases:    make([]*btype.BundleHelmRelease, 0),
 			Configurations:  make([]string, 0),
 			ConfigStore:     make([]string, 0),
 		}
@@ -546,7 +399,7 @@ func loadManifest(bundleFolder string) (*ManifestBundle, error) {
 	return manifest, nil
 }
 
-func saveManifest(bundleFolder string, content *ManifestBundle) error {
+func saveManifest(bundleFolder string, content *btype.ManifestBundle) error {
 	out, err := json.MarshalIndent(content, "", "  ")
 	if err != nil {
 		return err
@@ -555,7 +408,7 @@ func saveManifest(bundleFolder string, content *ManifestBundle) error {
 	return ioutil.WriteFile(manifestPath, out, 0600)
 }
 
-func saveEnvVars(prefix string, envVars map[string]string, manifestFile *ManifestBundle, bundleFolder string) (*ManifestBundle, error) {
+func saveEnvVars(prefix string, envVars map[string]string, manifestFile *btype.ManifestBundle, bundleFolder string) (*btype.ManifestBundle, error) {
 	filename := prefix + "-config"
 	varsPath := filepath.Join(filepath.Join(bundleFolder, "configurations"), prefix+"-config")
 	var fileOut string
@@ -571,7 +424,7 @@ func saveEnvVars(prefix string, envVars map[string]string, manifestFile *Manifes
 	return manifestFile, nil
 }
 
-func handleConfigStoreRecords(prefix string, services []*common.Service, databases []common.Database, manifestBundle *ManifestBundle, bundleFolder string, includeDatabases bool) error {
+func handleConfigStoreRecords(prefix string, services []*common.Service, databases []common.Database, manifestBundle *btype.ManifestBundle, bundleFolder string, includeDatabases bool) error {
 	configStoreRecords, err := getConfigStoreRecords(services, databases, includeDatabases)
 	if err != nil {
 		return err
@@ -587,7 +440,7 @@ func handleConfigStoreRecords(prefix string, services []*common.Service, databas
 	return nil
 }
 
-func downloadStencil(context string, stencilTemplate *StencilTemplate, btrShortName string, manifestFile *ManifestBundle, bundleFolder string, templateRepository string, branch string) (*BundleStencil, error) {
+func downloadStencil(context string, stencilTemplate *ttype.Stencil, btrShortName string, manifestFile *btype.ManifestBundle, bundleFolder string, templateRepository string, branch string) (*btype.BundleStencil, error) {
 	filename := ""
 	if context != "" {
 		filename = context + "_"
@@ -602,7 +455,7 @@ func downloadStencil(context string, stencilTemplate *StencilTemplate, btrShortN
 	}
 
 	// Add the entry to the manifest file
-	var bundleStencil BundleStencil
+	var bundleStencil btype.BundleStencil
 	bundleStencil.UID = ""
 	bundleStencil.Filename = filename
 	bundleStencil.TemplateFilename = stencilTemplate.Filename
@@ -614,13 +467,13 @@ func downloadStencil(context string, stencilTemplate *StencilTemplate, btrShortN
 	return &bundleStencil, nil
 }
 
-func downloadPolicy(policyTemplate *PolicyTemplate, btrShortName string, bundleFolder string, templateRepository string, branch string) (*BundlePolicy, error) {
+func downloadPolicy(policyTemplate *ttype.Policy, btrShortName string, bundleFolder string, templateRepository string, branch string) (*btype.BundlePolicy, error) {
 	filename := policyTemplate.Filename
 	filename, err := downloadComponent(filename, filename, btrShortName, templateRepository, "policies", bundleFolder, branch)
 	if err != nil {
 		return nil, err
 	}
-	bundlePolicy := &BundlePolicy{
+	bundlePolicy := &btype.BundlePolicy{
 		UID:  "",
 		Name: filename,
 		Tags: policyTemplate.Tags,
@@ -628,13 +481,13 @@ func downloadPolicy(policyTemplate *PolicyTemplate, btrShortName string, bundleF
 	return bundlePolicy, nil
 }
 
-func downloadTransformation(transformationTemplate *TransformationTemplate, btrShortName string, bundleFolder string, templateRepository string, branch string) (*BundleTransformation, error) {
+func downloadTransformation(transformationTemplate *ttype.Transformation, btrShortName string, bundleFolder string, templateRepository string, branch string) (*btype.BundleTransformation, error) {
 	filename := transformationTemplate.Filename
 	filename, err := downloadComponent(filename, filename, btrShortName, templateRepository, "transformations", bundleFolder, branch)
 	if err != nil {
 		return nil, err
 	}
-	bundleTransformation := &BundleTransformation{
+	bundleTransformation := &btype.BundleTransformation{
 		UID:  "",
 		Name: filename,
 		Tags: transformationTemplate.Tags,
@@ -660,13 +513,13 @@ func downloadComponent(remoteFilename, localFilename string, btrShortName string
 }
 
 func downloadAndAddWorkflow(
-	workflowTemplate *WorkflowTemplate,
+	workflowTemplate *ttype.Workflow,
 	btrShortname string,
 	bundleFolder string,
 	templateRepository string,
 	branch string,
-	manifestWorkflows []*BundleWorkflow,
-	isGenericBtr bool) ([]*BundleWorkflow, error) {
+	manifestWorkflows []*btype.BundleWorkflow,
+	isGenericBtr bool) ([]*btype.BundleWorkflow, error) {
 
 	filename := workflowTemplate.Filename
 	parts := strings.Split(filename, ".")
@@ -688,16 +541,16 @@ func downloadAndAddWorkflow(
 		return nil, downErr
 	}
 
-	var wk *BundleWorkflow
+	var wk *btype.BundleWorkflow
 	if isGenericBtr {
-		wk = &BundleWorkflow{
+		wk = &btype.BundleWorkflow{
 			Uid:     "",
 			Name:    filename,
 			Default: false,
 			Tags:    workflowTemplate.Tags,
 		}
 	} else {
-		wk = &BundleWorkflow{
+		wk = &btype.BundleWorkflow{
 			Uid:     "",
 			Name:    filename,
 			Default: false,
@@ -712,8 +565,8 @@ func downloadAndAddWorkflow(
 	return manifestWorkflows, nil
 }
 
-func addMetadata(manifestFile *ManifestBundle) (*ManifestBundle, error) {
-	var metadata = &Metadata{
+func addMetadata(manifestFile *btype.ManifestBundle) (*btype.ManifestBundle, error) {
+	var metadata = &btype.Metadata{
 		Annotations: []string{"Generated by Cloud 66 starter"},
 		App:         "starter",
 		Timestamp:   time.Now().UTC(),
@@ -724,10 +577,10 @@ func addMetadata(manifestFile *ManifestBundle) (*ManifestBundle, error) {
 	return manifestFile, nil
 }
 
-func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleFolder string, manifestFile *ManifestBundle, databases []common.Database, githubURL string) (*ManifestBundle, error) {
+func addDatabase(templateJSON *ttype.JSON, templateRepository, branch, bundleFolder string, manifestFile *btype.ManifestBundle, databases []common.Database, githubURL string) (*btype.ManifestBundle, error) {
 	var helmReleases = manifestFile.HelmReleases
 	for _, db := range databases {
-		var release BundleHelmRelease
+		var release btype.BundleHelmRelease
 
 		switch db.Name {
 		case "mysql":
@@ -751,7 +604,7 @@ func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleF
 			continue
 		}
 
-		var applicableHelmChartTemplate *HelmChartTemplate
+		var applicableHelmChartTemplate *ttype.HelmRelease
 		for _, h := range templateJSON.Templates.HelmCharts {
 			// TODO: maybe check the chart repository URL as well
 			if h.ChartName == release.ChartName && h.ChartVersion == release.Version {
@@ -819,7 +672,7 @@ func addDatabase(templateJSON *TemplateJSON, templateRepository, branch, bundleF
 	return manifestFile, nil
 }
 
-func getStencilTemplate(templateJSON *TemplateJSON, stencil_filename string) (*StencilTemplate, error) {
+func getStencilTemplate(templateJSON *ttype.JSON, stencil_filename string) (*ttype.Stencil, error) {
 	for _, stencil := range templateJSON.Templates.Stencils {
 		if stencil.Filename == stencil_filename {
 			return stencil, nil
@@ -828,7 +681,7 @@ func getStencilTemplate(templateJSON *TemplateJSON, stencil_filename string) (*S
 	return nil, errors.New("Stencil not found")
 }
 
-func findIndexByRepoAndBranch(base_templates []*BundleBaseTemplates, repo string, branch string) (int, error) {
+func findIndexByRepoAndBranch(base_templates []*btype.BundleBaseTemplates, repo string, branch string) (int, error) {
 	repo = strings.TrimSpace(repo)
 	branch = strings.TrimSpace(branch)
 	for index, btr := range base_templates {
@@ -847,52 +700,7 @@ const (
 	black color = 2
 )
 
-type DependencyInterface interface {
-	getName() string
-	getDependencies() []string
-}
-
-func (v StencilTemplate) getName() string {
-	return v.Name
-}
-
-func (v StencilTemplate) getDependencies() []string {
-	return v.Dependencies
-}
-
-func (v PolicyTemplate) getName() string {
-	return v.Name
-}
-
-func (v PolicyTemplate) getDependencies() []string {
-	return v.Dependencies
-}
-
-func (v TransformationTemplate) getName() string {
-	return v.Name
-}
-
-func (v TransformationTemplate) getDependencies() []string {
-	return v.Dependencies
-}
-
-func (v HelmChartTemplate) getName() string {
-	return v.Name
-}
-
-func (v HelmChartTemplate) getDependencies() []string {
-	return v.Dependencies
-}
-
-func (v WorkflowTemplate) getName() string {
-	return v.Name
-}
-
-func (v WorkflowTemplate) getDependencies() []string {
-	return v.Dependencies
-}
-
-func getMinUsageComponents(templateJSON *TemplateJSON) ([]string, error) {
+func getMinUsageComponents(templateJSON *ttype.JSON) ([]string, error) {
 	result := make([]string, 0)
 	// stencils
 	for _, stencilTemplate := range templateJSON.Templates.Stencils {
@@ -927,7 +735,7 @@ func getMinUsageComponents(templateJSON *TemplateJSON) ([]string, error) {
 	return result, nil
 }
 
-func getDependencyComponents(templateJSON *TemplateJSON, initialComponentNames []string) ([]string, error) {
+func getDependencyComponents(templateJSON *ttype.JSON, initialComponentNames []string) ([]string, error) {
 	// loop through them and get the full dependency tree
 	requiredComponentNameMap := make(map[string]bool)
 	for _, initialComponentName := range initialComponentNames {
@@ -936,19 +744,19 @@ func getDependencyComponents(templateJSON *TemplateJSON, initialComponentNames [
 		if err != nil {
 			return nil, err
 		}
-		for dependencyName, _ := range visited {
+		for dependencyName := range visited {
 			requiredComponentNameMap[dependencyName] = true
 		}
 	}
 	// get unique required component names
 	requiredComponentNames := make([]string, 0)
-	for requiredComponentName, _ := range requiredComponentNameMap {
+	for requiredComponentName := range requiredComponentNameMap {
 		requiredComponentNames = append(requiredComponentNames, requiredComponentName)
 	}
 	return requiredComponentNames, nil
 }
 
-func getRequiredComponentNamesInternal(templateJSON *TemplateJSON, rootName string, name string, visited map[string]color) error {
+func getRequiredComponentNamesInternal(templateJSON *ttype.JSON, rootName string, name string, visited map[string]color) error {
 	_, present := visited[name]
 	if !present {
 		visited[name] = white
@@ -977,7 +785,7 @@ func getRequiredComponentNamesInternal(templateJSON *TemplateJSON, rootName stri
 	return nil
 }
 
-func getTemplateDependencies(templateJSON *TemplateJSON, name string) ([]string, error) {
+func getTemplateDependencies(templateJSON *ttype.JSON, name string) ([]string, error) {
 	nameParts := strings.Split(name, "/")
 	if len(nameParts) != 2 {
 		return nil, fmt.Errorf("dependency name '%s' should be 'TEMPLATE_TYPE/TEMPLATE_NAME', where TEMPLATE_TYPE is one of 'stencils', 'policies', 'transformations', or 'helm_charts'", name)
@@ -1017,8 +825,8 @@ func getTemplateDependencies(templateJSON *TemplateJSON, name string) ([]string,
 	return nil, fmt.Errorf("could not find dependency with name '%s'", name)
 }
 
-func filterStencilsByRequiredComponentNames(templateJSON *TemplateJSON, requiredComponentNames []string) []*StencilTemplate {
-	result := make([]*StencilTemplate, 0)
+func filterStencilsByRequiredComponentNames(templateJSON *ttype.JSON, requiredComponentNames []string) []*ttype.Stencil {
+	result := make([]*ttype.Stencil, 0)
 	for _, stencilTemplate := range templateJSON.Templates.Stencils {
 		required := false
 		for _, requiredComponentName := range requiredComponentNames {
@@ -1037,8 +845,8 @@ func filterStencilsByRequiredComponentNames(templateJSON *TemplateJSON, required
 	return result
 }
 
-func filterPoliciesByRequiredComponentNames(templateJSON *TemplateJSON, requiredComponentNames []string) []*PolicyTemplate {
-	result := make([]*PolicyTemplate, 0)
+func filterPoliciesByRequiredComponentNames(templateJSON *ttype.JSON, requiredComponentNames []string) []*ttype.Policy {
+	result := make([]*ttype.Policy, 0)
 	for _, policyTemplate := range templateJSON.Templates.Policies {
 		required := false
 		for _, requiredComponentName := range requiredComponentNames {
@@ -1057,8 +865,8 @@ func filterPoliciesByRequiredComponentNames(templateJSON *TemplateJSON, required
 	return result
 }
 
-func filterTransformationsByRequiredComponentNames(templateJSON *TemplateJSON, requiredComponentNames []string) []*TransformationTemplate {
-	result := make([]*TransformationTemplate, 0)
+func filterTransformationsByRequiredComponentNames(templateJSON *ttype.JSON, requiredComponentNames []string) []*ttype.Transformation {
+	result := make([]*ttype.Transformation, 0)
 	for _, transformationTemplate := range templateJSON.Templates.Transformations {
 		required := false
 		for _, requiredComponentName := range requiredComponentNames {
@@ -1077,31 +885,31 @@ func filterTransformationsByRequiredComponentNames(templateJSON *TemplateJSON, r
 	return result
 }
 
-func generateFullyQualifiedName(v DependencyInterface) (string, error) {
-	name := v.getName()
+func generateFullyQualifiedName(v ttype.TemplateInterface) (string, error) {
+	name := v.GetName()
 	switch vt := v.(type) {
-	case StencilTemplate, *StencilTemplate:
+	case ttype.Stencil, *ttype.Stencil:
 		return "stencils" + "/" + name, nil
-	case PolicyTemplate, *PolicyTemplate:
+	case ttype.Policy, *ttype.Policy:
 		return "policies" + "/" + name, nil
-	case TransformationTemplate, *TransformationTemplate:
+	case ttype.Transformation, *ttype.Transformation:
 		return "transformations" + "/" + name, nil
-	case HelmChartTemplate, *HelmChartTemplate:
+	case ttype.HelmRelease, *ttype.HelmRelease:
 		return "helm_releases" + "/" + name, nil
-	case WorkflowTemplate, *WorkflowTemplate:
+	case ttype.Workflow, *ttype.Workflow:
 		return "workflows" + "/" + name, nil
 	default:
 		return "", fmt.Errorf("generateFullyQualifiedName missing definition for %T", vt)
 	}
 }
 
-func generateTemplateJSONFromUpstreamFile(templateRepository, branch string) (*TemplateJSON, error) {
+func generateTemplateJSONFromUpstreamFile(templateRepository, branch string) (*ttype.JSON, error) {
 	templatesJSONData, err := readStencilTemplateFile(templateRepository, branch, "templates.json")
 	if err != nil {
 		return nil, err
 	}
 
-	var templateJSON TemplateJSON
+	var templateJSON ttype.JSON
 	err = json.Unmarshal(templatesJSONData, &templateJSON)
 	if err != nil {
 		return nil, err
