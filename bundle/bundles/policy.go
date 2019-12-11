@@ -1,6 +1,6 @@
-package bundle_types
+package bundles
 
-type BundlePolicy struct {
+type Policy struct {
 	UID      string   `json:"uid"`
 	Name     string   `json:"name"`
 	Selector string   `json:"selector"`

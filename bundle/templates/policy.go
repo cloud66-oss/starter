@@ -1,4 +1,4 @@
-package template_types
+package templates
 
 type Policy struct {
 	Name         string   `json:"name"`

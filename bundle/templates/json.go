@@ -1,4 +1,4 @@
-package template_types
+package templates
 
 type JSON struct {
 	Version     string         `json:"version"`

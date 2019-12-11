@@ -1,4 +1,4 @@
-package bundle_types
+package bundles
 
 import "time"
 

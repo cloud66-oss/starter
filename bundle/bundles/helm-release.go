@@ -1,6 +1,6 @@
-package bundle_types
+package bundles
 
-type BundleHelmRelease struct {
+type HelmRelease struct {
 	UID           string `json:"uid"`
 	ChartName     string `json:"chart_name"`
 	DisplayName   string `json:"display_name"`

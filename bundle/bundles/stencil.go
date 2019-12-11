@@ -1,6 +1,6 @@
-package bundle_types
+package bundles
 
-type BundleStencil struct {
+type Stencil struct {
 	UID              string   `json:"uid"`
 	Filename         string   `json:"filename"`
 	TemplateFilename string   `json:"template_filename"`

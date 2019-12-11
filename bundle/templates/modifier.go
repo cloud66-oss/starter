@@ -1,4 +1,4 @@
-package template_types
+package templates
 
 type Modifier struct {
 	Type     string `json:"type"`

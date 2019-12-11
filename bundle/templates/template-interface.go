@@ -1,4 +1,4 @@
-package template_types
+package templates
 
 type TemplateInterface interface {
 	GetName() string

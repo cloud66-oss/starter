@@ -1,4 +1,4 @@
-package template_types
+package templates
 
 type HelmRelease struct {
 	Name               string      `json:"name"`

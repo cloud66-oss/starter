@@ -1,4 +1,4 @@
-package template_types
+package templates
 
 type Transformation struct {
 	Name         string   `json:"name"`

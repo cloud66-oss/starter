@@ -1,4 +1,4 @@
-package template_types
+package templates
 
 type TemplateTypes struct {
 	Stencils        []*Stencil        `json:"stencils"`
