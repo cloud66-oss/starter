@@ -555,9 +555,10 @@ func downloadFilter(templateFilter *templates.Filter, btrShortName, bundleFolder
 		return nil, err
 	}
 	bundleFilter := &bundles.Filter{
-		UID:  "",
-		Name: filename,
-		Tags: templateFilter.Tags,
+		Name:        templateFilter.Name,
+		Description: templateFilter.Description,
+		Filename:    filename,
+		Tags:        templateFilter.Tags,
 	}
 	return bundleFilter, nil
 }
