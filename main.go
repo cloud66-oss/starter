@@ -207,7 +207,7 @@ func main() {
 		config.SetDefaults()
 	}
 
-	common.PrintlnTitle("Starter (c) 2019 Cloud66 Inc.")
+	common.PrintlnTitle("Starter (c) 2020 Cloud66 Inc.")
 
 	// Run in daemon mode
 	if flagDaemon {
@@ -371,27 +371,32 @@ func analyze(
 		}
 	}
 
-	//get all the support language versions
-	if use_registry && pack.Name() != "docker-compose" && pack.Name() != "service.yml" {
-		url := "https://registry-1.docker.io/"
-		username := "" // anonymous
-		password := "" // anonymous
-		hub, err := registry.New(url, username, password)
-		if err != nil {
-			return nil, errors.New("can't connect to docker registry to check for allowed base images")
-		}
+	// if we haven't loaded versions from docker yet
+	if len(pack.GetSupportedLanguageVersions()) <= 1 {
+		//get all the support language versions
+		if use_registry && pack.Name() != "docker-compose" && pack.Name() != "service.yml" {
+			fmt.Printf("[PACKNAME: %s] [FETCHING REMOTE VERSIONS]\n", pack.Name())
+			url := "https://registry-1.docker.io/"
+			username := "" // anonymous
+			password := "" // anonymous
+			hub, err := registry.New(url, username, password)
+			if err != nil {
+				return nil, errors.New("can't connect to docker registry to check for allowed base images")
+			}
 
-		tags, err := hub.Tags("library/" + pack.Name())
-		if err != nil {
-			return nil, errors.New("can't find the tags for this pack")
-		}
-		tags = Filter(tags, func(v string) bool {
-			ok, _ := regexp.MatchString(`^\d+.\d+.\d+$`, v)
-			return ok
-		})
+			tags, err := hub.Tags("library/" + pack.Name())
+			if err != nil {
+				return nil, errors.New("can't find the tags for this pack")
+			}
+			tags = Filter(tags, func(v string) bool {
+				ok, _ := regexp.MatchString(`^\d+.\d+.\d+$`, v)
+				return ok
+			})
 
-		pack.SetSupportedLanguageVersions(tags)
+			pack.SetSupportedLanguageVersions(tags)
+		}
 	}
+
 
 	err = pack.Analyze(path, environment, !noPrompt, git_repo, git_branch)
 	if err != nil {

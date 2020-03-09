@@ -5,16 +5,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strconv"
-	"strings"
-	"text/template"
-
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/cloud66-oss/starter/bundle"
 	"github.com/cloud66-oss/starter/common"
@@ -26,6 +16,16 @@ import (
 	"github.com/cloud66-oss/starter/utils"
 	"github.com/heroku/docker-registry-client/registry"
 	uuid "github.com/satori/go.uuid"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+	"text/template"
+	"time"
 )
 
 // API holds starter API
@@ -100,38 +100,57 @@ func (a *API) StartAPI() error {
 			support.Files = p.FilesToBeAnalysed()
 
 			if a.config.use_registry && p.Name() != "docker-compose" && p.Name() != "service.yml" {
-				url := "https://registry-1.docker.io/"
-				username := "" // anonymous
-				password := "" // anonymous
-				hub, err := registry.New(url, username, password)
+				err := a.tryGetRemoteTags(p, support)
 				if err != nil {
-					common.PrintError("Failed to start API %s", err.Error())
-					os.Exit(2)
+					//sleep then try again
+					common.PrintL1("THROTTLE 60 seconds\n")
+					time.Sleep(60 * time.Second)
+					// try again
+					err := a.tryGetRemoteTags(p, support)
+					if err != nil {
+						//sleep then try again ONE MORE TIME :/
+						common.PrintL1("THROTTLE 60 seconds\n")
+						time.Sleep(60 * time.Second)
+						// try again
+						err := a.tryGetRemoteTags(p, support)
+						if err != nil {
+							common.PrintError("Failed to start API due to: %s", err.Error())
+							os.Exit(2)
+						}
+					}
 				}
-				tags, err := hub.Tags("library/" + p.Name())
-				if err != nil {
-					common.PrintError("Failed to start API %s", err.Error())
-					os.Exit(2)
-				}
-				tags = Filter(tags, func(v string) bool {
-					ok, _ := regexp.MatchString(`^\d+.\d+.\d+$`, v)
-					return ok
-				})
-				p.SetSupportedLanguageVersions(tags)
-				support.SupportedVersion = tags
 			} else {
 				support.SupportedVersion = p.GetSupportedLanguageVersions()
 			}
-
 			languages.Languages = append(languages.Languages, support)
 		}
-
 		if err := http.ListenAndServe(a.config.APIURL, api.MakeHandler()); err != nil {
 			common.PrintError("Failed to start API %s", err.Error())
 			os.Exit(2)
 		}
 	}()
 
+	return nil
+}
+
+func (a *API) tryGetRemoteTags(p packs.Pack, support Language) error {
+	url := "https://registry-1.docker.io/"
+	username := "" // anonymous
+	password := "" // anonymous
+	hub, err := registry.New(url, username, password)
+	if err != nil {
+		return err
+	}
+	tags, err := hub.Tags("library/" + p.Name())
+	if err != nil {
+		return err
+	}
+	tags = Filter(tags, func(v string) bool {
+		ok, _ := regexp.MatchString(`^\d+.\d+.\d+$`, v)
+		return ok
+	})
+	p.SetSupportedLanguageVersions(tags)
+	support.SupportedVersion = tags
 	return nil
 }
 
