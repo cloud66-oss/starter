@@ -1,9 +1,10 @@
 package docker_compose
 
 import (
-	"gopkg.in/yaml.v2"
 	"log"
 	"strconv"
+
+	"gopkg.in/yaml.v2"
 )
 
 func (b *Build) UnmarshalYAML(unmarshal func(interface{}) error) error {

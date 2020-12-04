@@ -2,14 +2,15 @@ package transform
 
 import (
 	"fmt"
-	"github.com/cloud66-oss/starter/common"
-	"github.com/cloud66-oss/starter/definitions/kubernetes"
-	"github.com/cloud66-oss/starter/definitions/service-yml"
-	"gopkg.in/yaml.v2"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/cloud66-oss/starter/common"
+	"github.com/cloud66-oss/starter/definitions/kubernetes"
+	service_yml "github.com/cloud66-oss/starter/definitions/service-yml"
+	"gopkg.in/yaml.v2"
 )
 
 func finalFormat(file []byte) string {

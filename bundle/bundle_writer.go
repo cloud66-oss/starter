@@ -11,7 +11,7 @@ import (
 	"sort"
 
 	"github.com/cloud66-oss/starter/packs"
-	"gopkg.in/go-yaml/yaml.v2"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path"

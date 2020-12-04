@@ -2,11 +2,12 @@ package kubernetes
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 func composeWriter(file []byte, deployments []KubesDeployment, kubesServices []KubesService) []byte {

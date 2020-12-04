@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/go-resty/resty"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"io/ioutil"
 	"os"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"gopkg.in/resty.v1"
 )
 
 var _ = Describe("Running Starter in daemon mode", func() {

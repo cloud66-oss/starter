@@ -1,9 +1,10 @@
 package service_yml
 
 import (
-	"gopkg.in/yaml.v2"
 	"log"
 	"strconv"
+
+	"gopkg.in/yaml.v2"
 )
 
 func (t *TrafficMatches) UnmarshalYAML(unmarshal func(interface{}) error) error {

@@ -7,11 +7,12 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/cloud66-oss/starter/common"
-	"github.com/cloud66-oss/starter/definitions/docker-compose"
-	"github.com/cloud66-oss/starter/definitions/service-yml"
-	"gopkg.in/yaml.v2"
 	"strconv"
+
+	"github.com/cloud66-oss/starter/common"
+	docker_compose "github.com/cloud66-oss/starter/definitions/docker-compose"
+	service_yml "github.com/cloud66-oss/starter/definitions/service-yml"
+	"gopkg.in/yaml.v2"
 )
 
 func readEnv_file(path string) map[string]string {

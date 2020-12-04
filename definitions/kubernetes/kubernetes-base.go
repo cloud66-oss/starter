@@ -2,11 +2,12 @@ package kubernetes
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 
-	"github.com/cloud66-oss/starter/definitions/docker-compose"
+	"gopkg.in/yaml.v2"
+
+	docker_compose "github.com/cloud66-oss/starter/definitions/docker-compose"
 )
 
 type Kubernetes struct {
