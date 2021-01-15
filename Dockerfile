@@ -2,15 +2,11 @@
 FROM golang:1.13    
 #copy the source files
 RUN mkdir -p /go/src/github.com/cloud66-oss/starter
-# install dep
-RUN go get -u github.com/golang/dep/cmd/dep
 #switch to our app directory
 WORKDIR /go/src/github.com/cloud66-oss/starter
 # add the app code
 ADD . /go/src/github.com/cloud66-oss/starter
 # run build commands
-RUN dep ensure 
-# RUN go test -v 
 RUN bash -c "env GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o compiled/starter ."
 #---------
 # use the alpine base image
