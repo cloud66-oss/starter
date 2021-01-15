@@ -178,7 +178,7 @@ func (a *Analyzer) FindDatabases() []common.Database {
 
 func (a *Analyzer) EnvVars() []*common.EnvVar {
 	return []*common.EnvVar{
-		&common.EnvVar{Key: "SECRET_KEY_BASE", Value: "AUTO_GENERATE_128"},
+		&common.EnvVar{Key: "SECRET_KEY_BASE", Value: "AUTO_GENERATE_128_SECRET_KEY_BASE"},
 		&common.EnvVar{Key: "RAILS_ENV", Value: a.Environment},
 		&common.EnvVar{Key: "RACK_ENV", Value: a.Environment}}
 }
