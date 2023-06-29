@@ -4,13 +4,9 @@
 
 Starter is an open source command line tool to generate a `Dockerfile` and a `docker-compose.yml` file from arbitrary source code. It will kickstart the journey towards containerizing your apps.
 
-Starter can also generate the `service.yml` file, which is a Cloud 66 service definition file used to define the service configurations that run Docker in production on any cloud, or on your own serve
+Starter can also generate the `service.yml` file, which is a Cloud 66 service definition file used to define the service configurations that run Docker in production on any cloud, or on your own server.
 
-![Logo Starter an open source dockerfile generator](http://blog.cloud66.com/content/images/2016/08/Starter-open-source-dockerfile-generator-on-github.png)
-
-- Help Pages: https://help.cloud66.com/starter/
 - Download Starter: https://github.com/cloud66-oss/starter/releases/
-- Articles: http://blog.cloud66.com/tag/starter/
 
 
 ### Key features:
@@ -43,12 +39,6 @@ There are a couple reasons why you would need to run multiple applications on th
 - If you have a specialized application that requires a sandbox environment
 With the new security features of Docker, you get true isolation of your process. When using Starter you can isolate parts of your apps in containers and make sure they’re in a sandbox (and can’t do harmful things!).
 
-### Documentations:
-___
-
-Comprehensive documentation is available on the Starter website:
-
-https://help.cloud66.com/starter/
 
 ### Quick Start:
 ___
