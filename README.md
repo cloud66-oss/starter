@@ -1,3 +1,6 @@
+> We are looking for maintainers for this project. Please reach out if you're interested!
+> 
+
 <img src="http://cdn2-cloud66-com.s3.amazonaws.com/images/oss-sponsorship.png" width=150/>
 
 # Starter
